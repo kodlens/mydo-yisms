@@ -207,3 +207,67 @@ Activity logs for monitoring system use
     documents
     attendance_logs
     activity_logs
+
+
+## SOFTWARE SPECS
+
+### SERVER SIDE
+Component | Specification
+--- | ----
+Operating System | Ubuntu Server 22.04 LTS or later / Windows Server
+Web Server          |   Apache or Nginx
+Backend Framework   |   Laravel / PHP
+Database            |   MySQL or MariaDB
+API	                |   REST API
+Authentication	    |   Role-based login system
+File Storage	    |   Local server storage or cloud storage
+Security	        |   SSL certificate, password hashing, access control, activity logs
+
+### CLIENT SIDE
+Component | Specification
+--- | ---
+Browser | Google Chrome, Microsoft Edge, Mozilla Firefox
+Frontend | React / Vue / Blade / Inertia.js
+UI Framework | Tailwind CSS / Ant Design
+Device Support | Desktop, laptop, tablet, mobile browser
+
+### DEVELOPMENT TOOLS
+Component | Specification
+--- | ---
+Code Editor | Visual Studio Code
+Version Control | Git / GitHub
+Package Manager | Composer, npm
+Testing Tool | Browser DevTools, Postman
+
+
+## HARDWARE SPECS
+
+### MINIMUM SERVER REQUIREMENTS
+Component | Specification
+--- | ---
+Component | Specification
+Processor | Dual-core processor
+RAM | 4 GB
+Storage | 100 GB HDD/SSD
+Network | Stable internet connection
+Backup | External drive or cloud backup
+
+### RECOMMENDED SERVER REQUIREMENTS
+Component | Specification
+--- | ---
+Component | Specification
+Processor | Quad-core processor or higher
+RAM | 8 GB to 16 GB
+Storage | 256 GB SSD or higher
+Network | Stable broadband connection
+Backup | Automated cloud or offsite backup
+
+### CLIENT DEVICE REQUIREMENTS
+Component | Specification
+--- | ---
+Device | Desktop, laptop, tablet, or smartphone
+Processor | Dual-core or higher
+RAM | 2 GB minimum, 4 GB recommended
+Browser | Latest Chrome, Edge, or Firefox
+Camera | Required for QR attendance scanning
+Internet | Required for online access
