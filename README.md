@@ -245,7 +245,6 @@ Testing Tool | Browser DevTools, Postman
 ### MINIMUM SERVER REQUIREMENTS
 Component | Specification
 --- | ---
-Component | Specification
 Processor | Dual-core processor
 RAM | 4 GB
 Storage | 100 GB HDD/SSD
