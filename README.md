@@ -7,11 +7,11 @@ Youth Information and Scholarship Management System (YISMS)
 The Youth Information and Scholarship Management System is a web-based platform designed to assist the Municipal Youth Development Office (MYDO) in efficiently managing youth records, scholarship programs, and youth-related activities. The system centralizes information in a single database, streamlines application and evaluation processes, and provides administrators with tools for monitoring, reporting, and decision-making. By digitizing these processes, the platform improves service delivery, enhances transparency, and promotes better engagement with the youth sector.
 
 
-### GENERAL OBJECTIVES
+## GENERAL OBJECTIVES
 
 To develop a comprehensive web-based Youth Information, Scholarship, and Program Management System that enables the Municipal Youth Development Office (MYDO) to efficiently manage youth records, scholarship programs, cash incentives, volunteer activities, SK monitoring, and youth development initiatives through a centralized, secure, and integrated platform.
 
-### SPECIFIC OBJECTIVES
+## SPECIFIC OBJECTIVES
 
 1. To establish a centralized youth profiling system that maintains accurate and up-to-date demographic, educational, and socio-economic information of registered youth within the municipality.
 2. To streamline scholarship administration by digitizing the application, document submission, eligibility verification, evaluation, monitoring, and renewal processes.
@@ -26,7 +26,7 @@ To develop a comprehensive web-based Youth Information, Scholarship, and Program
 11. To enhance operational efficiency by reducing manual processes, minimizing redundant data entry, and improving the accuracy, accessibility, and timeliness of information across all MYDO services.
 
 
-### MAIN FEATURES
+## MAIN FEATURES
 
 1. Youth Profiling
 Register youth members
