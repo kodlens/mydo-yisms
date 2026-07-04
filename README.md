@@ -9,30 +9,22 @@ The Youth Information and Scholarship Management System is a web-based platform 
 
 ### GENERAL OBJECTIVES
 
-Develop a web-based Youth Information and Scholarship Management System that enables the Municipal Youth Development Office (MYDO) to efficiently manage youth records, scholarship programs, and youth-related activities through a centralized and user-friendly platform.
+To develop a comprehensive web-based Youth Information, Scholarship, and Program Management System that enables the Municipal Youth Development Office (MYDO) to efficiently manage youth records, scholarship programs, cash incentives, volunteer activities, SK monitoring, and youth development initiatives through a centralized, secure, and integrated platform.
 
 ### SPECIFIC OBJECTIVES
 
-1. Develop a centralized database for maintaining accurate and up-to-date youth information.
-2. Automate the scholarship application, evaluation, approval, and monitoring processes.
-3. Provide an online portal for youth applicants to register, submit applications, and track the status of their scholarship requests.
-4. Manage youth programs, events, trainings, and activities, including participant registration and attendance.
-5. Generate real-time reports and analytics to support planning, monitoring, and decision-making.
-6. Improve transparency and efficiency by digitizing records and reducing manual paperwork.
-7. Ensure secure access to sensitive information through role-based user authentication and authorization.
-8. Enable administrators to manage announcements, scholarship programs, and system users from a centralized dashboard.
+1. To establish a centralized youth profiling system that maintains accurate and up-to-date demographic, educational, and socio-economic information of registered youth within the municipality.
+2. To streamline scholarship administration by digitizing the application, document submission, eligibility verification, evaluation, monitoring, and renewal processes.
+3. To improve the management of cash incentive programs by recording financial assistance releases, monitoring beneficiary status, and maintaining accurate disbursement records.
+4. To facilitate volunteer management by tracking volunteer registrations, participation, attendance, and accumulated service hours for youth-led community activities.
+5. To support the planning and monitoring of youth programs and activities through event scheduling, participant management, attendance monitoring, and program status tracking.
+6. To strengthen Sangguniang Kabataan (SK) monitoring by maintaining records of SK officials, documenting activities, tracking KK Assembly compliance, and managing submitted reports and supporting documents.
+7. To provide a centralized document management repository for securely storing, organizing, retrieving, and archiving digital records associated with youth members, scholars, programs, and SK activities.
+8. To automate attendance recording for seminars, trainings, and community activities using manual or QR code-based attendance mechanisms to improve monitoring accuracy.
+9. To provide comprehensive reporting and analytical tools that support operational monitoring, program evaluation, and evidence-based planning through dashboards and configurable reports.
+10. To ensure data security, accountability, and controlled system access through role-based authentication, activity logging, and secure management of sensitive youth information.
+11. To enhance operational efficiency by reducing manual processes, minimizing redundant data entry, and improving the accuracy, accessibility, and timeliness of information across all MYDO services.
 
-### OBJECTIVES (IEEE SRS)
-
-1. To establish a centralized repository for storing and managing youth demographic, educational, and program-related information.
-2. To automate the end-to-end scholarship management process, including program creation, application, document submission, evaluation, approval, renewal, and monitoring.
-3. To provide authorized users with role-based access to ensure secure management of youth and scholarship data.
-4. To facilitate online registration and application, allowing youth applicants to submit required information and supporting documents electronically.
-5. To enable the planning, scheduling, and monitoring of youth programs, events, seminars, and other activities conducted by the MYDO.
-6. To generate comprehensive reports and statistical summaries that support monitoring, evaluation, and policy formulation.
-7. To improve operational efficiency by reducing manual record-keeping, minimizing data redundancy, and streamlining administrative workflows.
-8. To ensure data integrity, availability, and security through authentication, authorization, validation, and backup mechanisms.
-9. To provide a scalable and maintainable system architecture that supports future enhancements and integration with other government information systems.
 
 ### MAIN FEATURES
 
