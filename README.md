@@ -91,3 +91,119 @@ Login system
 Role-based access
 Secure data storage
 Activity logs for monitoring system use
+
+
+## USE CASE
+
+### Actors
+    Admin
+    MYDO Staff
+    Scholar / Youth Member
+    Volunteer
+    SK Official
+    Evaluator / Approver
+
+### Posiible Use Cases
+
+#### 1. Youth Profiling
+    Register youth profile
+    Update youth information
+    Search youth records
+    View youth profile details
+    Archive inactive youth records
+
+### 2. Scholarship Management
+    Apply for scholarship
+    Upload scholarship requirements
+    Check application eligibility
+    Review application
+    Approve or reject application
+    Monitor scholar status
+    Update scholar academic record
+    Mark scholar as graduated
+    
+### 3. Cash Incentive Management
+    Record cash incentive release
+    Assign beneficiary
+    Track amount received
+    Update release status
+    Generate cash incentive report
+
+### 4. Volunteer Tracking
+    Register as volunteer
+    Assign volunteer to activity
+    Record volunteer attendance
+    Track service hours
+    Generate volunteer participation report
+
+### 5. Program and Activity Management
+    Create youth program or event
+    Schedule activity
+    Register participants
+    Record attendance
+    Update program status
+    Generate program report
+
+### 6. SK Monitoring
+    Register SK officials per barangay
+    Upload SK documents and reports
+    Record SK activities
+    Monitor KK Assembly compliance
+    View SK submission status
+
+### 7. Documentt Management
+    Upload documents
+    View documents
+    Download documents
+    Update document status
+    Archive documents after retention period
+    Organize files by youth, scholar, program, or SK record
+
+
+### Attendance Management
+    Record manual attendance
+    Generate QR attendance
+    Scan QR code for time-in/time-out
+    View attendance logs
+    Generate attendance reports
+
+### Reports and Analytics
+    Generate youth profile report
+    Generate scholarship report
+    Generate volunteer report
+    Generate program report
+    Generate SK monitoring report
+    View dashboard statistics
+
+### User Management and Security
+    Login
+    Manage users
+    Assign roles
+    Manage permissions
+    View activity logs
+    Secure user access
+
+
+## POSSIBLE CORE DB TABLES
+    users
+    roles
+    youth_profiles
+    barangays
+    scholarship_programs
+    scholarship_applications
+    scholarship_requirements
+    scholarship_documents
+    scholar_statuses
+    cash_incentives
+    cash_incentive_releases
+    volunteers
+    volunteer_activities
+    volunteer_attendance
+    programs
+    program_participants
+    sk_officials
+    sk_activities
+    sk_documents
+    documents
+    attendance_logs
+    activity_logs
