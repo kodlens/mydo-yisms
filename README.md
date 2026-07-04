@@ -227,7 +227,7 @@ Security	        |   SSL certificate, password hashing, access control, activity
 Component | Specification
 --- | ---
 Browser | Google Chrome, Microsoft Edge, Mozilla Firefox
-Frontend | React / Vue / Blade / Inertia.js
+Frontend | React / Inertia.js
 UI Framework | Tailwind CSS / Ant Design
 Device Support | Desktop, laptop, tablet, mobile browser
 
