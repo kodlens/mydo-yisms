@@ -1,6 +1,5 @@
+import { Select } from 'antd';
 import { useEffect, useState } from 'react';
-
-import SelectField from './select-field';
 
 type Province = {
   provCode: string;
@@ -13,22 +12,18 @@ type ProvinceOption = {
 };
 
 export default function SelectProvince({
-  error,
   onChange,
   value,
 }: {
-  error?: string;
   onChange?: (value: string) => void;
   value?: string;
 }) {
   const [options, setOptions] = useState<ProvinceOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const loadProvinces = async () => {
       setLoading(true);
-      setErrorMessage('');
 
       try {
         const response = await fetch('/load-provinces', {
@@ -51,7 +46,6 @@ export default function SelectProvince({
         );
       } catch {
         setOptions([]);
-        setErrorMessage('Province list is unavailable. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -61,16 +55,15 @@ export default function SelectProvince({
   }, []);
 
   return (
-    <SelectField
-      id="provCode"
-      label="Province"
+    <Select
+      allowClear
+      showSearch
       loading={loading}
+      optionFilterProp="label"
       options={options}
-      placeholder="Choose your province"
-      value={value}
-      onChange={onChange}
-      error={error}
-      helperText={errorMessage || 'Select the province where you currently reside.'}
+      placeholder="Choose province"
+      value={value || undefined}
+      onChange={(selectedValue) => onChange?.(selectedValue ?? '')}
     />
   );
 }

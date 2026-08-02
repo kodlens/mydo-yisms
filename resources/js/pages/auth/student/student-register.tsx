@@ -1,13 +1,11 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, BookOpen, GraduationCap, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
-import { type FormEventHandler, type ReactNode } from 'react';
-
-import { Button } from '@/components/ui/button';
-import TextField from '@/components/text-field';
-import SelectField from '@/components/select-field';
-import SelectProvince from '@/components/select-province';
-import SelectCity from '@/components/select-city';
 import SelectBarangay from '@/components/select-barangay';
+import SelectCity from '@/components/select-city';
+import SelectProvince from '@/components/select-province';
+import { Head, Link } from '@inertiajs/react';
+import { Button, Card, Col, DatePicker, Form, Input, InputNumber, Row, Select, Typography } from 'antd';
+import axios from 'axios';
+import { ArrowLeft, ArrowRight, BookOpen, GraduationCap, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 
 type StudentRegistrationForm = {
   username: string;
@@ -16,9 +14,9 @@ type StudentRegistrationForm = {
   password_confirmation: string;
   lname: string;
   fname: string;
-  mname: string;
-  suffix: string;
-  birth_date: string;
+  mname?: string;
+  suffix?: string;
+  birth_date?: { format: (format: string) => string };
   sex: string;
   civil_status: string;
   mobile_number: string;
@@ -26,72 +24,74 @@ type StudentRegistrationForm = {
   citymunCode: string;
   brgyCode: string;
   street_address: string;
-  zip_code: string;
+  zip_code?: string;
   school_name: string;
   program: string;
   year: string;
   guardian_name: string;
   guardian_contact_number: string;
-  monthly_family_income: string;
+  monthly_family_income: number;
 };
 
 const yearOptions = [
-  { value: 1, label: '1st Year' },
-  { value: 2, label: '2nd Year' },
-  { value: 3, label: '3rd Year' },
-  { value: 4, label: '4th Year' },
+  { value: '1', label: '1st Year' },
+  { value: '2', label: '2nd Year' },
+  { value: '3', label: '3rd Year' },
+  { value: '4', label: '4th Year' },
 ];
-const sexOptions = ['Female', 'Male'];
-const civilStatusOptions = ['Single', 'Married', 'Widowed', 'Separated'];
+
+const sexOptions = [
+  { value: 'Female', label: 'Female' },
+  { value: 'Male', label: 'Male' },
+];
+
+const civilStatusOptions = [
+  { value: 'Single', label: 'Single' },
+  { value: 'Married', label: 'Married' },
+  { value: 'Widowed', label: 'Widowed' },
+  { value: 'Separated', label: 'Separated' },
+];
 
 export default function StudentRegister() {
-  const { data, setData, post, processing, errors, reset } = useForm<StudentRegistrationForm>({
-    username: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
-    lname: '',
-    fname: '',
-    mname: '',
-    suffix: '',
-    birth_date: '',
-    sex: '',
-    civil_status: '',
-    mobile_number: '',
-    provCode: '',
-    citymunCode: '',
-    brgyCode: '',
-    street_address: '',
-    zip_code: '',
-    school_name: '',
-    program: '',
-    year: '',
-    guardian_name: '',
-    guardian_contact_number: '',
-    monthly_family_income: '',
-  });
-  const updateProvince = (provinceId: string) => {
-    setData((currentData) => ({
-      ...currentData,
-      provCode: provinceId,
-      citymunCode: '',
-      brgyCode: '',
-    }));
+  const [form] = Form.useForm<StudentRegistrationForm>();
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const [processing, setProcessing] = useState(false);
+
+  const provCode = Form.useWatch('provCode', form) ?? '';
+  const citymunCode = Form.useWatch('citymunCode', form) ?? '';
+
+  const submit = (values: StudentRegistrationForm) => {
+    setProcessing(true);
+    setErrors({});
+
+    axios
+      .post(route('student-register.store'), {
+        ...values,
+        birth_date: values.birth_date?.format('YYYY-MM-DD'),
+      })
+      .then(() => {
+        window.location.href = route('student-login');
+      })
+      .catch((error) => {
+        setErrors(error.response?.data?.errors ?? {});
+      })
+      .finally(() => {
+        setProcessing(false);
+      });
   };
 
-  const updateCity = (cityId: string) => {
-    setData((currentData) => ({
-      ...currentData,
-      citymunCode: cityId,
-      brgyCode: '',
-    }));
+  const resetCityAndBarangay = (value: string) => {
+    form.setFieldsValue({
+      provCode: value,
+      citymunCode: undefined,
+      brgyCode: undefined,
+    });
   };
 
-  const submit: FormEventHandler = (event) => {
-    event.preventDefault();
-
-    post(route('student-register.store'), {
-      onFinish: () => reset('password', 'password_confirmation'),
+  const resetBarangay = (value: string) => {
+    form.setFieldsValue({
+      citymunCode: value,
+      brgyCode: undefined,
     });
   };
 
@@ -116,9 +116,7 @@ export default function StudentRegister() {
             <div className="grid lg:grid-cols-[360px_1fr]">
               <aside className="bg-emerald-800 px-6 py-8 text-white sm:px-8">
                 <Link href={route('home')} className="inline-flex w-fit items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-md bg-white text-sm font-bold text-emerald-800">
-                    MY
-                  </span>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-md bg-white text-sm font-bold text-emerald-800">MY</span>
                   <span>
                     <span className="block text-sm font-bold tracking-wide">MYDO-YISMS</span>
                     <span className="block text-xs text-emerald-100">Student Registration</span>
@@ -138,85 +136,307 @@ export default function StudentRegister() {
                 </div>
 
                 <div className="mt-10 space-y-3">
-                  <div className="rounded-md bg-white/10 p-4">
-                    <UserRound className="h-5 w-5 text-emerald-100" />
-                    <p className="mt-3 text-sm font-semibold">Personal details</p>
-                  </div>
-                  <div className="rounded-md bg-white/10 p-4">
-                    <BookOpen className="h-5 w-5 text-emerald-100" />
-                    <p className="mt-3 text-sm font-semibold">School information</p>
-                  </div>
-                  <div className="rounded-md bg-white/10 p-4">
-                    <LockKeyhole className="h-5 w-5 text-emerald-100" />
-                    <p className="mt-3 text-sm font-semibold">Secure login account</p>
-                  </div>
+                  <SidebarItem icon={UserRound} label="Personal details" />
+                  <SidebarItem icon={Home} label="Address verification" />
+                  <SidebarItem icon={BookOpen} label="School information" />
+                  <SidebarItem icon={LockKeyhole} label="Secure login account" />
                 </div>
               </aside>
 
               <div className="px-6 py-8 sm:px-8 lg:px-10">
                 <div className="mb-8">
                   <p className="text-sm font-semibold uppercase text-emerald-700">Applicant Form</p>
-                  <h2 className="mt-2 text-2xl font-bold text-slate-950">Student scholarship registration</h2>
+                  <Typography.Title level={2} className="!mb-0 !mt-2 !text-2xl">
+                    Student scholarship registration
+                  </Typography.Title>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     Complete the form below to submit your student scholarship registration for MYDO review.
                   </p>
                 </div>
 
-                <form className="space-y-8" onSubmit={submit}>
+                <Form form={form} layout="vertical" onFinish={submit} requiredMark="optional">
                   <FormSection icon={LockKeyhole} title="Account Information">
-                    <TextField id="username" label="Username" placeholder="e.g. juan.delacruz" value={data.username} onChange={(value) => setData('username', value)} error={errors.username} />
-                    <TextField id="email" label="Email address" type="email" placeholder="student@example.com" icon={Mail} value={data.email} onChange={(value) => setData('email', value)} error={errors.email} />
-                    <TextField id="password" label="Password" type="password" placeholder="Create a password" value={data.password} onChange={(value) => setData('password', value)} error={errors.password} />
-                    <TextField id="password_confirmation" label="Confirm password" type="password" placeholder="Confirm your password" value={data.password_confirmation} onChange={(value) => setData('password_confirmation', value)} error={errors.password_confirmation} />
+                    <div className="flex md:gap-4 flex-col md:flex-row">
+                      <div className="w-full ">
+                        <Form.Item name="username" label="Username"
+                          validateStatus={errors.username ? "error" : ""}
+                          help={errors.username ? errors.username[0] : ""} >
+                          <Input placeholder="Username" />
+                        </Form.Item>
+                      </div>
+
+                      <div className="w-full">
+                        <Form.Item
+                          name="email"
+                          label="Email"
+                          validateStatus={errors.email ? "error" : ""}
+                          help={errors.email ? errors.email[0] : ""}
+                        >
+                          <Input prefix={<Mail className="h-4 w-4 text-slate-400" />} placeholder="email@example.com" />
+                        </Form.Item>
+                      </div>
+                    </div>
+
+                    <div className='flex gap-4 md:flex-row md:gap-4 flex-col'>
+                      <div className="w-full">
+                        <Form.Item
+                          name="password"
+                          label="Password"
+                          validateStatus={errors.password ? "error" : ""}
+                          help={errors.password ? errors.password[0] : ""}
+                        >
+                          <Input.Password placeholder="Create a password" />
+                        </Form.Item>
+                      </div>
+
+                      <div className="w-full">
+                        <Form.Item
+                          name="password_confirmation"
+                          label="Confirm password"
+                          validateStatus={errors.password_confirmation ? "error" : ""}
+                          help={errors.password_confirmation ? errors.password_confirmation[0] : ""}
+                        >
+                          <Input.Password placeholder="Confirm your password" />
+                        </Form.Item>
+                      </div>
+                    </div>
                   </FormSection>
 
                   <FormSection icon={UserRound} title="Personal Information">
-                    <TextField id="lname" label="Last name" placeholder="Dela Cruz" value={data.lname} onChange={(value) => setData('lname', value)} error={errors.lname} />
-                    <TextField id="fname" label="First name" placeholder="Juan" value={data.fname} onChange={(value) => setData('fname', value)} error={errors.fname} />
-                    <TextField id="mname" label="Middle name" placeholder="Santos" value={data.mname} onChange={(value) => setData('mname', value)} error={errors.mname} />
-                    <TextField id="suffix" label="Suffix" placeholder="Jr., III, etc." value={data.suffix} onChange={(value) => setData('suffix', value)} error={errors.suffix} />
-                    <TextField id="birth_date" label="Birth date" type="date" value={data.birth_date} onChange={(value) => setData('birth_date', value)} error={errors.birth_date} />
-                    <SelectField id="sex" label="Sex" options={sexOptions} value={data.sex} onChange={(value) => setData('sex', value)} error={errors.sex} />
-                    <SelectField id="civil_status" label="Civil status" options={civilStatusOptions} value={data.civil_status} onChange={(value) => setData('civil_status', value)} error={errors.civil_status} />
-                    <TextField id="mobile_number" label="Mobile number" placeholder="09XXXXXXXXX" icon={Phone} value={data.mobile_number} onChange={(value) => setData('mobile_number', value)} error={errors.mobile_number} />
+                    <Row gutter={16}>
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="lname"
+                          label="Last name"
+                          validateStatus={errors.lname ? "error" : ""}
+                          help={errors.lname ? errors.lname[0] : ""}
+                        >
+                          <Input placeholder="Dela Cruz" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="fname"
+                          label="First name"
+                          validateStatus={errors.fname ? "error" : ""}
+                          help={errors.fname ? errors.fname[0] : ""}
+                        >
+                          <Input placeholder="Juan" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="mname"
+                          label="Middle name"
+                          validateStatus={errors.mname ? "error" : ""}
+                          help={errors.mname ? errors.mname[0] : ""}
+                        >
+                          <Input placeholder="Santos" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="suffix"
+                          label="Suffix"
+                          validateStatus={errors.suffix ? "error" : ""}
+                          help={errors.suffix ? errors.suffix[0] : ""}
+                        >
+                          <Input placeholder="Jr., III, etc." />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="birth_date"
+                          label="Birth date"
+                          validateStatus={errors.birth_date ? "error" : ""}
+                          help={errors.birth_date ? errors.birth_date[0] : ""}
+                        >
+                          <DatePicker className="w-full" placeholder="Select birth date" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="sex"
+                          label="Sex"
+                          validateStatus={errors.sex ? "error" : ""}
+                          help={errors.sex ? errors.sex[0] : ""}
+                        >
+                          <Select allowClear options={sexOptions} placeholder="Select sex" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="civil_status"
+                          label="Civil status"
+                          validateStatus={errors.civil_status ? "error" : ""}
+                          help={errors.civil_status ? errors.civil_status[0] : ""}
+                        >
+                          <Select allowClear options={civilStatusOptions} placeholder="Select civil status" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="mobile_number"
+                          label="Mobile number"
+                          validateStatus={errors.mobile_number ? "error" : ""}
+                          help={errors.mobile_number ? errors.mobile_number[0] : ""}
+                        >
+                          <Input prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
                   </FormSection>
 
                   <FormSection icon={Home} title="Address Information">
-                    <SelectProvince value={data.provCode} onChange={updateProvince} error={errors.provCode} />
-                    <SelectCity provinceCode={data.provCode} value={data.citymunCode} onChange={updateCity} error={errors.citymunCode} />
-                    <SelectBarangay
-                      provinceCode={data.provCode}
-                      cityCode={data.citymunCode}
-                      value={data.brgyCode}
-                      onChange={(value) => setData('brgyCode', value)}
-                      error={errors.brgyCode}
-                    />
-                    <TextField id="street_address" label="Street address" placeholder="House no., street, purok, subdivision" value={data.street_address} onChange={(value) => setData('street_address', value)} error={errors.street_address} />
-                    <TextField id="zip_code" label="ZIP code" placeholder="0000" value={data.zip_code} onChange={(value) => setData('zip_code', value)} error={errors.zip_code} />
+                    <Row gutter={16}>
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="provCode"
+                          label="Province"
+                          validateStatus={errors.provCode ? "error" : ""}
+                          help={errors.provCode ? errors.provCode[0] : ""}
+                        >
+                          <SelectProvince onChange={resetCityAndBarangay} />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="citymunCode"
+                          label="City / Municipality"
+                          validateStatus={errors.citymunCode ? "error" : ""}
+                          help={errors.citymunCode ? errors.citymunCode[0] : ""}
+                        >
+                          <SelectCity provinceCode={provCode} onChange={resetBarangay} />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="brgyCode"
+                          label="Barangay"
+                          validateStatus={errors.brgyCode ? "error" : ""}
+                          help={errors.brgyCode ? errors.brgyCode[0] : ""}
+                        >
+                          <SelectBarangay provinceCode={provCode} cityCode={citymunCode} />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={16}>
+                        <Form.Item
+                          name="street_address"
+                          label="Street address"
+                          validateStatus={errors.street_address ? "error" : ""}
+                          help={errors.street_address ? errors.street_address[0] : ""}
+                        >
+                          <Input placeholder="House no., street, purok, subdivision" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={8}>
+                        <Form.Item
+                          name="zip_code"
+                          label="ZIP code"
+                          validateStatus={errors.zip_code ? "error" : ""}
+                          help={errors.zip_code ? errors.zip_code[0] : ""}
+                        >
+                          <Input placeholder="0000" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
                   </FormSection>
 
                   <FormSection icon={BookOpen} title="Educational Information">
-                    <TextField id="school_name" label="School name" placeholder="Name of school" value={data.school_name} onChange={(value) => setData('school_name', value)} error={errors.school_name} />
-                    <TextField id="program" label="Program" placeholder="Bachelor of Science in Information Technology" value={data.program} onChange={(value) => setData('program', value)} error={errors.program} />
-                    <SelectField id="year" label="Year" options={yearOptions} placeholder="Select year level" value={data.year} onChange={(value) => setData('year', value)} error={errors.year} />
+                    <Row gutter={16}>
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="school_name"
+                          label="School name"
+                          validateStatus={errors.school_name ? "error" : ""}
+                          help={errors.school_name ? errors.school_name[0] : ""}
+                        >
+                          <Input placeholder="Name of school" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="program"
+                          label="Program"
+                          validateStatus={errors.program ? "error" : ""}
+                          help={errors.program ? errors.program[0] : ""}
+                        >
+                          <Input placeholder="Bachelor of Science in Information Technology" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="year"
+                          label="Year"
+                          validateStatus={errors.year ? "error" : ""}
+                          help={errors.year ? errors.year[0] : ""}
+                        >
+                          <Select allowClear options={yearOptions} placeholder="Select year level" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
                   </FormSection>
 
                   <FormSection icon={Users} title="Family / Guardian Information">
-                    <TextField id="guardian_name" label="Guardian name" placeholder="Full name of parent or guardian" value={data.guardian_name} onChange={(value) => setData('guardian_name', value)} error={errors.guardian_name} />
-                    <TextField id="guardian_contact_number" label="Guardian contact number" placeholder="09XXXXXXXXX" icon={Phone} value={data.guardian_contact_number} onChange={(value) => setData('guardian_contact_number', value)} error={errors.guardian_contact_number} />
-                    <TextField id="monthly_family_income" label="Monthly family income" type="number" placeholder="e.g. 10000" value={data.monthly_family_income} onChange={(value) => setData('monthly_family_income', value)} error={errors.monthly_family_income} />
+                    <Row gutter={16}>
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="guardian_name"
+                          label="Guardian name"
+                          validateStatus={errors.guardian_name ? "error" : ""}
+                          help={errors.guardian_name ? errors.guardian_name[0] : ""}
+                        >
+                          <Input placeholder="Full name of parent or guardian" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="guardian_contact_number"
+                          label="Guardian contact number"
+                          validateStatus={errors.guardian_contact_number ? "error" : ""}
+                          help={errors.guardian_contact_number ? errors.guardian_contact_number[0] : ""}
+                        >
+                          <Input prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12} xl={8}>
+                        <Form.Item
+                          name="monthly_family_income"
+                          label="Monthly family income"
+                          validateStatus={errors.monthly_family_income ? "error" : ""}
+                          help={errors.monthly_family_income ? errors.monthly_family_income[0] : ""}
+                        >
+                          <InputNumber className="w-full" min={0} placeholder="e.g. 10000" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
                   </FormSection>
 
                   <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
                     <Link href={route('student-login')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
                       I already have an account
                     </Link>
-                    <Button type="submit" className="bg-emerald-700 px-6 hover:bg-emerald-800" disabled={processing}>
-                      {processing ? 'Submitting...' : 'Submit Registration'}
+                    <Button htmlType="submit" type="primary" size="large" loading={processing} className="bg-emerald-700">
+                      Submit Registration
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </div>
-                </form>
+                </Form>
               </div>
             </div>
           </section>
@@ -226,24 +446,29 @@ export default function StudentRegister() {
   );
 }
 
-function FormSection({
-  children,
-  icon: Icon,
-  title,
-}: {
-  children: ReactNode;
-  icon: LucideIcon;
-  title: string;
-}) {
+function SidebarItem({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
   return (
-    <section>
-      <div className="mb-4 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
-          <Icon className="h-5 w-5" />
+    <div className="rounded-md bg-white/10 p-4">
+      <Icon className="h-5 w-5 text-emerald-100" />
+      <p className="mt-3 text-sm font-semibold">{label}</p>
+    </div>
+  );
+}
+
+function FormSection({ children, icon: Icon, title }: { children: ReactNode; icon: LucideIcon; title: string }) {
+  return (
+    <Card
+      className="mb-6"
+      title={
+        <span className="inline-flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
+            <Icon className="h-5 w-5" />
+          </span>
+          <span>{title}</span>
         </span>
-        <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>
-    </section>
+      }
+    >
+      {children}
+    </Card>
   );
 }

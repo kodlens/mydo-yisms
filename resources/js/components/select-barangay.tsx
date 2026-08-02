@@ -1,6 +1,5 @@
+import { Select } from 'antd';
 import { useEffect, useState } from 'react';
-
-import SelectField from './select-field';
 
 type Barangay = {
   brgyCode: string;
@@ -14,31 +13,26 @@ type BarangayOption = {
 
 export default function SelectBarangay({
   cityCode,
-  error,
   onChange,
   provinceCode,
   value,
 }: {
   cityCode: string;
-  error?: string;
   onChange?: (value: string) => void;
   provinceCode: string;
   value?: string;
 }) {
   const [options, setOptions] = useState<BarangayOption[]>([]);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (!provinceCode || !cityCode) {
       setOptions([]);
-      setErrorMessage('');
       return;
     }
 
     const loadBarangays = async () => {
       setLoading(true);
-      setErrorMessage('');
 
       try {
         const searchParams = new URLSearchParams({
@@ -66,7 +60,6 @@ export default function SelectBarangay({
         );
       } catch {
         setOptions([]);
-        setErrorMessage('Barangay list is unavailable. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -76,17 +69,16 @@ export default function SelectBarangay({
   }, [cityCode, provinceCode]);
 
   return (
-    <SelectField
-      id="brgyCode"
-      label="Barangay"
+    <Select
+      allowClear
+      showSearch
       disabled={!provinceCode || !cityCode}
       loading={loading}
+      optionFilterProp="label"
       options={options}
-      placeholder={cityCode ? 'Choose your barangay' : 'Select a city or municipality first'}
-      value={value}
-      onChange={onChange}
-      error={error}
-      helperText={errorMessage || 'Select your barangay after choosing a city or municipality.'}
+      placeholder={cityCode ? 'Choose barangay' : 'Select city / municipality first'}
+      value={value || undefined}
+      onChange={(selectedValue) => onChange?.(selectedValue ?? '')}
     />
   );
 }
