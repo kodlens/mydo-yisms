@@ -155,6 +155,7 @@ export default function StudentRegister() {
                 </div>
 
                 <Form form={form} layout="vertical" onFinish={submit} requiredMark="optional">
+
                   <FormSection icon={LockKeyhole} title="Account Information">
                     <div className="flex md:gap-4 flex-col md:flex-row">
                       <div className="w-full ">
@@ -354,8 +355,8 @@ export default function StudentRegister() {
                   </FormSection>
 
                   <FormSection icon={BookOpen} title="Educational Information">
-                    <Row gutter={16}>
-                      <Col xs={24} md={12} xl={8}>
+                    <div className="flex">
+                      <div className="w-full">
                         <Form.Item
                           name="school_name"
                           label="School name"
@@ -364,9 +365,9 @@ export default function StudentRegister() {
                         >
                           <Input placeholder="Name of school" />
                         </Form.Item>
-                      </Col>
+                      </div>
 
-                      <Col xs={24} md={12} xl={8}>
+                      <div className="w-full">
                         <Form.Item
                           name="program"
                           label="Program"
@@ -375,9 +376,9 @@ export default function StudentRegister() {
                         >
                           <Input placeholder="Bachelor of Science in Information Technology" />
                         </Form.Item>
-                      </Col>
+                      </div>
 
-                      <Col xs={24} md={12} xl={8}>
+                      <div>
                         <Form.Item
                           name="year"
                           label="Year"
@@ -386,14 +387,13 @@ export default function StudentRegister() {
                         >
                           <Select allowClear options={yearOptions} placeholder="Select year level" />
                         </Form.Item>
-                      </Col>
-                    </Row>
+                      </div>
+                    </div>
                   </FormSection>
 
                   <FormSection icon={Users} title="Family / Guardian Information">
-                    <Row gutter={16}>
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
+                    <div>
+                      <Form.Item
                           name="guardian_name"
                           label="Guardian name"
                           validateStatus={errors.guardian_name ? "error" : ""}
@@ -401,9 +401,10 @@ export default function StudentRegister() {
                         >
                           <Input placeholder="Full name of parent or guardian" />
                         </Form.Item>
-                      </Col>
+                    </div>
 
-                      <Col xs={24} md={12} xl={8}>
+                    <div className="flex md:gap-4 md:flex-row flex-col">
+                       <div className="w-full">
                         <Form.Item
                           name="guardian_contact_number"
                           label="Guardian contact number"
@@ -412,10 +413,11 @@ export default function StudentRegister() {
                         >
                           <Input prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
                         </Form.Item>
-                      </Col>
+                      </div>
 
-                      <Col xs={24} md={12} xl={8}>
+                      <div className="w-full">
                         <Form.Item
+                          className="w-full"
                           name="monthly_family_income"
                           label="Monthly family income"
                           validateStatus={errors.monthly_family_income ? "error" : ""}
@@ -423,8 +425,8 @@ export default function StudentRegister() {
                         >
                           <InputNumber className="w-full" min={0} placeholder="e.g. 10000" />
                         </Form.Item>
-                      </Col>
-                    </Row>
+                      </div>
+                    </div>
                   </FormSection>
 
                   <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
