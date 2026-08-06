@@ -69,7 +69,9 @@ export default function StudentLogin() {
             </div>
 
             <div className="flex flex-1 items-center justify-center py-10">
+
               <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-xl shadow-emerald-900/10 sm:p-8">
+
                 <div className="mb-8 text-center">
                   <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
                     <GraduationCap className="h-7 w-7" />
@@ -118,18 +120,22 @@ export default function StudentLogin() {
                   <Button
                     htmlType="submit"
                     type="primary"
-                    className="w-full">
+                    className="w-full bg-emerald-700 hover:bg-emerald-800 text-white">
                     Sign in
                   </Button>
                 </form>
 
-                <p className="mt-6 text-center text-sm text-slate-600">
-                  New applicant?{' '}
-                  <Link href={route('student-register')} className="font-semibold text-emerald-700 hover:text-emerald-900">
-                    Create an account
-                  </Link>
-                </p>
+
+                <div className="mt-6">
+                  <p className="text-center text-sm text-slate-600">
+                    New applicant?{' '}
+                    <Link href={route('student-register')} className="font-semibold text-emerald-700 hover:text-emerald-900">
+                      Create an account
+                    </Link>
+                  </p>
+                </div>
               </div>
+
             </div>
           </section>
         </div>

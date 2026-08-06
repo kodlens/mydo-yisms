@@ -1,11 +1,14 @@
+import FormSection from '@/components/form-section';
 import SelectBarangay from '@/components/select-barangay';
 import SelectCity from '@/components/select-city';
 import SelectProvince from '@/components/select-province';
 import { Head, Link } from '@inertiajs/react';
-import { Button, Card, Col, DatePicker, Form, Input, InputNumber, Row, Select, Typography } from 'antd';
+import { Button, DatePicker, Form, Input, InputNumber, Select, Steps, Typography } from 'antd';
 import axios from 'axios';
 import { ArrowLeft, ArrowRight, BookOpen, GraduationCap, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
+import UploadDocument from './form/upload-document';
+import Address from './form/address';
 
 type StudentRegistrationForm = {
   username: string;
@@ -33,12 +36,6 @@ type StudentRegistrationForm = {
   monthly_family_income: number;
 };
 
-const yearOptions = [
-  { value: '1', label: '1st Year' },
-  { value: '2', label: '2nd Year' },
-  { value: '3', label: '3rd Year' },
-  { value: '4', label: '4th Year' },
-];
 
 const sexOptions = [
   { value: 'Female', label: 'Female' },
@@ -52,10 +49,17 @@ const civilStatusOptions = [
   { value: 'Separated', label: 'Separated' },
 ];
 
+const registrationSteps = [
+  { title: 'Profile' },
+  { title: 'Education' },
+  { title: 'Documents' },
+];
+
 export default function StudentRegister() {
   const [form] = Form.useForm<StudentRegistrationForm>();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [processing, setProcessing] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
   const provCode = Form.useWatch('provCode', form) ?? '';
   const citymunCode = Form.useWatch('citymunCode', form) ?? '';
@@ -154,289 +158,296 @@ export default function StudentRegister() {
                   </p>
                 </div>
 
-                <Form form={form} layout="vertical" onFinish={submit} requiredMark="optional">
+                <Form form={form}
+                  layout="vertical"
+                  onFinish={submit}
+                  className="space-y-6">
 
-                  <FormSection icon={LockKeyhole} title="Account Information">
-                    <div className="flex md:gap-4 flex-col md:flex-row">
-                      <div className="w-full ">
-                        <Form.Item name="username" label="Username"
-                          validateStatus={errors.username ? "error" : ""}
-                          help={errors.username ? errors.username[0] : ""} >
-                          <Input placeholder="Username" />
-                        </Form.Item>
-                      </div>
+                  <div>
+                    <Steps current={currentStep} items={registrationSteps} responsive />
+                  </div>
 
-                      <div className="w-full">
-                        <Form.Item
-                          name="email"
-                          label="Email"
-                          validateStatus={errors.email ? "error" : ""}
-                          help={errors.email ? errors.email[0] : ""}
-                        >
-                          <Input prefix={<Mail className="h-4 w-4 text-slate-400" />} placeholder="email@example.com" />
-                        </Form.Item>
-                      </div>
-                    </div>
+                  {currentStep === 0 && (
+                    <>
+                      <FormSection icon={LockKeyhole} title="Account Information">
+                        <div className="flex md:gap-4 flex-col md:flex-row">
+                          <div className="w-full ">
+                            <Form.Item name="username"
+                              label="Username"
+                              validateStatus={errors.username ? "error" : ""}
+                              help={errors.username ? errors.username[0] : ""} >
+                              <Input placeholder="Username" />
+                            </Form.Item>
+                          </div>
 
-                    <div className='flex gap-4 md:flex-row md:gap-4 flex-col'>
-                      <div className="w-full">
-                        <Form.Item
-                          name="password"
-                          label="Password"
-                          validateStatus={errors.password ? "error" : ""}
-                          help={errors.password ? errors.password[0] : ""}
-                        >
-                          <Input.Password placeholder="Create a password" />
-                        </Form.Item>
-                      </div>
+                          <div className="w-full">
+                            <Form.Item
+                              name="email"
+                              label="Email"
+                              validateStatus={errors.email ? "error" : ""}
+                              help={errors.email ? errors.email[0] : ""}
+                            >
+                              <Input prefix={<Mail className="h-4 w-4 text-slate-400" />} placeholder="email@example.com" />
+                            </Form.Item>
+                          </div>
+                        </div>
 
-                      <div className="w-full">
-                        <Form.Item
-                          name="password_confirmation"
-                          label="Confirm password"
-                          validateStatus={errors.password_confirmation ? "error" : ""}
-                          help={errors.password_confirmation ? errors.password_confirmation[0] : ""}
-                        >
-                          <Input.Password placeholder="Confirm your password" />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </FormSection>
+                        <div className='flex gap-4 md:flex-row md:gap-4 flex-col'>
+                          <div className="w-full">
+                            <Form.Item
+                              name="password"
+                              label="Password"
+                              validateStatus={errors.password ? "error" : ""}
+                              help={errors.password ? errors.password[0] : ""}
+                            >
+                              <Input.Password placeholder="Create a password" />
+                            </Form.Item>
+                          </div>
 
-                  <FormSection icon={UserRound} title="Personal Information">
-                    <Row gutter={16}>
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="lname"
-                          label="Last name"
-                          validateStatus={errors.lname ? "error" : ""}
-                          help={errors.lname ? errors.lname[0] : ""}
-                        >
-                          <Input placeholder="Dela Cruz" />
-                        </Form.Item>
-                      </Col>
+                          <div className="w-full">
+                            <Form.Item
+                              name="password_confirmation"
+                              label="Confirm password"
+                              validateStatus={errors.password_confirmation ? "error" : ""}
+                              help={errors.password_confirmation ? errors.password_confirmation[0] : ""}
+                            >
+                              <Input.Password placeholder="Confirm your password" />
+                            </Form.Item>
+                          </div>
+                        </div>
+                      </FormSection>
 
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="fname"
-                          label="First name"
-                          validateStatus={errors.fname ? "error" : ""}
-                          help={errors.fname ? errors.fname[0] : ""}
-                        >
-                          <Input placeholder="Juan" />
-                        </Form.Item>
-                      </Col>
+                      <FormSection icon={UserRound} title="Personal Information">
+                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
 
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="mname"
-                          label="Middle name"
-                          validateStatus={errors.mname ? "error" : ""}
-                          help={errors.mname ? errors.mname[0] : ""}
-                        >
-                          <Input placeholder="Santos" />
-                        </Form.Item>
-                      </Col>
+                          <div className="w-full">
+                            <Form.Item
+                              name="lname"
+                              label="Last name"
+                              validateStatus={errors.lname ? "error" : ""}
+                              help={errors.lname ? errors.lname[0] : ""}
+                            >
+                              <Input placeholder="Dela Cruz" />
+                            </Form.Item>
+                          </div>
 
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="suffix"
-                          label="Suffix"
-                          validateStatus={errors.suffix ? "error" : ""}
-                          help={errors.suffix ? errors.suffix[0] : ""}
-                        >
-                          <Input placeholder="Jr., III, etc." />
-                        </Form.Item>
-                      </Col>
+                          <div className="w-full">
+                            <Form.Item
+                              name="fname"
+                              label="First name"
+                              validateStatus={errors.fname ? "error" : ""}
+                              help={errors.fname ? errors.fname[0] : ""}
+                            >
+                              <Input placeholder="Juan" />
+                            </Form.Item>
+                          </div>
+                        </div>
 
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="birth_date"
-                          label="Birth date"
-                          validateStatus={errors.birth_date ? "error" : ""}
-                          help={errors.birth_date ? errors.birth_date[0] : ""}
-                        >
-                          <DatePicker className="w-full" placeholder="Select birth date" />
-                        </Form.Item>
-                      </Col>
+                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
+                          <div className="w-full">
+                            <Form.Item
+                              name="mname"
+                              label="Middle name"
+                              validateStatus={errors.mname ? "error" : ""}
+                              help={errors.mname ? errors.mname[0] : ""}
+                            >
+                              <Input placeholder="Santos" />
+                            </Form.Item>
+                          </div>
 
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="sex"
-                          label="Sex"
-                          validateStatus={errors.sex ? "error" : ""}
-                          help={errors.sex ? errors.sex[0] : ""}
-                        >
-                          <Select allowClear options={sexOptions} placeholder="Select sex" />
-                        </Form.Item>
-                      </Col>
+                          <div className="w-full">
+                            <Form.Item
+                              name="suffix"
+                              label="Suffix"
+                              validateStatus={errors.suffix ? "error" : ""}
+                              help={errors.suffix ? errors.suffix[0] : ""}
+                            >
+                              <Input placeholder="Jr., III, etc." />
+                            </Form.Item>
+                          </div>
+                        </div>
 
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="civil_status"
-                          label="Civil status"
-                          validateStatus={errors.civil_status ? "error" : ""}
-                          help={errors.civil_status ? errors.civil_status[0] : ""}
-                        >
-                          <Select allowClear options={civilStatusOptions} placeholder="Select civil status" />
-                        </Form.Item>
-                      </Col>
+                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
+                          <div className="w-full">
+                            <Form.Item
+                              name="birth_date"
+                              label="Birth date"
+                              validateStatus={errors.birth_date ? "error" : ""}
+                              help={errors.birth_date ? errors.birth_date[0] : ""}
+                            >
+                              <DatePicker className="w-full" placeholder="Select birth date" />
+                            </Form.Item>
+                          </div>
 
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="mobile_number"
-                          label="Mobile number"
-                          validateStatus={errors.mobile_number ? "error" : ""}
-                          help={errors.mobile_number ? errors.mobile_number[0] : ""}
-                        >
-                          <Input prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </FormSection>
+                          <div className="w-full">
+                            <Form.Item
+                              name="sex"
+                              label="Sex"
+                              validateStatus={errors.sex ? "error" : ""}
+                              help={errors.sex ? errors.sex[0] : ""}
+                            >
+                              <Select allowClear options={sexOptions} placeholder="Select sex" />
+                            </Form.Item>
+                          </div>
+                        </div>
 
-                  <FormSection icon={Home} title="Address Information">
-                    <Row gutter={16}>
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="provCode"
-                          label="Province"
-                          validateStatus={errors.provCode ? "error" : ""}
-                          help={errors.provCode ? errors.provCode[0] : ""}
-                        >
-                          <SelectProvince onChange={resetCityAndBarangay} />
-                        </Form.Item>
-                      </Col>
+                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
+                          <div className="w-full">
+                            <Form.Item
+                              name="civil_status"
+                              label="Civil status"
+                              validateStatus={errors.civil_status ? "error" : ""}
+                              help={errors.civil_status ? errors.civil_status[0] : ""}
+                            >
+                              <Select allowClear options={civilStatusOptions} placeholder="Select civil status" />
+                            </Form.Item>
+                          </div>
 
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="citymunCode"
-                          label="City / Municipality"
-                          validateStatus={errors.citymunCode ? "error" : ""}
-                          help={errors.citymunCode ? errors.citymunCode[0] : ""}
-                        >
-                          <SelectCity provinceCode={provCode} onChange={resetBarangay} />
-                        </Form.Item>
-                      </Col>
+                          <div className="w-full">
+                            <Form.Item
+                              name="mobile_number"
+                              label="Mobile number"
+                              validateStatus={errors.mobile_number ? "error" : ""}
+                              help={errors.mobile_number ? errors.mobile_number[0] : ""}
+                            >
+                              <Input prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
+                            </Form.Item>
+                          </div>
+                        </div>
+                      </FormSection>
 
-                      <Col xs={24} md={12} xl={8}>
-                        <Form.Item
-                          name="brgyCode"
-                          label="Barangay"
-                          validateStatus={errors.brgyCode ? "error" : ""}
-                          help={errors.brgyCode ? errors.brgyCode[0] : ""}
-                        >
-                          <SelectBarangay provinceCode={provCode} cityCode={citymunCode} />
-                        </Form.Item>
-                      </Col>
+                      <FormSection icon={Home} title="Address Information">
+                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
+                          <div className="w-full">
+                            <Form.Item
+                              name="provCode"
+                              label="Province"
+                              validateStatus={errors.provCode ? "error" : ""}
+                              help={errors.provCode ? errors.provCode[0] : ""}
+                            >
+                              <SelectProvince onChange={resetCityAndBarangay} />
+                            </Form.Item>
+                          </div>
 
-                      <Col xs={24} md={16}>
-                        <Form.Item
-                          name="street_address"
-                          label="Street address"
-                          validateStatus={errors.street_address ? "error" : ""}
-                          help={errors.street_address ? errors.street_address[0] : ""}
-                        >
-                          <Input placeholder="House no., street, purok, subdivision" />
-                        </Form.Item>
-                      </Col>
+                          <div className="w-full">
+                            <Form.Item
+                              name="citymunCode"
+                              label="City / Municipality"
+                              validateStatus={errors.citymunCode ? "error" : ""}
+                              help={errors.citymunCode ? errors.citymunCode[0] : ""}
+                            >
+                              <SelectCity provinceCode={provCode} onChange={resetBarangay} />
+                            </Form.Item>
+                          </div>
 
-                      <Col xs={24} md={8}>
-                        <Form.Item
-                          name="zip_code"
-                          label="ZIP code"
-                          validateStatus={errors.zip_code ? "error" : ""}
-                          help={errors.zip_code ? errors.zip_code[0] : ""}
-                        >
-                          <Input placeholder="0000" />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </FormSection>
+                          <div className="w-full">
+                            <Form.Item
+                              name="brgyCode"
+                              label="Barangay"
+                              validateStatus={errors.brgyCode ? "error" : ""}
+                              help={errors.brgyCode ? errors.brgyCode[0] : ""}
+                            >
+                              <SelectBarangay provinceCode={provCode} cityCode={citymunCode} />
+                            </Form.Item>
+                          </div>
+                        </div>
 
-                  <FormSection icon={BookOpen} title="Educational Information">
-                    <div className="flex">
-                      <div className="w-full">
-                        <Form.Item
-                          name="school_name"
-                          label="School name"
-                          validateStatus={errors.school_name ? "error" : ""}
-                          help={errors.school_name ? errors.school_name[0] : ""}
-                        >
-                          <Input placeholder="Name of school" />
-                        </Form.Item>
-                      </div>
 
-                      <div className="w-full">
-                        <Form.Item
-                          name="program"
-                          label="Program"
-                          validateStatus={errors.program ? "error" : ""}
-                          help={errors.program ? errors.program[0] : ""}
-                        >
-                          <Input placeholder="Bachelor of Science in Information Technology" />
-                        </Form.Item>
-                      </div>
+                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
+                          <div className="w-full">
+                            <Form.Item
+                              name="street_address"
+                              label="Street address"
+                              validateStatus={errors.street_address ? "error" : ""}
+                              help={errors.street_address ? errors.street_address[0] : ""}
+                            >
+                              <Input placeholder="House no., street, purok, subdivision" />
+                            </Form.Item>
+                          </div>
 
-                      <div>
-                        <Form.Item
-                          name="year"
-                          label="Year"
-                          validateStatus={errors.year ? "error" : ""}
-                          help={errors.year ? errors.year[0] : ""}
-                        >
-                          <Select allowClear options={yearOptions} placeholder="Select year level" />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </FormSection>
+                          <div className="w-full">
+                            <Form.Item
+                              name="zip_code"
+                              label="ZIP code"
+                              validateStatus={errors.zip_code ? "error" : ""}
+                              help={errors.zip_code ? errors.zip_code[0] : ""}
+                            >
+                              <Input placeholder="0000" />
+                            </Form.Item>
+                          </div>
+                        </div>
+                      </FormSection>
 
-                  <FormSection icon={Users} title="Family / Guardian Information">
-                    <div>
-                      <Form.Item
-                          name="guardian_name"
-                          label="Guardian name"
-                          validateStatus={errors.guardian_name ? "error" : ""}
-                          help={errors.guardian_name ? errors.guardian_name[0] : ""}
-                        >
-                          <Input placeholder="Full name of parent or guardian" />
-                        </Form.Item>
-                    </div>
+                      <FormSection icon={Users} title="Family / Guardian Information">
+                        <div>
+                          <Form.Item
+                              name="guardian_name"
+                              label="Guardian name"
+                              validateStatus={errors.guardian_name ? "error" : ""}
+                              help={errors.guardian_name ? errors.guardian_name[0] : ""}
+                            >
+                              <Input placeholder="Full name of parent or guardian" />
+                            </Form.Item>
+                        </div>
 
-                    <div className="flex md:gap-4 md:flex-row flex-col">
-                       <div className="w-full">
-                        <Form.Item
-                          name="guardian_contact_number"
-                          label="Guardian contact number"
-                          validateStatus={errors.guardian_contact_number ? "error" : ""}
-                          help={errors.guardian_contact_number ? errors.guardian_contact_number[0] : ""}
-                        >
-                          <Input prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
-                        </Form.Item>
-                      </div>
+                        <div className="flex md:gap-4 md:flex-row flex-col">
+                           <div className="w-full">
+                            <Form.Item
+                              name="guardian_contact_number"
+                              label="Guardian contact number"
+                              validateStatus={errors.guardian_contact_number ? "error" : ""}
+                              help={errors.guardian_contact_number ? errors.guardian_contact_number[0] : ""}
+                            >
+                              <Input prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
+                            </Form.Item>
+                          </div>
 
-                      <div className="w-full">
-                        <Form.Item
-                          className="w-full"
-                          name="monthly_family_income"
-                          label="Monthly family income"
-                          validateStatus={errors.monthly_family_income ? "error" : ""}
-                          help={errors.monthly_family_income ? errors.monthly_family_income[0] : ""}
-                        >
-                          <InputNumber className="w-full" min={0} placeholder="e.g. 10000" />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </FormSection>
+                          <div className="w-full">
+                            <Form.Item
+                              className="w-full"
+                              name="monthly_family_income"
+                              label="Monthly family income"
+                              validateStatus={errors.monthly_family_income ? "error" : ""}
+                              help={errors.monthly_family_income ? errors.monthly_family_income[0] : ""}
+                            >
+                              <InputNumber className="w-full" min={0} placeholder="e.g. 10000" />
+                            </Form.Item>
+                          </div>
+                        </div>
+                      </FormSection>
+                    </>
+                  )}
+
+                  {currentStep === 1 && (
+                    <Address errors={errors} />
+                  )}
+
+                  {currentStep === 2 && (
+                    <UploadDocument errors={errors}/>
+                  )}
 
                   <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                    <Link href={route('student-login')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-                      I already have an account
-                    </Link>
-                    <Button htmlType="submit" type="primary" size="large" loading={processing}>
-                      Submit Registration
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
+                    {currentStep === 0 ? (
+                      <Link href={route('student-login')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                        I already have an account
+                      </Link>
+                    ) : (
+                      <Button icon={<ArrowLeft className="h-4 w-4" />} size="large" onClick={() => setCurrentStep((step) => step - 1)}>
+                        Back
+                      </Button>
+                    )}
+
+                    {currentStep < registrationSteps.length - 1 ? (
+                      <Button type="primary" size="large" onClick={() => setCurrentStep((step) => step + 1)}>
+                        Continue
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button htmlType="submit" type="primary" size="large" loading={processing}>
+                        Submit Registration
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </Form>
               </div>
@@ -454,23 +465,5 @@ function SidebarItem({ icon: Icon, label }: { icon: LucideIcon; label: string })
       <Icon className="h-5 w-5 text-emerald-100" />
       <p className="mt-3 text-sm font-semibold">{label}</p>
     </div>
-  );
-}
-
-function FormSection({ children, icon: Icon, title }: { children: ReactNode; icon: LucideIcon; title: string }) {
-  return (
-    <Card
-      className="mb-6"
-      title={
-        <span className="inline-flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
-            <Icon className="h-5 w-5" />
-          </span>
-          <span>{title}</span>
-        </span>
-      }
-    >
-      {children}
-    </Card>
   );
 }
