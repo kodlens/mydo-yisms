@@ -433,7 +433,7 @@ export default function StudentRegister() {
                     <Link href={route('student-login')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
                       I already have an account
                     </Link>
-                    <Button htmlType="submit" type="primary" size="large" loading={processing} className="bg-emerald-700">
+                    <Button htmlType="submit" type="primary" size="large" loading={processing}>
                       Submit Registration
                       <ArrowRight className="h-4 w-4" />
                     </Button>

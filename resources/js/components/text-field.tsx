@@ -1,7 +1,5 @@
-import { Label } from '@/components/ui/label';
+import { Input } from 'antd';
 import { LucideIcon } from 'lucide-react';
-import { Input } from './ui/input';
-
 
 export default function TextField({
   error,
@@ -24,19 +22,16 @@ export default function TextField({
 }) {
   return (
     <div className="grid gap-2">
-      <Label htmlFor={id}>{label}</Label>
-      <div className="relative">
-        {Icon && <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />}
-        <Input
-          id={id}
-          name={id}
-          type={type}
-          placeholder={placeholder}
-          className={Icon ? 'pl-10' : undefined}
-          value={value}
-          onChange={(event) => onChange?.(event.target.value)}
-        />
-      </div>
+      <label htmlFor={id} className="text-sm font-medium">{label}</label>
+      <Input
+        id={id}
+        name={id}
+        type={type}
+        placeholder={placeholder}
+        prefix={Icon ? <Icon className="h-4 w-4 text-slate-400" /> : undefined}
+        value={value}
+        onChange={(event) => onChange?.(event.target.value)}
+      />
       {error && <p className="text-xs font-medium text-red-600">{error}</p>}
     </div>
   );

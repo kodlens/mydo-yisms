@@ -1,4 +1,3 @@
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -11,6 +10,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
+    const PlaceholderPattern = ({ className }: { className?: string }) => (
+        <svg className={className} fill="none">
+            <defs>
+                <pattern id="dashboard-pattern" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+                    <path d="M0 32V0h32" />
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#dashboard-pattern)" />
+        </svg>
+    );
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />

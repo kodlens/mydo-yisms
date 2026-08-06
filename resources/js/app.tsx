@@ -6,7 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { route as routeFn } from 'ziggy-js';
 //import { initializeTheme } from './hooks/use-appearance';
-import { App as AntApp } from "antd";
+import { App as AntApp, ConfigProvider } from 'antd';
 
 
 declare global {
@@ -15,6 +15,21 @@ declare global {
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+const antdTheme = {
+    token: {
+        colorPrimary: '#047857',
+        colorInfo: '#047857',
+        borderRadius: 6,
+    },
+    components: {
+        Button: {
+            colorPrimary: '#047857',
+            colorPrimaryHover: '#065f46',
+            colorPrimaryActive: '#064e3b',
+        },
+    },
+};
+
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
@@ -22,9 +37,11 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-          <AntApp>
-            <App {...props} />
-          </AntApp>
+            <ConfigProvider theme={antdTheme}>
+                <AntApp>
+                    <App {...props} />
+                </AntApp>
+            </ConfigProvider>,
         );
     },
     progress: {

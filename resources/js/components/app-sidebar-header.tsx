@@ -1,14 +1,25 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/app-sidebar';
+import { useAppSidebar } from '@/components/app-shell';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import { Button, Drawer } from 'antd';
+import { Menu } from 'lucide-react';
+import { useState } from 'react';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
+    const { toggle } = useAppSidebar();
+    const [mobileOpen, setMobileOpen] = useState(false);
+
     return (
-        <header className="border-sidebar-border/50 flex h-16 shrink-0 items-center gap-2 border-b px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-neutral-200 px-4 md:px-6">
             <div className="flex items-center gap-2">
-                <SidebarTrigger className="-ml-1" />
+                <Button type="text" icon={<Menu className="h-5 w-5" />} onClick={toggle} className="hidden lg:inline-flex" aria-label="Toggle sidebar" />
+                <Button type="text" icon={<Menu className="h-5 w-5" />} onClick={() => setMobileOpen(true)} className="lg:hidden" aria-label="Open menu" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
+            <Drawer title="Navigation" placement="left" open={mobileOpen} onClose={() => setMobileOpen(false)} width={288}>
+                <AppSidebar mobile />
+            </Drawer>
         </header>
     );
 }

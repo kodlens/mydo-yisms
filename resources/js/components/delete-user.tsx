@@ -1,18 +1,15 @@
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useRef } from 'react';
+import { Button, Input, Modal, type InputRef } from 'antd';
+import { FormEventHandler, useRef, useState } from 'react';
 
 // Components...
 import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 import HeadingSmall from '@/components/heading-small';
 
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-
 export default function DeleteUser() {
-    const passwordInput = useRef<HTMLInputElement>(null);
+    const [open, setOpen] = useState(false);
+    const passwordInput = useRef<InputRef>(null);
     const { data, setData, delete: destroy, processing, reset, errors, clearErrors } = useForm({ password: '' });
 
     const deleteUser: FormEventHandler = (e) => {
@@ -27,6 +24,7 @@ export default function DeleteUser() {
     };
 
     const closeModal = () => {
+        setOpen(false);
         clearErrors();
         reset();
     };
@@ -40,25 +38,28 @@ export default function DeleteUser() {
                     <p className="text-sm">Please proceed with caution, this cannot be undone.</p>
                 </div>
 
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="destructive">Delete account</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogTitle>Are you sure you want to delete your account?</DialogTitle>
-                        <DialogDescription>
-                            Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password
-                            to confirm you would like to permanently delete your account.
-                        </DialogDescription>
+                <Button danger type="primary" onClick={() => setOpen(true)}>
+                    Delete account
+                </Button>
+                <Modal
+                    title="Are you sure you want to delete your account?"
+                    open={open}
+                    onCancel={closeModal}
+                    footer={null}
+                    destroyOnHidden
+                >
+                    <p className="mb-6 text-sm text-slate-600">
+                        Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password
+                        to confirm you would like to permanently delete your account.
+                    </p>
                         <form className="space-y-6" onSubmit={deleteUser}>
                             <div className="grid gap-2">
-                                <Label htmlFor="password" className="sr-only">
+                                <label htmlFor="password" className="sr-only">
                                     Password
-                                </Label>
+                                </label>
 
-                                <Input
+                                <Input.Password
                                     id="password"
-                                    type="password"
                                     name="password"
                                     ref={passwordInput}
                                     value={data.password}
@@ -70,20 +71,14 @@ export default function DeleteUser() {
                                 <InputError message={errors.password} />
                             </div>
 
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant="secondary" onClick={closeModal}>
-                                        Cancel
-                                    </Button>
-                                </DialogClose>
-
-                                <Button variant="destructive" disabled={processing} asChild>
-                                    <button type="submit">Delete account</button>
+                            <div className="flex justify-end gap-3">
+                                <Button onClick={closeModal}>Cancel</Button>
+                                <Button danger htmlType="submit" loading={processing} type="primary" disabled={processing}>
+                                    Delete account
                                 </Button>
-                            </DialogFooter>
+                            </div>
                         </form>
-                    </DialogContent>
-                </Dialog>
+                </Modal>
             </div>
         </div>
     );

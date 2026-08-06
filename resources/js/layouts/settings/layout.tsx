@@ -1,9 +1,8 @@
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
+import { Button } from 'antd';
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -36,9 +35,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                         {sidebarNavItems.map((item) => (
                             <Button
                                 key={item.url}
-                                size="sm"
-                                variant="ghost"
-                                asChild
+                                type="text"
+                                size="small"
                                 className={cn('w-full justify-start', {
                                     'bg-muted': currentPath === item.url,
                                 })}
@@ -51,7 +49,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                     </nav>
                 </aside>
 
-                <Separator className="my-6 md:hidden" />
+                <div className="my-6 h-px w-full bg-neutral-200 md:hidden" />
 
                 <div className="flex-1 md:max-w-2xl">
                     <section className="max-w-xl space-y-12">{children}</section>

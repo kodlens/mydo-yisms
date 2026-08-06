@@ -1,14 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, Eye, EyeOff, GraduationCap, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { Button, Input } from 'antd';
+import { ArrowLeft, BookOpen, GraduationCap, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
+import { FormEventHandler } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 export default function StudentLogin() {
-  const [showPassword, setShowPassword] = useState(false);
-
   const submit: FormEventHandler = (event) => {
     event.preventDefault();
   };
@@ -86,45 +82,29 @@ export default function StudentLogin() {
 
                 <form className="space-y-5" onSubmit={submit}>
                   <div className="grid gap-2">
-                    <Label htmlFor="email">Email address</Label>
-                    <div className="relative">
-                      <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                      <Input
-                        id="email"
-                        type="email"
-                        autoComplete="email"
-                        placeholder="student@example.com"
-                        className="pl-10"
-                      />
-                    </div>
+                    <label htmlFor="email" className="text-sm font-medium">Email address</label>
+                    <Input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="student@example.com"
+                      prefix={<Mail className="h-4 w-4 text-slate-400" />}
+                    />
                   </div>
 
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="password">Password</Label>
+                      <label htmlFor="password" className="text-sm font-medium">Password</label>
                       <Link href={route('password.request')} className="text-sm font-medium text-emerald-700 hover:text-emerald-900">
                         Forgot password?
                       </Link>
                     </div>
-                    <div className="relative">
-                      <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                      <Input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete="current-password"
-                        placeholder="Enter your password"
-                        className="px-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((visible) => !visible)}
-                        className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-500 hover:text-slate-900"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        aria-pressed={showPassword}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                    <Input.Password
+                      id="password"
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      prefix={<LockKeyhole className="h-4 w-4 text-slate-400" />}
+                    />
                   </div>
 
                   {/* <div className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-3">
@@ -135,7 +115,10 @@ export default function StudentLogin() {
                     <span className="text-xs font-medium text-slate-500">Design only</span>
                   </div> */}
 
-                  <Button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800">
+                  <Button
+                    htmlType="submit"
+                    type="primary"
+                    className="w-full">
                     Sign in
                   </Button>
                 </form>
