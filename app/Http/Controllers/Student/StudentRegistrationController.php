@@ -13,11 +13,15 @@ class StudentRegistrationController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('auth/student/student-register');
+        return Inertia::render('auth/student/student-register',
+        [
+            'xToken' => csrf_token(),
+        ]);
     }
 
-    public function store(StoreStudentRegistrationRequest $request): RedirectResponse
+    public function store(StoreStudentRegistrationRequest $request)
     {
+        return $request;
         Student::create([
             ...$request->validated(),
             'role' => 'student',

@@ -1,12 +1,11 @@
 import FormSection from '@/components/form-section'
 import { Form, Input, InputNumber, Select } from 'antd'
 import { BookOpen } from 'lucide-react'
-import React from 'react'
 
 type Props = {
   errors: Record<string, unknown[]>;
 }
-const Address = ( { errors } : Props ) => {
+const Education = ( { errors } : Props ) => {
 
 
   const yearOptions = [
@@ -72,4 +71,4 @@ const Address = ( { errors } : Props ) => {
   )
 }
 
-export default Address
+export default Education

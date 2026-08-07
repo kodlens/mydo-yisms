@@ -21,8 +21,11 @@ class StoreStudentRegistrationRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        $email = strtolower((string) $this->email);
+
         $this->merge([
-            'email' => strtolower((string) $this->email),
+            'email' => $email,
+            'username' => $this->username ?: str($email)->before('@')->slug('_')->toString(),
             'mobile_number' => preg_replace('/\D+/', '', (string) $this->mobile_number),
             'guardian_contact_number' => preg_replace('/\D+/', '', (string) $this->guardian_contact_number),
         ]);
@@ -39,7 +42,7 @@ class StoreStudentRegistrationRequest extends FormRequest
         $oldestAllowedBirthDate = now()->subYears(31)->addDay()->toDateString();
 
         return [
-            'username' => ['required', 'string', 'max:30', 'alpha_dash:ascii', 'unique:students,username'],
+          //  'username' => ['required', 'string', 'max:30', 'alpha_dash:ascii', 'unique:students,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:students,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
 

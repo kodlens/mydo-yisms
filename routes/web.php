@@ -20,7 +20,14 @@ Route::middleware('guest')->group(function () {
     Route::get('/student-login', [AuthController::class, 'index'])->name('student-login');
     Route::get('/student-register', [StudentRegistrationController::class, 'index'])->name('student-register');
     Route::post('/student-register', [StudentRegistrationController::class, 'store'])->name('student-register.store');
+
+
+
 });
+
+    Route::post('/temp-upload', [App\Http\Controllers\Base\UploadFileController::class, 'tempUpload'])->name('open.temp-upload');
+    Route::post('/temp-remove/{filename}', [App\Http\Controllers\Base\UploadFileController::class, 'tempRemove'])->name('open.temp-remove');
+
 
 
 Route::middleware(['auth'])->group(function () {
@@ -43,6 +50,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/dashboard', function () {
         return Inertia::render('dashboard');
     })->name('admin.dashboard');
+
+
+
+
 });
 
 

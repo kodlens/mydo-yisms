@@ -36,11 +36,6 @@ type StudentRegistrationForm = {
   guardian_name: string;
   guardian_contact_number: string;
   monthly_family_income: number;
-  coe?: unknown;
-  cog?: unknown;
-  cedula?: unknown;
-  school_id?: unknown;
-  psa?: unknown;
 };
 
 
@@ -62,7 +57,11 @@ const registrationSteps = [
   { title: 'Documents' },
 ];
 
-export default function StudentRegister() {
+type Props = {
+  xToken: string;
+}
+
+export default function StudentRegister( { xToken } : Props ) {
   const [form] = Form.useForm<StudentRegistrationForm>();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [processing, setProcessing] = useState(false);
@@ -75,18 +74,10 @@ export default function StudentRegister() {
     setProcessing(true);
     setErrors({});
 
-    const payload = { ...values };
-
-    delete payload.coe;
-    delete payload.cog;
-    delete payload.cedula;
-    delete payload.school_id;
-    delete payload.psa;
-
     axios
       .post(route('student-register.store'), {
-        ...payload,
-        birth_date: payload.birth_date?.format('YYYY-MM-DD'),
+        ...values,
+        birth_date: values.birth_date?.format('YYYY-MM-DD'),
       })
       .then(() => {
         window.location.href = route('student-login');
@@ -176,25 +167,29 @@ export default function StudentRegister() {
                 <Form form={form}
                   layout="vertical"
                   onFinish={submit}
+                  onFinishFailed={(errorInfo) => {
+                    console.log('Student registration validation failed:', errorInfo);
+                  }}
+                  preserve
+                  initialValues={{
+                    email: null,
+                    password: null,
+                    password_confirmation: null,
+                    lname: null,
+                    fname: null,
+                    mname: null,
+                    sex:null
+                  }}
                   className="space-y-6">
 
                   <div>
                     <Steps current={currentStep} items={registrationSteps} responsive />
                   </div>
 
-                  {currentStep === 0 && (
+                  { currentStep === 0 && (
                     <>
                       <FormSection icon={LockKeyhole} title="Account Information">
                         <div className="flex md:gap-4 flex-col md:flex-row">
-                          {/* <div className="w-full ">
-                            <Form.Item name="username"
-                              label="Username"
-                              validateStatus={errors.username ? "error" : ""}
-                              help={errors.username ? errors.username[0] : ""} >
-                              <Input placeholder="Username" />
-                            </Form.Item>
-                          </div> */}
-
                           <div className="w-full">
                             <Form.Item
                               name="email"
@@ -202,7 +197,8 @@ export default function StudentRegister() {
                               validateStatus={errors.email ? "error" : ""}
                               help={errors.email ? errors.email[0] : ""}
                             >
-                              <Input prefix={<Mail className="h-4 w-4 text-slate-400" />} placeholder="email@example.com" />
+                              <Input prefix={<Mail className="h-4 w-4 text-slate-400" />}
+                                placeholder="email@example.com" />
                             </Form.Item>
                           </div>
                         </div>
@@ -406,7 +402,7 @@ export default function StudentRegister() {
                         </div>
 
                         <div className="flex md:gap-4 md:flex-row flex-col">
-                           <div className="w-full">
+                          <div className="w-full">
                             <Form.Item
                               name="guardian_contact_number"
                               label="Guardian contact number"
@@ -433,38 +429,54 @@ export default function StudentRegister() {
                     </>
                   )}
 
-                  {currentStep === 1 && (
+                  { currentStep === 1 && (
                     <Education errors={errors} />
                   )}
 
                   {currentStep === 2 && (
-                    <UploadDocument errors={errors}/>
+                    <UploadDocument xToken={xToken} errors={errors}/>
+                  )}
+                </Form>
+
+                <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                  { currentStep === 0 ? (
+                    <Link href={route('student-login')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                      I already have an account
+                    </Link>
+                  ) : (
+                    <Button
+                      htmlType="button"
+                      icon={<ArrowLeft className="h-4 w-4" />}
+                      size="large"
+                      onClick={() => setCurrentStep((step) => step - 1)}
+                    >
+                      Back
+                    </Button>
                   )}
 
-                  <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                    {currentStep === 0 ? (
-                      <Link href={route('student-login')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-                        I already have an account
-                      </Link>
-                    ) : (
-                      <Button icon={<ArrowLeft className="h-4 w-4" />} size="large" onClick={() => setCurrentStep((step) => step - 1)}>
-                        Back
-                      </Button>
-                    )}
-
-                    {currentStep < registrationSteps.length - 1 ? (
-                      <Button type="primary" size="large" onClick={() => setCurrentStep((step) => step + 1)}>
-                        Continue
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button htmlType="submit" type="primary" size="large" loading={processing}>
-                        Submit Registration
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </Form>
+                  { currentStep < registrationSteps.length - 1 ? (
+                    <Button
+                      htmlType="button"
+                      type="primary"
+                      size="large"
+                      onClick={() => setCurrentStep((step) => step + 1)}
+                    >
+                      Continue
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button htmlType="button"
+                      type="primary" size="large"
+                      loading={processing}
+                      onClick={() => {
+                        console.log('Submitting values:', form.getFieldsValue(true));
+                        form.submit();
+                      }}>
+                      Submit Registration
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </section>
