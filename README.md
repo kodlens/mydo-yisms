@@ -1,6 +1,6 @@
-# MYDO - YISMS
+# eKabataan
 
-Youth Information and Scholarship Management System (YISMS)
+Youth Information and Scholarship Management System
 
 ## BACKGROUND (ABOUT)
 

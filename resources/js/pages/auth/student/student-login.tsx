@@ -1,3 +1,4 @@
+import BrandLogo from '@/components/brand-logo';
 import { Head, Link } from '@inertiajs/react';
 import { Button, Input } from 'antd';
 import { ArrowLeft, BookOpen, GraduationCap, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
@@ -17,11 +18,9 @@ export default function StudentLogin() {
         <div className="mx-auto grid min-h-screen w-full max-w-7xl lg:grid-cols-[1fr_520px]">
           <section className="hidden bg-emerald-800 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
             <Link href={route('home')} className="inline-flex w-fit items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-md bg-white text-sm font-bold text-emerald-800">
-                MY
-              </span>
+              <BrandLogo className="h-12 w-12 rounded-md bg-white p-1" />
               <span>
-                <span className="block text-sm font-bold tracking-wide">MYDO-YISMS</span>
+                <span className="block text-sm font-bold tracking-wide">eKabataan</span>
                 <span className="block text-xs text-emerald-100">Youth and Scholarship Portal</span>
               </span>
             </Link>
@@ -73,9 +72,7 @@ export default function StudentLogin() {
               <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-xl shadow-emerald-900/10 sm:p-8">
 
                 <div className="mb-8 text-center">
-                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
-                    <GraduationCap className="h-7 w-7" />
-                  </span>
+                  <BrandLogo className="mx-auto h-16 w-16" />
                   <h2 className="mt-5 text-2xl font-bold text-slate-950">Student Login</h2>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     Access your scholarship application and youth profile.

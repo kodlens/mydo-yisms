@@ -1,3 +1,4 @@
+import BrandLogo from '@/components/brand-logo';
 import FormSection from '@/components/form-section';
 import SelectBarangay from '@/components/select-barangay';
 import SelectCity from '@/components/select-city';
@@ -8,7 +9,7 @@ import axios from 'axios';
 import { ArrowLeft, ArrowRight, BookOpen, GraduationCap, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import UploadDocument from './form/upload-document';
-import Address from './form/address';
+import Education from './form/education';
 
 type StudentRegistrationForm = {
   username: string;
@@ -31,9 +32,15 @@ type StudentRegistrationForm = {
   school_name: string;
   program: string;
   year: string;
+  previous_semester_gwa?: number;
   guardian_name: string;
   guardian_contact_number: string;
   monthly_family_income: number;
+  coe?: unknown;
+  cog?: unknown;
+  cedula?: unknown;
+  school_id?: unknown;
+  psa?: unknown;
 };
 
 
@@ -68,10 +75,18 @@ export default function StudentRegister() {
     setProcessing(true);
     setErrors({});
 
+    const payload = { ...values };
+
+    delete payload.coe;
+    delete payload.cog;
+    delete payload.cedula;
+    delete payload.school_id;
+    delete payload.psa;
+
     axios
       .post(route('student-register.store'), {
-        ...values,
-        birth_date: values.birth_date?.format('YYYY-MM-DD'),
+        ...payload,
+        birth_date: payload.birth_date?.format('YYYY-MM-DD'),
       })
       .then(() => {
         window.location.href = route('student-login');
@@ -120,9 +135,9 @@ export default function StudentRegister() {
             <div className="grid lg:grid-cols-[360px_1fr]">
               <aside className="bg-emerald-800 px-6 py-8 text-white sm:px-8">
                 <Link href={route('home')} className="inline-flex w-fit items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-md bg-white text-sm font-bold text-emerald-800">MY</span>
+                  <BrandLogo className="h-12 w-12 rounded-md bg-white p-1" />
                   <span>
-                    <span className="block text-sm font-bold tracking-wide">MYDO-YISMS</span>
+                    <span className="block text-sm font-bold tracking-wide">eKabataan</span>
                     <span className="block text-xs text-emerald-100">Student Registration</span>
                   </span>
                 </Link>
@@ -171,14 +186,14 @@ export default function StudentRegister() {
                     <>
                       <FormSection icon={LockKeyhole} title="Account Information">
                         <div className="flex md:gap-4 flex-col md:flex-row">
-                          <div className="w-full ">
+                          {/* <div className="w-full ">
                             <Form.Item name="username"
                               label="Username"
                               validateStatus={errors.username ? "error" : ""}
                               help={errors.username ? errors.username[0] : ""} >
                               <Input placeholder="Username" />
                             </Form.Item>
-                          </div>
+                          </div> */}
 
                           <div className="w-full">
                             <Form.Item
@@ -419,7 +434,7 @@ export default function StudentRegister() {
                   )}
 
                   {currentStep === 1 && (
-                    <Address errors={errors} />
+                    <Education errors={errors} />
                   )}
 
                   {currentStep === 2 && (

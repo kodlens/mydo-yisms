@@ -35,6 +35,9 @@ class StoreStudentRegistrationRequest extends FormRequest
      */
     public function rules(): array
     {
+        $youngestAllowedBirthDate = now()->subYears(18)->toDateString();
+        $oldestAllowedBirthDate = now()->subYears(31)->addDay()->toDateString();
+
         return [
             'username' => ['required', 'string', 'max:30', 'alpha_dash:ascii', 'unique:students,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:students,email'],
@@ -44,7 +47,7 @@ class StoreStudentRegistrationRequest extends FormRequest
             'fname' => ['required', 'string', 'max:255'],
             'mname' => ['nullable', 'string', 'max:255'],
             'suffix' => ['nullable', 'string', 'max:30'],
-            'birth_date' => ['required', 'date', 'before:today'],
+            'birth_date' => ['required', 'date', "before_or_equal:{$youngestAllowedBirthDate}", "after_or_equal:{$oldestAllowedBirthDate}"],
             'sex' => ['required', 'string', 'in:Female,Male'],
             'civil_status' => ['required', 'string', 'in:Single,Married,Widowed,Separated'],
             'mobile_number' => ['required', 'string', 'max:30', 'regex:/^09[0-9]{9}$/'],
@@ -58,6 +61,7 @@ class StoreStudentRegistrationRequest extends FormRequest
             'school_name' => ['required', 'string', 'max:255'],
             'program' => ['required', 'string', 'max:255'],
             'year' => ['required', 'integer', 'between:1,4'],
+            'previous_semester_gwa' => ['nullable', 'numeric', 'between:1,5'],
 
             'guardian_name' => ['required', 'string', 'max:255'],
             'guardian_contact_number' => ['required', 'string', 'max:30', 'regex:/^09[0-9]{9}$/'],
@@ -102,9 +106,24 @@ class StoreStudentRegistrationRequest extends FormRequest
             'lname' => 'last name',
             'fname' => 'first name',
             'mname' => 'middle name',
+            'birth_date' => 'birth date',
             'provCode' => 'province',
             'citymunCode' => 'city / municipality',
             'brgyCode' => 'barangay',
+            'previous_semester_gwa' => 'GWA for previous semester',
+        ];
+    }
+
+    /**
+     * Get custom validation messages.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'birth_date.before_or_equal' => 'The applicant must be at least 18 years old.',
+            'birth_date.after_or_equal' => 'The applicant must not be older than 30 years old.',
         ];
     }
 }

@@ -1,5 +1,5 @@
 import FormSection from '@/components/form-section'
-import { Form, Input, Select } from 'antd'
+import { Form, Input, InputNumber, Select } from 'antd'
 import { BookOpen } from 'lucide-react'
 import React from 'react'
 
@@ -51,6 +51,19 @@ const Address = ( { errors } : Props ) => {
               help={errors.year ? errors.year[0] as string : ""}
             >
               <Select allowClear options={yearOptions} placeholder="Select year level" />
+            </Form.Item>
+          </div>
+        </div>
+
+        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
+          <div className="w-full">
+            <Form.Item
+              name="previous_semester_gwa"
+              label="GWA for previous semester"
+              validateStatus={errors.previous_semester_gwa ? "error" : ""}
+              help={errors.previous_semester_gwa ? errors.previous_semester_gwa[0] as string : ""}
+            >
+              <InputNumber className="w-full" min={1} max={5} step={0.01} placeholder="e.g. 1.75" />
             </Form.Item>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import BrandLogo from '@/components/brand-logo';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
@@ -6,6 +7,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardCheck,
+  ClipboardList,
   FileText,
   GraduationCap,
   HandCoins,
@@ -55,17 +57,17 @@ const systemModules = [
 ];
 
 const workflowItems = [
-  { label: 'Create account', description: 'Use your active email and basic contact details.', icon: Users },
-  { label: 'Complete profile', description: 'Add your barangay, school, course, and youth information.', icon: FileText },
-  { label: 'Upload requirements', description: 'Submit clear copies of the required scholarship documents.', icon: GraduationCap },
-  { label: 'Wait for review', description: 'MYDO staff will check your application and update your status.', icon: ShieldCheck },
+  { label: 'Register and complete your profile', description: 'Create your applicant account, then add personal, address, and guardian details.', icon: Users },
+  { label: 'Add your education details', description: 'Provide your school, course or program, and current year level.', icon: FileText },
+  { label: 'Upload required documents', description: 'Attach clear copies of your registration certificate and PSA birth certificate.', icon: GraduationCap },
+  { label: 'Submit for MYDO review', description: 'MYDO staff will review your application and update your status after checking.', icon: ShieldCheck },
 ];
 
 const requirements = [
   'PSA birth certificate',
-  'Certificate of Enrollment',
-  'Certificate of Grades',
-  'Valid school ID',
+  'Certificate of Registration',
+  'Active email address',
+  'Guardian contact information',
 ];
 
 export default function Welcome() {
@@ -73,7 +75,7 @@ export default function Welcome() {
 
   return (
     <>
-      <Head title="MYDO-YISMS">
+      <Head title="eKabataan">
         <link rel="preconnect" href="https://fonts.bunny.net" />
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
       </Head>
@@ -81,11 +83,9 @@ export default function Welcome() {
       <main className="min-h-screen bg-[#f7f9f5] text-slate-950">
         <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
           <Link href={route('home')} className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-md bg-emerald-700 text-sm font-bold text-white">
-              MY
-            </span>
+            <BrandLogo className="h-12 w-12" />
             <span>
-              <span className="block text-sm font-bold tracking-wide text-slate-950">MYDO-YISMS</span>
+              <span className="block text-sm font-bold tracking-wide text-slate-950">eKabataan</span>
               <span className="block text-xs text-slate-600">Youth and Scholarship Portal</span>
             </span>
           </Link>
@@ -132,25 +132,28 @@ export default function Welcome() {
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-7 text-emerald-50 sm:text-lg">
-                Register once, complete your youth profile, upload your scholarship requirements, and receive updates from
-                MYDO through your account.
+                Create your applicant account, complete your youth profile, upload your scholarship requirements, and
+                receive MYDO updates through your account.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
                   href={auth.user ? route('dashboard') : route('student-register')}
-                  className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-emerald-900 shadow-sm transition hover:bg-emerald-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-6 py-3 text-sm font-bold text-emerald-900 shadow-sm transition hover:bg-emerald-50"
                 >
-                  {auth.user ? 'Continue Application' : 'Start Registration'}
+                  {auth.user ? 'Continue Application' : 'Apply for Scholarship'}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
                   href="#how-to-apply"
-                  className="inline-flex items-center justify-center rounded-md border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                  className="inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-semibold text-emerald-50 transition hover:bg-white/10"
                 >
-                  How to Apply
+                  <ClipboardList className="h-4 w-4" />
+                  View requirements first
                 </a>
               </div>
+
+              <p className="mt-3 text-sm text-emerald-100">Takes around 5-10 minutes if your documents are ready.</p>
 
               <div className="mt-10 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-md bg-white/10 p-4">
@@ -193,19 +196,30 @@ export default function Welcome() {
                   Make sure your uploaded files are clear and readable before submitting your application.
                 </div>
 
-                <Link
-                  href={auth.user ? route('dashboard') : route('student-register')}
-                  className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  {auth.user ? 'Go to My Account' : 'Register as Applicant'}
+                <a href="#how-to-apply" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                  See application steps
                   <ArrowRight className="h-4 w-4" />
-                </Link>
+                </a>
               </div>
             </aside>
           </div>
         </section>
 
         <section id="how-to-apply" className="mx-auto w-full max-w-7xl px-6 pb-14 lg:px-8">
+          <div className="mb-6 flex flex-col justify-between gap-3 md:flex-row md:items-end">
+            <div>
+              <p className="text-sm font-semibold uppercase text-emerald-700">How To Apply</p>
+              <h2 className="mt-2 text-3xl font-bold text-slate-950">Prepare first, then submit once.</h2>
+            </div>
+            <Link
+              href={auth.user ? route('dashboard') : route('student-register')}
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
+            >
+              {auth.user ? 'Continue Application' : 'Start Application'}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {workflowItems.map((item, index) => {
               const Icon = item.icon;

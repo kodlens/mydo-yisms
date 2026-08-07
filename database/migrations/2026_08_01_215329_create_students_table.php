@@ -32,10 +32,17 @@ return new class extends Migration
             $table->string('school_name')->nullable();
             $table->string('program')->nullable();
             $table->unsignedTinyInteger('year')->nullable();
+            $table->decimal('previous_semester_gwa', 5, 2)->nullable();
 
             $table->string('guardian_name')->nullable();
             $table->string('guardian_contact_number', 30)->nullable();
             $table->decimal('monthly_family_income', 10, 2)->nullable();
+
+            $table->string('coe_path')->nullable();
+            $table->string('cog_path')->nullable();
+            $table->string('cedula_path')->nullable();
+            $table->string('school_id_path')->nullable();
+            $table->string('psa_path')->nullable();
 
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();

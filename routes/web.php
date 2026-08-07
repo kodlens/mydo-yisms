@@ -16,12 +16,12 @@ Route::get('/load-cities', [App\Http\Controllers\OpenController::class, 'loadCit
 Route::get('/load-barangays', [App\Http\Controllers\OpenController::class, 'loadBarangays']);
 
 
-
 Route::middleware('guest')->group(function () {
     Route::get('/student-login', [AuthController::class, 'index'])->name('student-login');
     Route::get('/student-register', [StudentRegistrationController::class, 'index'])->name('student-register');
     Route::post('/student-register', [StudentRegistrationController::class, 'store'])->name('student-register.store');
 });
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
