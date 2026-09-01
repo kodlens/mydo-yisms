@@ -144,7 +144,7 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
             name="coe"
             valuePropName="fileList"
             className="w-full"
-            label="Upload thumbnail"
+            label="Upload Certificate of Enrolment"
             getValueFromEvent={(e) => {
               // Normalize the value to fit what the Upload component expects
               if (Array.isArray(e)) {
@@ -166,7 +166,92 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
               </Upload.Dragger>
           </Form.Item>
 
+          <Form.Item
+            name="coe"
+            valuePropName="fileList"
+            className="w-full"
+            label="Upload Certificate of Grade (Last semester)"
+            getValueFromEvent={(e) => {
+              // Normalize the value to fit what the Upload component expects
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+            validateStatus={errors.upload ? "error" : ""}
+            help={errors.upload ? errors.upload[0] as string : ""}
+          >
+            <Upload.Dragger
+              maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
+              {...uploadProps}>
+                <div className="flex flex-col items-center py-5 text-center">
+                  <UploadCloud className="mb-3 h-8 w-8 text-emerald-700" />
+                  <p className="text-sm font-semibold text-slate-800">Certificate of Grade (Last semester)</p>
+                  <p className="mt-1 text-xs text-slate-500">PDF, JPG, or PNG only</p>
+                </div>
+              </Upload.Dragger>
+          </Form.Item>
+
         </div>
+
+
+
+        <div className='grid md:grid-cols-2 gap-4'>
+          <Form.Item
+            name="coe"
+            valuePropName="fileList"
+            className="w-full"
+            label="Photocopy of Sedula"
+            getValueFromEvent={(e) => {
+              // Normalize the value to fit what the Upload component expects
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+            validateStatus={errors.upload ? "error" : ""}
+            help={errors.upload ? errors.upload[0] as string : ""}
+          >
+            <Upload.Dragger
+              maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
+              {...uploadProps}>
+                <div className="flex flex-col items-center py-5 text-center">
+                  <UploadCloud className="mb-3 h-8 w-8 text-emerald-700" />
+                  <p className="text-sm font-semibold text-slate-800">Photocopy of Sedula</p>
+                  <p className="mt-1 text-xs text-slate-500">PDF, JPG, or PNG only</p>
+                </div>
+              </Upload.Dragger>
+          </Form.Item>
+
+          <Form.Item
+            name="coe"
+            valuePropName="fileList"
+            className="w-full"
+            label="Photocopy of School Id"
+            getValueFromEvent={(e) => {
+              // Normalize the value to fit what the Upload component expects
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+            validateStatus={errors.upload ? "error" : ""}
+            help={errors.upload ? errors.upload[0] as string : ""}
+          >
+            <Upload.Dragger
+              maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
+              {...uploadProps}>
+                <div className="flex flex-col items-center py-5 text-center">
+                  <UploadCloud className="mb-3 h-8 w-8 text-emerald-700" />
+                  <p className="text-sm font-semibold text-slate-800">Photocopy of School Id</p>
+                  <p className="mt-1 text-xs text-slate-500">PDF, JPG, or PNG only</p>
+                </div>
+              </Upload.Dragger>
+          </Form.Item>
+
+        </div>
+
+
       </FormSection>
 
     </>

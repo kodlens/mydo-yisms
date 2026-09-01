@@ -1,3 +1,5 @@
+@layer theme, base, antd, components, utilities;
+
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -55,6 +57,7 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
 }
+
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,

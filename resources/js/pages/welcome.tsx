@@ -76,8 +76,8 @@ export default function Welcome() {
   return (
     <>
       <Head title="eKabataan">
-        <link rel="preconnect" href="https://fonts.bunny.net" />
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+        {/* <link rel="preconnect" href="https://fonts.bunny.net" />
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" /> */}
       </Head>
 
       <main className="min-h-screen bg-[#f7f9f5] text-slate-950">
@@ -110,7 +110,7 @@ export default function Welcome() {
                 </Link>
                 <Link
                   href={route('student-register')}
-                  className="hidden rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 sm:inline-flex"
+                  className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 sm:inline-flex"
                 >
                   Apply Now
                 </Link>

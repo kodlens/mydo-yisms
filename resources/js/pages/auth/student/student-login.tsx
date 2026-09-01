@@ -20,7 +20,7 @@ export default function StudentLogin() {
             <Link href={route('home')} className="inline-flex w-fit items-center gap-3">
               <BrandLogo className="h-12 w-12 rounded-md bg-white p-1" />
               <span>
-                <span className="block text-sm font-bold tracking-wide">eKabataan</span>
+                <span className="block text-sm font-bold tracking-wide text-white">eKabataan</span>
                 <span className="block text-xs text-emerald-100">Youth and Scholarship Portal</span>
               </span>
             </Link>

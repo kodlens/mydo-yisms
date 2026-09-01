@@ -128,7 +128,7 @@ export default function StudentRegister( { xToken } : Props ) {
                 <Link href={route('home')} className="inline-flex w-fit items-center gap-3">
                   <BrandLogo className="h-12 w-12 rounded-md bg-white p-1" />
                   <span>
-                    <span className="block text-sm font-bold tracking-wide">eKabataan</span>
+                    <span className="block text-sm font-bold tracking-wid text-white">eKabataan</span>
                     <span className="block text-xs text-emerald-100">Student Registration</span>
                   </span>
                 </Link>
