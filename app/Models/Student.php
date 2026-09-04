@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Student extends Authenticatable
 {
@@ -55,5 +56,20 @@ class Student extends Authenticatable
             'is_active' => 'boolean',
             'password' => 'hashed',
         ];
+    }
+
+    public function province(): BelongsTo
+    {
+        return $this->belongsTo(Province::class, 'provCode', 'provCode');
+    }
+
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class, 'citymunCode', 'citymunCode');
+    }
+
+    public function barangay(): BelongsTo
+    {
+        return $this->belongsTo(Barangay::class, 'brgyCode', 'brgyCode');
     }
 }

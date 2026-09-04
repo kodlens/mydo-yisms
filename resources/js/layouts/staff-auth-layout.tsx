@@ -68,10 +68,11 @@ export default function StaffAuthLayout({
   const userInitials = `${user?.fname?.[0] ?? ''}${user?.lname?.[0] ?? ''}`.toUpperCase();
   const fullName = `${user?.lname ?? ''}, ${user?.fname ?? ''}`.trim();
   const compactName = `${user?.lname ?? ''}, ${user?.fname?.[0] ?? ''}.`.trim();
+  const selectedMenuKey = currentRoute.startsWith('staff.applicants.') ? 'staff.applicants.index' : currentRoute;
   const pageTitle =
     currentRoute === 'staff.dashboard.index'
       ? 'Dashboard'
-      : currentRoute === 'staff.applicants.index'
+      : currentRoute.startsWith('staff.applicants.')
         ? 'Applicants'
         : 'Staff Panel';
 
@@ -134,7 +135,7 @@ export default function StaffAuthLayout({
               paddingInline: 8,
               paddingTop: 8,
             }}
-            selectedKeys={[currentRoute]}
+            selectedKeys={[selectedMenuKey]}
             items={navigationItems}
           />
         </ConfigProvider>

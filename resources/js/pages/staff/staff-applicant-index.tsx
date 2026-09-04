@@ -2,7 +2,7 @@ import StaffAuthLayout from '@/layouts/staff-auth-layout';
 import { SharedData, Student } from '@/types';
 import { EyeOutlined, FileSearchOutlined, SearchOutlined } from '@ant-design/icons';
 import { Head, router } from '@inertiajs/react';
-import { App, Button, Input, Pagination, Space, Table, Tag } from 'antd';
+import { App, Button, Input, Pagination, Segmented, Space, Table, Tag } from 'antd';
 import axios from 'axios';
 import { ReactElement, ReactNode, useEffect, useMemo, useState } from 'react';
 
@@ -23,6 +23,14 @@ const statusColor: Record<string, string> = {
   rejected: 'red',
 };
 
+const statusOptions = [
+  { label: 'All', value: 'all' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Approved', value: 'approved' },
+  { label: 'Rejected', value: 'rejected' },
+  { label: 'Draft', value: 'draft' },
+];
+
 const formatName = (student: Student) =>
   [student.lname, student.fname, student.mname].filter(Boolean).join(', ').replace(', ,', ',');
 
@@ -34,6 +42,7 @@ const StaffApplicantIndex = () => {
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('all');
 
   const rows = useMemo(() => (Array.isArray(applicants?.data) ? applicants.data : []), [applicants]);
 
@@ -42,6 +51,7 @@ const StaffApplicantIndex = () => {
       search: string;
       page: number;
       perPage: number;
+      status: string;
     }>,
   ) => {
     setLoading(true);
@@ -49,11 +59,13 @@ const StaffApplicantIndex = () => {
     const nextSearch = overrides?.search ?? search;
     const nextPage = overrides?.page ?? page;
     const nextPerPage = overrides?.perPage ?? perPage;
+    const nextStatus = overrides?.status ?? status;
 
     try {
       const res = await axios.get<PaginatedResponse<Student>>('/staff/get-applicants', {
         params: {
           search: nextSearch,
+          status: nextStatus === 'all' ? undefined : nextStatus,
           perpage: nextPerPage,
           page: nextPage,
         },
@@ -73,7 +85,7 @@ const StaffApplicantIndex = () => {
 
   useEffect(() => {
     loadApplicants();
-  }, [page, perPage]);
+  }, [page, perPage, status]);
 
   const handleSearch = (value: string) => {
     const nextSearch = value.trim();
@@ -90,6 +102,14 @@ const StaffApplicantIndex = () => {
   const handlePageChange = (nextPage: number, nextPerPage: number) => {
     setPage(nextPage);
     setPerPage(nextPerPage);
+  };
+
+  const handleStatusChange = (nextStatus: string) => {
+    setStatus(nextStatus);
+
+    if (page !== 1) {
+      setPage(1);
+    }
   };
 
   return (
@@ -131,6 +151,12 @@ const StaffApplicantIndex = () => {
                 loading={loading}
                 onSearch={handleSearch}
                 className="w-full md:max-w-[460px]"
+              />
+              <Segmented
+                options={statusOptions}
+                value={status}
+                onChange={(value) => handleStatusChange(String(value))}
+                className="md:ml-auto"
               />
             </div>
 
