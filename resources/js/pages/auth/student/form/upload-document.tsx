@@ -89,9 +89,6 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
   };
 
 
-  console.log('token', xToken);
-
-
   return (
     <>
 
@@ -127,8 +124,8 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
               }
               return e?.fileList;
             }}
-            validateStatus={errors.upload ? "error" : ""}
-            help={errors.upload ? errors.coe[0] as string : ""}
+            validateStatus={errors.coe ? "error" : ""}
+            help={errors.coe ? errors.coe[0] as string : ""}
           >
             <Upload.Dragger
               maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
@@ -153,8 +150,8 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
               }
               return e?.fileList;
             }}
-            validateStatus={errors.upload ? "error" : ""}
-            help={errors.upload ? errors.cog[0] as string : ""}
+            validateStatus={errors.cog ? "error" : ""}
+            help={errors.cog ? errors.cog[0] as string : ""}
           >
             <Upload.Dragger
               maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
@@ -184,8 +181,8 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
               }
               return e?.fileList;
             }}
-            validateStatus={errors.upload ? "error" : ""}
-            help={errors.upload ? errors.sedula[0] as string : ""}
+            validateStatus={errors.sedula ? "error" : ""}
+            help={errors.sedula ? errors.sedula[0] as string : ""}
           >
             <Upload.Dragger
               maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
@@ -210,8 +207,8 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
               }
               return e?.fileList;
             }}
-            validateStatus={errors.upload ? "error" : ""}
-            help={errors.upload ? errors.school_id[0] as string : ""}
+            validateStatus={errors.school_id ? "error" : ""}
+            help={errors.school_id ? errors.school_id[0] as string : ""}
           >
             <Upload.Dragger
               maxCount={1} accept=".pdf,.jpg,.jpeg,.png"

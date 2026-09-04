@@ -24,12 +24,22 @@ class AuthController extends Controller
 
         if (Auth::guard('student')->attempt($credentials)) {
             $req->session()->regenerate();
+            $student = Auth::guard('student')->user();
+
+            if ($student->registration_status === 'pending') {
+                return response()->json([
+                    'success' => true,
+                    'status' => 'pending',
+                    'redirect' => route('student.pending-page.index'),
+                ]);
+            }
 
 
             // return redirect()->route('student.dashboard');
             return response()->json([
                 'success' => true,
-                'redirect' => route('student.dashboard'),
+                'status' => $student->registration_status,
+                'redirect' => route('student.dashboard.index'),
             ]);
         }
 

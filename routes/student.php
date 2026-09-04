@@ -1,7 +1,7 @@
 <?php
 
 
-Route::middleware('guest')->group(function () {
+Route::middleware('guest:student')->group(function () {
     Route::get('/student-login', [App\Http\Controllers\Student\AuthController::class, 'index'])->name('student-login.index');
     Route::post('/student-login', [App\Http\Controllers\Student\AuthController::class, 'login'])->name('student-login.login');
 
@@ -15,12 +15,18 @@ Route::middleware('auth:student')->group(function () {
         ->name('student-logout');
 
 
+    //pending page for account with pending status
+    Route::get('/student/account-pending', [App\Http\Controllers\Student\PendingPageController::class, 'index'])->name('student.pending-page.index');
 
-    Route::get('/student/dashboard', [App\Http\Controllers\Student\StudentDashboardController::class, 'index'])->name('student.dashboard.index');
 
-    Route::get('/student/my-account', [App\Http\Controllers\Student\StudentMyAccountController::class, 'index'])->name('student.my-account.index');
+    Route::get('/student/dashboard', [App\Http\Controllers\Student\StudentDashboardController::class, 'index'])
+        ->middleware('student.approved')
+        ->name('student.dashboard.index');
+
+    Route::get('/student/my-account', [App\Http\Controllers\Student\StudentMyAccountController::class, 'index'])
+        ->middleware('student.approved')
+        ->name('student.my-account.index');
 
 
 
 });
-

@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\EnsureStudentAccountApproved;
 
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -17,6 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         //custom redirection
         $middleware->redirectGuestsTo('/');
+        $middleware->redirectUsersTo(function ($request) {
+            $student = $request->user('student');
+
+            if ($student) {
+                return $student->registration_status === 'pending'
+                    ? route('student.pending-page.index')
+                    : route('student.dashboard.index');
+            }
+
+            return route('dashboard');
+        });
 
         $middleware->web(append: [
             HandleInertiaRequests::class,
@@ -25,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
+            'student.approved' => EnsureStudentAccountApproved::class,
         ]);
 
     })

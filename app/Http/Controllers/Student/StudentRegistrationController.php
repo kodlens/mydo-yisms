@@ -22,8 +22,10 @@ class StudentRegistrationController extends Controller
 
     public function store(StoreStudentRegistrationRequest $req)
     {
+        //return $req;
+
         Student::create([
-            ...$request->validated(),
+            ...$req->validated(),
             'role' => 'student',
             'registration_status' => 'pending',
             'is_active' => true,

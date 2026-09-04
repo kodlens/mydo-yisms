@@ -3,13 +3,15 @@ import FormSection from '@/components/form-section';
 import SelectBarangay from '@/components/select-barangay';
 import SelectCity from '@/components/select-city';
 import SelectProvince from '@/components/select-province';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { App, Button, DatePicker, Form, Input, InputNumber, Select, Steps, Typography } from 'antd';
 import axios, { isAxiosError } from 'axios';
 import { ArrowLeft, ArrowRight, BookOpen, GraduationCap, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import UploadDocument from './form/upload-document';
 import Education from './form/education';
+import dayjs from 'dayjs';
+
 
 type StudentRegistrationForm = {
   email: string;
@@ -30,7 +32,7 @@ type StudentRegistrationForm = {
   zip_code?: string;
   school_name: string;
   program: string;
-  year: string;
+  year: string | number;
   previous_semester_gwa?: number;
   guardian_name: string;
   guardian_contact_number: string;
@@ -70,18 +72,92 @@ export default function StudentRegister( { xToken } : Props ) {
   const provCode = Form.useWatch('provCode', form) ?? '';
   const citymunCode = Form.useWatch('citymunCode', form) ?? '';
 
-  const submit = (values: StudentRegistrationForm) => {
+  const initialData = {
+    email: null,
+    password: null,
+    password_confirmation: null,
+    lname: '',
+    fname: '',
+    mname: '',
+    sex:'',
+    birth_date: null,
+    civil_status: '',
+    mobile_number: null,
+    provCode: null,
+    citymunCode: null,
+    brgyCode: null,
+    street_address: '',
+    zip_code: '',
+    guardian_name: '',
+    guardian_contact_number: null,
+    monthly_family_income: 0,
+     school_name: '',
+    program: '',
+    year: 1,
+    previous_semester_gwa: 0,
+    coe: null,
+    cog: null,
+    sedula: null,
+    school_id: null
+  }
+
+
+  const testData = {
+    email: 'juan@mail.com',
+    password: 'a',
+    password_confirmation: 'a',
+    lname: 'Dela Cruz',
+    fname: 'Juan',
+    mname: 'N',
+    sex:'Male',
+    birth_date: dayjs('2005-08-08'),
+    civil_status: 'Single',
+    mobile_number: '09706102876',
+    provCode: '421',
+    citymunCode: '42113',
+    brgyCode: '42113014',
+    street_address: 'Mabini St.',
+    zip_code: '9210',
+    guardian_name: 'Maria Clara Dela Cruz',
+    guardian_contact_number: '09712223654',
+    monthly_family_income: 10000,
+    school_name: 'JH Cerilles State College',
+    program: 'Bachelor of Science in Computer Science',
+    year: 1,
+    previous_semester_gwa: 1.3,
+    coe: null,
+    cog: null,
+    sedula: null,
+    school_id: null
+  }
+  const submit = () => {
     setProcessing(true);
     setErrors({});
 
+
+    const allValues = form.getFieldsValue(true);
+    // console.log('onFinish values:', values);
+    // console.log('all form values:', allValues);
+
+    // return
+
     axios
       .post(route('student-register.store'), {
-        ...values,
-        birth_date: values.birth_date?.format('YYYY-MM-DD'),
+        ...allValues,
+        birth_date: allValues.birth_date?.format('YYYY-MM-DD'),
       })
       .then((res) => {
         if(res.data.success){
           //window.location.href = route('student-login.index');
+          modal.success({
+            title: 'Scholarship Application Submitted!',
+            content:
+              'Your scholarship application has been successfully submitted. The MYDO will review and validate your application and submitted requirements. You will receive an email notification once there is an update on your application.',
+            okText: 'Got it',
+            onOk: () => {
+              router.visit('/')
+            }
+          });
         }
       })
       .catch((error) => {
@@ -189,15 +265,7 @@ export default function StudentRegister( { xToken } : Props ) {
                     console.log('Student registration validation failed:', errorInfo);
                   }}
                   preserve
-                  initialValues={{
-                    email: null,
-                    password: null,
-                    password_confirmation: null,
-                    lname: null,
-                    fname: null,
-                    mname: null,
-                    sex:null
-                  }}
+                  initialValues={testData}
                   className="space-y-6">
 
                   <div>
@@ -487,7 +555,7 @@ export default function StudentRegister( { xToken } : Props ) {
                       type="primary" size="large"
                       loading={processing}
                       onClick={() => {
-                        console.log('Submitting values:', form.getFieldsValue(true));
+                        //console.log('Submitting values:', form.getFieldsValue(true));
                         form.submit();
                       }}>
                       Submit Registration

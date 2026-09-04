@@ -43,7 +43,8 @@ class StoreStudentRegistrationRequest extends FormRequest
 
         return [
             'email' => ['required', 'string', 'email', 'max:255', 'unique:students,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            //'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => ['required', 'confirmed'],
 
             'lname' => ['required', 'string', 'max:255'],
             'fname' => ['required', 'string', 'max:255'],
