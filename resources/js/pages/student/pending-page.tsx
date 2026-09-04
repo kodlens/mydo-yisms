@@ -1,16 +1,18 @@
 import BrandLogo from '@/components/brand-logo';
-import { Student } from '@/types';
+import { Youth } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button, Tag } from 'antd';
 import { AlertCircle, ArrowLeft, Clock3, FileText, LogOut, Mail, ShieldCheck } from 'lucide-react';
 
 type Props = {
-  student: Student;
+  youth?: Youth;
+  student?: Youth;
 };
 
-const PendingPage = ({ student }: Props) => {
+const PendingPage = ({ youth, student }: Props) => {
+  const applicant = youth ?? student;
   const { post, processing } = useForm();
-  const status = student.registration_status ?? 'pending';
+  const status = applicant?.registration_status ?? 'pending';
   const isRejected = status === 'rejected';
   const statusColor = isRejected ? 'red' : 'gold';
   const statusTitle = isRejected ? 'Application Rejected' : 'Pending Review';
@@ -19,10 +21,10 @@ const PendingPage = ({ student }: Props) => {
   const heading = isRejected ? 'Your application was not approved.' : 'Your account is pending approval.';
   const description = isRejected
     ? 'MYDO reviewed your registration and found details that need attention.'
-    : 'MYDO is reviewing your registration and submitted scholarship requirements.';
+    : 'MYDO is reviewing your account status.';
 
   const logout = () => {
-    post(route('student-logout'));
+    post(route('youth-logout'));
   };
 
   return (
@@ -50,7 +52,7 @@ const PendingPage = ({ student }: Props) => {
                     <BrandLogo className="h-12 w-12 rounded-md bg-white p-1" />
                     <span>
                       <span className="block text-sm font-bold text-white">eKabataan</span>
-                      <span className="block text-xs text-emerald-100">Student Application</span>
+                      <span className="block text-xs text-emerald-100">Youth Application</span>
                     </span>
                   </div>
 
@@ -85,18 +87,18 @@ const PendingPage = ({ student }: Props) => {
                         <p className="text-sm font-semibold">Reason for rejection</p>
                       </div>
                       <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-red-900">
-                        {student.rejection_reason || 'No reason was provided. Please contact MYDO for more details.'}
+                        {applicant?.rejection_reason || 'No reason was provided. Please contact MYDO for more details.'}
                       </p>
                     </div>
                   )}
 
                   <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
                     <p className="text-sm font-semibold text-slate-900">
-                      {student.fname} {student.lname}
+                      {applicant?.fname} {applicant?.lname}
                     </p>
                     <p className="mt-1 inline-flex items-center gap-2 text-sm text-slate-600">
                       <Mail className="h-4 w-4" />
-                      {student.email}
+                      {applicant?.email}
                     </p>
                   </div>
 

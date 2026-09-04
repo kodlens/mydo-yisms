@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class StudentMyAccountController extends Controller
 {
     public function index(){
-        $student = Auth::guard('student')->user();
+        $student = Auth::guard('youth')->user();
 
         //return $student;
         return Inertia::render('student/my-account/my-account-index', [

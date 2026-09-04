@@ -4,16 +4,14 @@ import SelectBarangay from '@/components/select-barangay';
 import SelectCity from '@/components/select-city';
 import SelectProvince from '@/components/select-province';
 import { Head, Link, router } from '@inertiajs/react';
-import { App, Button, DatePicker, Form, Input, InputNumber, Select, Steps, Typography } from 'antd';
+import { App, Button, DatePicker, Form, Input, InputNumber, Select, Typography } from 'antd';
 import axios, { isAxiosError } from 'axios';
-import { ArrowLeft, ArrowRight, BookOpen, GraduationCap, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ClipboardList, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
 import { useState } from 'react';
-import UploadDocument from './form/upload-document';
-import Education from './form/education';
 import dayjs from 'dayjs';
 
 
-type StudentRegistrationForm = {
+type YouthRegistrationForm = {
   email: string;
   password: string;
   password_confirmation: string;
@@ -30,9 +28,9 @@ type StudentRegistrationForm = {
   brgyCode: string;
   street_address: string;
   zip_code?: string;
-  school_name: string;
-  program: string;
-  year: string | number;
+  school_name?: string;
+  program?: string;
+  year?: string | number;
   previous_semester_gwa?: number;
   guardian_name: string;
   guardian_contact_number: string;
@@ -52,22 +50,11 @@ const civilStatusOptions = [
   { value: 'Separated', label: 'Separated' },
 ];
 
-const registrationSteps = [
-  { title: 'Profile' },
-  { title: 'Education' },
-  { title: 'Documents' },
-];
-
-type Props = {
-  xToken: string;
-}
-
-export default function StudentRegister( { xToken } : Props ) {
+export default function StudentRegister() {
   const { modal } = App.useApp();
-  const [form] = Form.useForm<StudentRegistrationForm>();
+  const [form] = Form.useForm<YouthRegistrationForm>();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [processing, setProcessing] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
 
   const provCode = Form.useWatch('provCode', form) ?? '';
   const citymunCode = Form.useWatch('citymunCode', form) ?? '';
@@ -121,14 +108,6 @@ export default function StudentRegister( { xToken } : Props ) {
     guardian_name: 'Maria Clara Dela Cruz',
     guardian_contact_number: '09712223654',
     monthly_family_income: 10000,
-    school_name: 'JH Cerilles State College',
-    program: 'Bachelor of Science in Computer Science',
-    year: 1,
-    previous_semester_gwa: 1.3,
-    coe: null,
-    cog: null,
-    sedula: null,
-    school_id: null
   }
   const submit = () => {
     setProcessing(true);
@@ -142,20 +121,20 @@ export default function StudentRegister( { xToken } : Props ) {
     // return
 
     axios
-      .post(route('student-register.store'), {
+      .post(route('youth-register.store'), {
         ...allValues,
         birth_date: allValues.birth_date?.format('YYYY-MM-DD'),
       })
       .then((res) => {
         if(res.data.success){
-          //window.location.href = route('student-login.index');
+          //window.location.href = route('youth-login.index');
           modal.success({
-            title: 'Scholarship Application Submitted!',
+            title: 'Youth Profile Created',
             content:
-              'Your scholarship application has been successfully submitted. The MYDO will review and validate your application and submitted requirements. You will receive an email notification once there is an update on your application.',
+              'Your youth profile has been created. You may now sign in and apply for available MYDO services such as scholarship, cash incentives, and activities.',
             okText: 'Got it',
             onOk: () => {
-              router.visit('/')
+              router.visit(route('youth-login.index'))
             }
           });
         }
@@ -201,7 +180,7 @@ export default function StudentRegister( { xToken } : Props ) {
 
   return (
     <>
-      <Head title="Student Registration" />
+      <Head title="Youth Registration" />
 
       <main className="min-h-screen bg-[#f7f9f5] text-slate-950">
         <div className="mx-auto w-full max-w-7xl px-6 py-6 lg:px-8">
@@ -211,7 +190,7 @@ export default function StudentRegister( { xToken } : Props ) {
               Back to portal
             </Link>
 
-            <Link href={route('student-login.index')} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
+            <Link href={route('youth-login.index')} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
               Already registered?
             </Link>
           </div>
@@ -223,26 +202,26 @@ export default function StudentRegister( { xToken } : Props ) {
                   <BrandLogo className="h-12 w-12 rounded-md bg-white p-1" />
                   <span>
                     <span className="block text-sm font-bold tracking-wid text-white">eKabataan</span>
-                    <span className="block text-xs text-emerald-100">Student Registration</span>
+                    <span className="block text-xs text-emerald-100">Youth Registration</span>
                   </span>
                 </Link>
 
                 <div className="mt-10">
                   <div className="mb-5 inline-flex items-center gap-2 rounded-md bg-white/10 px-3 py-2 text-sm font-medium text-emerald-50">
-                    <GraduationCap className="h-4 w-4" />
-                    Scholarship Application
+                    <ClipboardList className="h-4 w-4" />
+                    Youth Profiling
                   </div>
 
-                  <h1 className="text-3xl font-bold leading-tight">Create your applicant account.</h1>
+                  <h1 className="text-3xl font-bold leading-tight">Create your youth account.</h1>
                   <p className="mt-4 text-sm leading-6 text-emerald-50">
-                    Fill out your student information so MYDO can review your scholarship application and youth profile.
+                    Fill out your basic youth information once, then use this profile when applying for MYDO services.
                   </p>
                 </div>
 
                 <div className="mt-10 space-y-3">
                   <SidebarItem icon={UserRound} label="Personal details" />
                   <SidebarItem icon={Home} label="Address verification" />
-                  <SidebarItem icon={BookOpen} label="School information" />
+                  <SidebarItem icon={Users} label="Family / guardian details" />
                   <SidebarItem icon={LockKeyhole} label="Secure login account" />
                 </div>
               </aside>
@@ -251,10 +230,10 @@ export default function StudentRegister( { xToken } : Props ) {
                 <div className="mb-8">
                   <p className="text-sm font-semibold uppercase text-emerald-700">Applicant Form</p>
                   <Typography.Title level={2} className="!mb-0 !mt-2 !text-2xl">
-                    Student scholarship registration
+                    Youth profile registration
                   </Typography.Title>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Complete the form below to submit your student scholarship registration for MYDO review.
+                    Complete your personal, address, and guardian information. Service applications are available after login.
                   </p>
                 </div>
 
@@ -262,18 +241,11 @@ export default function StudentRegister( { xToken } : Props ) {
                   layout="vertical"
                   onFinish={submit}
                   onFinishFailed={(errorInfo) => {
-                    console.log('Student registration validation failed:', errorInfo);
+                    console.log('Youth registration validation failed:', errorInfo);
                   }}
                   preserve
                   initialValues={testData}
                   className="space-y-6">
-
-                  <div>
-                    <Steps current={currentStep} items={registrationSteps} responsive />
-                  </div>
-
-                  { currentStep === 0 && (
-                    <>
                       <FormSection icon={LockKeyhole} title="Account Information">
                         <div className="flex md:gap-4 flex-col md:flex-row">
                           <div className="w-full">
@@ -512,56 +484,22 @@ export default function StudentRegister( { xToken } : Props ) {
                           </div>
                         </div>
                       </FormSection>
-                    </>
-                  )}
-
-                  { currentStep === 1 && (
-                    <Education errors={errors} />
-                  )}
-
-                  {currentStep === 2 && (
-                    <UploadDocument xToken={xToken} errors={errors}/>
-                  )}
                 </Form>
 
                 <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                  { currentStep === 0 ? (
-                    <Link href={route('student-login.index')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-                      I already have an account
-                    </Link>
-                  ) : (
-                    <Button
-                      htmlType="button"
-                      icon={<ArrowLeft className="h-4 w-4" />}
-                      size="large"
-                      onClick={() => setCurrentStep((step) => step - 1)}
-                    >
-                      Back
-                    </Button>
-                  )}
+                  <Link href={route('youth-login.index')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                    I already have an account
+                  </Link>
 
-                  { currentStep < registrationSteps.length - 1 ? (
-                    <Button
-                      htmlType="button"
-                      type="primary"
-                      size="large"
-                      onClick={() => setCurrentStep((step) => step + 1)}
-                    >
-                      Continue
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button htmlType="button"
-                      type="primary" size="large"
-                      loading={processing}
-                      onClick={() => {
-                        //console.log('Submitting values:', form.getFieldsValue(true));
-                        form.submit();
-                      }}>
-                      Submit Registration
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <Button htmlType="button"
+                    type="primary" size="large"
+                    loading={processing}
+                    onClick={() => {
+                      form.submit();
+                    }}>
+                    Create Youth Profile
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>

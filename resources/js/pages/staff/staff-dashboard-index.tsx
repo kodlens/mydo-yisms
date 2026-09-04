@@ -1,5 +1,5 @@
 import StaffAuthLayout from '@/layouts/staff-auth-layout';
-import { SharedData, Student } from '@/types';
+import { SharedData, Youth } from '@/types';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -23,7 +23,7 @@ type DashboardStats = {
 
 type Props = {
   stats: DashboardStats;
-  queue: Pick<Student, 'id' | 'fname' | 'lname' | 'program' | 'school_name' | 'registration_status'>[];
+  queue: Pick<Youth, 'id' | 'fname' | 'lname' | 'program' | 'school_name' | 'registration_status'>[];
 };
 
 const statusColor: Record<string, string> = {
@@ -33,7 +33,7 @@ const statusColor: Record<string, string> = {
   rejected: 'red',
 };
 
-const fullName = (student: Pick<Student, 'fname' | 'lname'>) => [student.fname, student.lname].filter(Boolean).join(' ');
+const fullName = (youth: Pick<Youth, 'fname' | 'lname'>) => [youth.fname, youth.lname].filter(Boolean).join(' ');
 
 const StaffDashboardIndex = ({ stats, queue }: Props) => {
   const summaryCards = [
@@ -77,7 +77,7 @@ const StaffDashboardIndex = ({ stats, queue }: Props) => {
             href="/staff/applicants"
             className="rounded-md border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 shadow-sm hover:bg-stone-50"
           >
-            View applicants
+            View applications
           </Link>
         </section>
 
@@ -141,7 +141,7 @@ const StaffDashboardIndex = ({ stats, queue }: Props) => {
 
             <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
-                <p className="text-stone-500">Total applicants</p>
+                <p className="text-stone-500">Total applications</p>
                 <p className="mt-1 text-xl font-semibold text-stone-950">{stats.total}</p>
               </div>
               <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">

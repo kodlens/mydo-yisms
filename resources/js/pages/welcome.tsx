@@ -57,10 +57,10 @@ const systemModules = [
 ];
 
 const workflowItems = [
-  { label: 'Register and complete your profile', description: 'Create your applicant account, then add personal, address, and guardian details.', icon: Users },
-  { label: 'Add your education details', description: 'Provide your school, course or program, and current year level.', icon: FileText },
-  { label: 'Upload required documents', description: 'Attach clear copies of your registration certificate and PSA birth certificate.', icon: GraduationCap },
-  { label: 'Submit for MYDO review', description: 'MYDO staff will review your application and update your status after checking.', icon: ShieldCheck },
+  { label: 'Register your youth profile', description: 'Create your account, then add personal, address, and guardian details.', icon: Users },
+  { label: 'Open your services menu', description: 'Choose a service such as scholarship, cash incentive, activities, or document request.', icon: FileText },
+  { label: 'Submit service requirements', description: 'Each service will ask only for the documents and details it needs.', icon: GraduationCap },
+  { label: 'Track your applications', description: 'MYDO staff will review each submitted service request and update its status.', icon: ShieldCheck },
 ];
 
 const requirements = [
@@ -102,17 +102,17 @@ export default function Welcome() {
             ) : (
               <>
                 <Link
-                  href={route('student-login.index')}
+                  href={route('youth-login.index')}
                   className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
                 >
                   <LockKeyhole className="h-4 w-4" />
                   Log in
                 </Link>
                 <Link
-                  href={route('student-register.index')}
+                  href={route('youth-register.index')}
                   className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 sm:inline-flex"
                 >
-                  Apply Now
+                  Register
                 </Link>
               </>
             )}
@@ -128,20 +128,20 @@ export default function Welcome() {
               </div>
 
               <h1 className="max-w-3xl text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-                Start your scholarship application here.
+                Start with one youth profile.
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-7 text-emerald-50 sm:text-lg">
-                Create your applicant account, complete your youth profile, upload your scholarship requirements, and
-                receive MYDO updates through your account.
+                Create your youth account once, then apply for MYDO services such as scholarship, cash incentives,
+                activities, and document requests through your portal.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
-                  href={auth.user ? route('dashboard') : route('student-register.index')}
+                  href={auth.user ? route('dashboard') : route('youth-register.index')}
                   className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-6 py-3 text-sm font-bold text-emerald-900 shadow-sm transition hover:bg-emerald-50"
                 >
-                  {auth.user ? 'Continue Application' : 'Apply for Scholarship'}
+                  {auth.user ? 'Open Services' : 'Create Youth Profile'}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
@@ -153,7 +153,7 @@ export default function Welcome() {
                 </a>
               </div>
 
-              <p className="mt-3 text-sm text-emerald-100">Takes around 5-10 minutes if your documents are ready.</p>
+              <p className="mt-3 text-sm text-emerald-100">Service requirements can be submitted after login.</p>
 
               <div className="mt-10 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-md bg-white/10 p-4">
@@ -178,8 +178,8 @@ export default function Welcome() {
                     <GraduationCap className="h-6 w-6" />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold uppercase text-sky-700">Scholarship Registration</p>
-                    <h2 className="mt-1 text-2xl font-bold text-slate-950">Prepare your documents</h2>
+                    <p className="text-sm font-semibold uppercase text-sky-700">Youth Services</p>
+                    <h2 className="mt-1 text-2xl font-bold text-slate-950">Register once, apply anytime</h2>
                   </div>
                 </div>
 
@@ -212,10 +212,10 @@ export default function Welcome() {
               <h2 className="mt-2 text-3xl font-bold text-slate-950">Prepare first, then submit once.</h2>
             </div>
             <Link
-              href={auth.user ? route('dashboard') : route('student-register.index')}
+              href={auth.user ? route('dashboard') : route('youth-register.index')}
               className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
             >
-              {auth.user ? 'Continue Application' : 'Start Application'}
+              {auth.user ? 'Open Services' : 'Create Youth Profile'}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

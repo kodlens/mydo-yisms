@@ -1,5 +1,5 @@
 import StaffAuthLayout from '@/layouts/staff-auth-layout';
-import { SharedData, Student } from '@/types';
+import { SharedData, Youth } from '@/types';
 import { EyeOutlined, FileSearchOutlined, SearchOutlined } from '@ant-design/icons';
 import { Head, router } from '@inertiajs/react';
 import { App, Button, Input, Pagination, Segmented, Space, Table, Tag } from 'antd';
@@ -31,13 +31,13 @@ const statusOptions = [
   { label: 'Draft', value: 'draft' },
 ];
 
-const formatName = (student: Student) =>
-  [student.lname, student.fname, student.mname].filter(Boolean).join(', ').replace(', ,', ',');
+const formatName = (youth: Youth) =>
+  [youth.lname, youth.fname, youth.mname].filter(Boolean).join(', ').replace(', ,', ',');
 
 const StaffApplicantIndex = () => {
   const { notification } = App.useApp();
 
-  const [applicants, setApplicants] = useState<PaginatedResponse<Student>>();
+  const [applicants, setApplicants] = useState<PaginatedResponse<Youth>>();
   const [loading, setLoading] = useState(false);
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
@@ -62,7 +62,7 @@ const StaffApplicantIndex = () => {
     const nextStatus = overrides?.status ?? status;
 
     try {
-      const res = await axios.get<PaginatedResponse<Student>>('/staff/get-applicants', {
+      const res = await axios.get<PaginatedResponse<Youth>>('/staff/get-applicants', {
         params: {
           search: nextSearch,
           status: nextStatus === 'all' ? undefined : nextStatus,
@@ -125,8 +125,8 @@ const StaffApplicantIndex = () => {
 
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-green-700">Staff Workspace</p>
-              <h1 className="mt-1 text-2xl font-semibold text-stone-950">Applicant Review</h1>
-              <p className="mt-1 text-sm text-stone-500">Review submitted student applications and verify applicant details.</p>
+              <h1 className="mt-1 text-2xl font-semibold text-stone-950">Scholarship Review</h1>
+              <p className="mt-1 text-sm text-stone-500">Review submitted youth scholarship applications and verify applicant details.</p>
             </div>
 
             <div className="ml-auto rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
@@ -160,21 +160,21 @@ const StaffApplicantIndex = () => {
               />
             </div>
 
-            <Table<Student>
+            <Table<Youth>
               dataSource={rows}
               loading={loading}
-              rowKey={(student) => student.id}
+              rowKey={(youth) => youth.id}
               pagination={false}
               scroll={{ x: 1080 }}
               className="[&_.ant-table-thead>tr>th]:bg-stone-50 [&_.ant-table-thead>tr>th]:text-stone-700"
             >
-              <Column<Student> title="ID" dataIndex="id" width={80} />
-              <Column<Student> title="Applicant" key="applicant" render={(_, student) => formatName(student)} />
-              <Column<Student> title="Email" dataIndex="email" key="email" />
-              <Column<Student> title="Mobile" dataIndex="mobile_number" key="mobile_number" />
-              <Column<Student> title="School" dataIndex="school_name" key="school_name" />
-              <Column<Student> title="Program" dataIndex="program" key="program" />
-              <Column<Student>
+              <Column<Youth> title="App ID" dataIndex="id" width={90} />
+              <Column<Youth> title="Youth" key="applicant" render={(_, youth) => formatName(youth)} />
+              <Column<Youth> title="Email" dataIndex="email" key="email" />
+              <Column<Youth> title="Mobile" dataIndex="mobile_number" key="mobile_number" />
+              <Column<Youth> title="School" dataIndex="school_name" key="school_name" />
+              <Column<Youth> title="Program" dataIndex="program" key="program" />
+              <Column<Youth>
                 title="Status"
                 dataIndex="registration_status"
                 key="registration_status"
@@ -185,17 +185,17 @@ const StaffApplicantIndex = () => {
                   </Tag>
                 )}
               />
-              <Column<Student>
+              <Column<Youth>
                 title="Action"
                 key="action"
                 fixed="right"
                 width={100}
-                render={(_, student) => (
+                render={(_, youth) => (
                   <Space size="small">
                     <Button
                       title="View applicant"
                       icon={<EyeOutlined />}
-                      onClick={() => router.visit(`/staff/applicants/${student.id}`)}
+                      onClick={() => router.visit(`/staff/applicants/${youth.id}`)}
                     />
                   </Space>
                 )}

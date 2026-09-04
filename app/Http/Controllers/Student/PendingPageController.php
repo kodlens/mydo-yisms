@@ -11,7 +11,8 @@ class PendingPageController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('student/pending-page', [
-            'student' => $request->user('student'),
+            'youth' => $request->user('youth'),
+            'student' => $request->user('youth'),
         ]);
     }
 }

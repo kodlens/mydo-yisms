@@ -43,7 +43,9 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
-export interface Student extends User {
+export interface Youth extends User {
+    youth_id?: number | null;
+    youth_profile_id?: number | null;
     birth_date?: string | null;
     civil_status?: string | null;
     mobile_number?: string | null;
@@ -80,3 +82,5 @@ export interface Student extends User {
         brgyDesc: string;
     } | null;
 }
+
+export type Student = Youth;

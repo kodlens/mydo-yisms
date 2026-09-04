@@ -13,10 +13,10 @@ class EnsureStudentAccountApproved
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $student = $request->user('student');
+        $student = $request->user('youth') ?? $request->user('student');
 
         if ($student && $student->registration_status !== 'approved') {
-            return redirect()->route('student.pending-page.index');
+            return redirect()->route('youth.pending-page.index');
         }
 
         return $next($request);

@@ -57,7 +57,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
             <div className="text-muted-foreground space-x-1 text-center text-sm">
               <span>Or, return to</span>
-              <TextLink href={route('student-login')}>log in</TextLink>
+              <TextLink href={route('youth-login.index')}>log in</TextLink>
             </div>
           </div>
 

@@ -1,5 +1,5 @@
 import StaffAuthLayout from '@/layouts/staff-auth-layout';
-import { SharedData, Student } from '@/types';
+import { SharedData, Youth } from '@/types';
 import {
   ArrowLeftOutlined,
   BankOutlined,
@@ -25,7 +25,7 @@ type DocumentItem = {
 };
 
 type Props = {
-  applicant: Student;
+  applicant: Youth;
   documents: DocumentItem[];
 };
 
@@ -63,7 +63,7 @@ const formatDate = (value: unknown) => {
   return `${monthName} ${day}, ${year}`;
 };
 
-const fullName = (applicant: Student) =>
+const fullName = (applicant: Youth) =>
   [applicant.fname, applicant.mname, applicant.lname, applicant.suffix].filter(Boolean).join(' ');
 
 const addressLabel = (name: unknown) => {
@@ -142,7 +142,7 @@ const StaffApplicantShow = ({ applicant, documents }: Props) => {
 
   return (
     <>
-      <Head title={`Applicant ${applicant.id}`} />
+      <Head title={`Scholarship Application ${applicant.id}`} />
 
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <div>
@@ -151,7 +151,7 @@ const StaffApplicantShow = ({ applicant, documents }: Props) => {
             className="inline-flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-stone-950"
           >
             <ArrowLeftOutlined />
-            Back to applicants
+            Back to scholarship applications
           </Link>
         </div>
 
@@ -162,9 +162,9 @@ const StaffApplicantShow = ({ applicant, documents }: Props) => {
             </div>
 
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-green-700">Applicant Profile</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-green-700">Youth Profile</p>
               <h1 className="mt-1 text-2xl font-semibold text-stone-950">{fullName(applicant)}</h1>
-              <p className="mt-1 text-sm text-stone-500">Application #{applicant.id}</p>
+              <p className="mt-1 text-sm text-stone-500">Scholarship application #{applicant.id}</p>
             </div>
 
             <div className="ml-auto">

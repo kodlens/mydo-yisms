@@ -22,24 +22,23 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::guard('student')->attempt($credentials)) {
+        if (Auth::guard('youth')->attempt($credentials)) {
             $req->session()->regenerate();
-            $student = Auth::guard('student')->user();
+            $youth = Auth::guard('youth')->user();
 
-            if ($student->registration_status !== 'approved') {
+            if ($youth->registration_status !== 'approved') {
                 return response()->json([
                     'success' => true,
-                    'status' => $student->registration_status,
-                    'redirect' => route('student.pending-page.index'),
+                    'status' => $youth->registration_status,
+                    'redirect' => route('youth.pending-page.index'),
                 ]);
             }
 
 
-            // return redirect()->route('student.dashboard');
             return response()->json([
                 'success' => true,
-                'status' => $student->registration_status,
-                'redirect' => route('student.dashboard.index'),
+                'status' => $youth->registration_status,
+                'redirect' => route('youth.dashboard.index'),
             ]);
         }
 
@@ -51,7 +50,7 @@ class AuthController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('student')->logout();
+        Auth::guard('youth')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

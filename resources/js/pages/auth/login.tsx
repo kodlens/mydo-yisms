@@ -160,7 +160,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
               </div>
 
               <p className="mt-5 text-center text-xs text-stone-500">
-                Student applicants should use the student login page.
+                Youth applicants should use the youth login page.
               </p>
             </div>
           </main>

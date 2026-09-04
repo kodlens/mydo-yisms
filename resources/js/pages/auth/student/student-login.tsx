@@ -2,7 +2,7 @@ import BrandLogo from '@/components/brand-logo';
 import { Head, Link, router } from '@inertiajs/react';
 import { App, Button, Form, Input } from 'antd';
 import axios from 'axios';
-import { ArrowLeft, BookOpen, GraduationCap, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, BookOpen, ClipboardList, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
 import {  useState } from 'react';
 
 type LoginProps = {
@@ -17,7 +17,7 @@ export default function StudentLogin() {
   const submit = (values:LoginProps) => {
     console.log(values);
     setLoading(true)
-    axios.post('/student-login', values).then(res=>{
+    axios.post('/youth-login', values).then(res=>{
       setLoading(false)
       if (res.data.success) {
         router.visit(res.data.redirect);
@@ -44,7 +44,7 @@ export default function StudentLogin() {
 
   return (
     <>
-      <Head title="Student Login" />
+      <Head title="Youth Login" />
 
       <main className="min-h-screen bg-[#f7f9f5] text-slate-950">
         <div className="mx-auto grid min-h-screen w-full max-w-7xl lg:grid-cols-[1fr_520px]">
@@ -59,14 +59,14 @@ export default function StudentLogin() {
 
             <div className="max-w-xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-md bg-white/10 px-3 py-2 text-sm font-medium text-emerald-50">
-                <GraduationCap className="h-4 w-4" />
-                Scholarship Applicant Access
+                <ClipboardList className="h-4 w-4" />
+                Youth Services Access
               </div>
 
-              <h1 className="text-5xl font-bold leading-tight">Welcome back, scholar applicant.</h1>
+              <h1 className="text-5xl font-bold leading-tight">Welcome back to your youth portal.</h1>
 
               <p className="mt-5 text-lg leading-8 text-emerald-50">
-                Sign in to continue your scholarship application, update your youth profile, upload requirements,
+                Sign in to update your youth profile, apply for services, upload requirements when needed,
                 and check notices from the Municipal Youth Development Office.
               </p>
             </div>
@@ -94,7 +94,7 @@ export default function StudentLogin() {
                 Back to portal
               </Link>
 
-              <Link href={route('student-register.index')} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
+              <Link href={route('youth-register.index')} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
                 Register
               </Link>
             </div>
@@ -105,9 +105,9 @@ export default function StudentLogin() {
 
                 <div className="mb-8 text-center">
                   <BrandLogo className="mx-auto h-16 w-16" />
-                  <h2 className="mt-5 text-2xl font-bold text-slate-950">Student Login</h2>
+                  <h2 className="mt-5 text-2xl font-bold text-slate-950">Youth Login</h2>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Access your scholarship application and youth profile.
+                    Access your youth profile and available MYDO services.
                   </p>
                 </div>
 
@@ -123,7 +123,7 @@ export default function StudentLogin() {
                     help={errors.email ? errors.email[0] as string : ""}
                     >
                     <Input
-                      placeholder="student@example.com"
+                      placeholder="email@example.com"
                       prefix={<Mail className="h-4 w-4 text-slate-400" />}
                     />
                   </Form.Item>
@@ -169,8 +169,8 @@ export default function StudentLogin() {
 
                 <div className="mt-6">
                   <p className="text-center text-sm text-slate-600">
-                    New applicant?{' '}
-                    <Link href={route('student-register.index')} className="font-semibold text-emerald-700 hover:text-emerald-900">
+                    New here?{' '}
+                    <Link href={route('youth-register.index')} className="font-semibold text-emerald-700 hover:text-emerald-900">
                       Create an account
                     </Link>
                   </p>

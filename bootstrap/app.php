@@ -19,12 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
         //custom redirection
         $middleware->redirectGuestsTo('/');
         $middleware->redirectUsersTo(function ($request) {
-            $student = $request->user('student');
+            $student = $request->user('youth') ?? $request->user('student');
 
             if ($student) {
                 return $student->registration_status === 'approved'
-                    ? route('student.dashboard.index')
-                    : route('student.pending-page.index');
+                    ? route('youth.dashboard.index')
+                    : route('youth.pending-page.index');
             }
 
             return route('dashboard');
@@ -38,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'student.approved' => EnsureStudentAccountApproved::class,
+            'youth.approved' => EnsureStudentAccountApproved::class,
         ]);
 
     })

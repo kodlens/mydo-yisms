@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
-use App\Models\Student;
+use App\Models\ScholarshipApplication;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -11,12 +11,12 @@ class StaffDashboardController extends Controller
 {
     public function index(): Response
     {
-        $statusCounts = Student::query()
-            ->selectRaw('registration_status, count(*) as total')
-            ->groupBy('registration_status')
-            ->pluck('total', 'registration_status');
+        $statusCounts = ScholarshipApplication::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        $totalApplicants = Student::query()->count();
+        $totalApplicants = ScholarshipApplication::query()->count();
         $completedReviews = (int) ($statusCounts->get('approved', 0) + $statusCounts->get('rejected', 0));
         $reviewProgress = $totalApplicants > 0
             ? round(($completedReviews / $totalApplicants) * 100)
@@ -29,14 +29,23 @@ class StaffDashboardController extends Controller
                 'rejected' => (int) $statusCounts->get('rejected', 0),
                 'draft' => (int) $statusCounts->get('draft', 0),
                 'total' => $totalApplicants,
-                'new_this_week' => Student::query()->where('created_at', '>=', now()->startOfWeek())->count(),
+                'new_this_week' => ScholarshipApplication::query()->where('created_at', '>=', now()->startOfWeek())->count(),
                 'review_progress' => $reviewProgress,
             ],
-            'queue' => Student::query()
-                ->where('registration_status', 'pending')
+            'queue' => ScholarshipApplication::query()
+                ->with('youthProfile')
+                ->where('status', 'pending')
                 ->latest()
                 ->limit(5)
-                ->get(['id', 'fname', 'lname', 'program', 'school_name', 'registration_status']),
+                ->get()
+                ->map(fn (ScholarshipApplication $application) => [
+                    'id' => $application->id,
+                    'fname' => $application->youthProfile?->fname,
+                    'lname' => $application->youthProfile?->lname,
+                    'program' => $application->youthProfile?->program,
+                    'school_name' => $application->youthProfile?->school_name,
+                    'registration_status' => $application->status,
+                ]),
         ]);
     }
 }
