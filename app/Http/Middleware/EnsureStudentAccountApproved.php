@@ -15,7 +15,7 @@ class EnsureStudentAccountApproved
     {
         $student = $request->user('student');
 
-        if ($student && $student->registration_status === 'pending') {
+        if ($student && $student->registration_status !== 'approved') {
             return redirect()->route('student.pending-page.index');
         }
 

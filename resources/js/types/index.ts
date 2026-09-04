@@ -65,6 +65,7 @@ export interface Student extends User {
     school_id_path?: string | null;
     psa_path?: string | null;
     registration_status?: string | null;
+    rejection_reason?: string | null;
     is_active?: boolean;
     province?: {
         provCode: string;

@@ -53,10 +53,14 @@ class StaffApplicantController extends Controller
     {
         $validated = $request->validate([
             'registration_status' => ['required', 'string', 'in:pending,approved,rejected'],
+            'rejection_reason' => ['required_if:registration_status,rejected', 'nullable', 'string', 'max:2000'],
         ]);
 
         $applicant->forceFill([
             'registration_status' => $validated['registration_status'],
+            'rejection_reason' => $validated['registration_status'] === 'rejected'
+                ? $validated['rejection_reason']
+                : null,
         ])->save();
 
         return back()->with('status', 'Applicant status updated.');

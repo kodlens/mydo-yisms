@@ -37,6 +37,7 @@ class Student extends Authenticatable
         'password',
         'role',
         'registration_status',
+        'rejection_reason',
         'is_active',
     ];
 

@@ -22,9 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
             $student = $request->user('student');
 
             if ($student) {
-                return $student->registration_status === 'pending'
-                    ? route('student.pending-page.index')
-                    : route('student.dashboard.index');
+                return $student->registration_status === 'approved'
+                    ? route('student.dashboard.index')
+                    : route('student.pending-page.index');
             }
 
             return route('dashboard');

@@ -13,7 +13,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { Head, Link, router } from '@inertiajs/react';
-import { App, Button, Descriptions, Empty, Space, Tag } from 'antd';
+import { App, Button, Descriptions, Empty, Form, Input, Modal, Space, Tag } from 'antd';
 import { ReactElement, ReactNode, useState } from 'react';
 
 type DocumentItem = {
@@ -44,71 +44,100 @@ const valueOrDash = (value: unknown) => {
   return String(value);
 };
 
+const formatDate = (value: unknown) => {
+  if (!value) {
+    return '-';
+  }
+
+  const rawDate = String(value).slice(0, 10);
+  const [year, month, day] = rawDate.split('-');
+
+  if (!year || !month || !day) {
+    return valueOrDash(value);
+  }
+
+  const monthName = new Date(Number(year), Number(month) - 1, Number(day)).toLocaleString('en-US', {
+    month: 'short',
+  });
+
+  return `${monthName} ${day}, ${year}`;
+};
+
 const fullName = (applicant: Student) =>
   [applicant.fname, applicant.mname, applicant.lname, applicant.suffix].filter(Boolean).join(' ');
 
-const addressLabel = (name: unknown, code: unknown) => {
+const addressLabel = (name: unknown) => {
   const displayName = valueOrDash(name);
-  const displayCode = valueOrDash(code);
+  //const displayCode = valueOrDash(code);
 
-  if (displayName === '-') {
-    return displayCode;
-  }
+  // if (displayName === '-') {
+  //   return displayCode;
+  // }
 
-  if (displayCode === '-') {
-    return displayName;
-  }
+  // if (displayCode === '-') {
+  //   return displayName;
+  // }
 
-  return `${displayName} (${displayCode})`;
+  return `${displayName}`;
 };
 
 const StaffApplicantShow = ({ applicant, documents }: Props) => {
   const { modal, notification } = App.useApp();
+  const [rejectForm] = Form.useForm<{ rejection_reason: string }>();
+  const [rejectOpen, setRejectOpen] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const status = valueOrDash(applicant.registration_status).toLowerCase();
 
-  const updateStatus = (nextStatus: 'pending' | 'approved' | 'rejected') => {
+  const saveStatus = (nextStatus: 'pending' | 'approved' | 'rejected', rejectionReason?: string) => {
+    setUpdatingStatus(nextStatus);
+
+    router.patch(
+      `/staff/applicants/${applicant.id}/status`,
+      { registration_status: nextStatus, rejection_reason: rejectionReason },
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          notification.success({
+            message: 'Status updated',
+            description: `Application is now ${nextStatus}.`,
+            placement: 'topRight',
+          });
+          setRejectOpen(false);
+          rejectForm.resetFields();
+        },
+        onError: (errors) => {
+          if (errors.rejection_reason) {
+            rejectForm.setFields([{ name: 'rejection_reason', errors: [errors.rejection_reason] }]);
+          }
+
+          notification.error({
+            message: 'Unable to update status',
+            description: 'Please check the form and try again.',
+            placement: 'topRight',
+          });
+        },
+        onFinish: () => setUpdatingStatus(null),
+      },
+    );
+  };
+
+  const updateStatus = (nextStatus: 'pending' | 'approved') => {
     const title =
       nextStatus === 'approved'
         ? 'Approve application?'
-        : nextStatus === 'rejected'
-          ? 'Reject application?'
-          : 'Mark as pending?';
+        : 'Mark as pending?';
 
     modal.confirm({
       title,
       content: `This will set ${fullName(applicant)}'s application status to ${nextStatus}.`,
-      okText: nextStatus === 'approved' ? 'Approve' : nextStatus === 'rejected' ? 'Reject' : 'Mark pending',
-      okButtonProps: {
-        danger: nextStatus === 'rejected',
-      },
-      onOk: () => {
-        setUpdatingStatus(nextStatus);
-
-        router.patch(
-          `/staff/applicants/${applicant.id}/status`,
-          { registration_status: nextStatus },
-          {
-            preserveScroll: true,
-            onSuccess: () => {
-              notification.success({
-                message: 'Status updated',
-                description: `Application is now ${nextStatus}.`,
-                placement: 'topRight',
-              });
-            },
-            onError: () => {
-              notification.error({
-                message: 'Unable to update status',
-                description: 'Please refresh the page and try again.',
-                placement: 'topRight',
-              });
-            },
-            onFinish: () => setUpdatingStatus(null),
-          },
-        );
-      },
+      okText: nextStatus === 'approved' ? 'Approve' : 'Mark pending',
+      onOk: () => saveStatus(nextStatus),
     });
+  };
+
+  const openRejectModal = () => {
+    rejectForm.setFieldsValue({ rejection_reason: applicant.rejection_reason ?? '' });
+    setRejectOpen(true);
   };
 
   return (
@@ -162,7 +191,7 @@ const StaffApplicantShow = ({ applicant, documents }: Props) => {
                   icon={<CloseOutlined />}
                   loading={updatingStatus === 'rejected'}
                   disabled={status === 'rejected' || updatingStatus !== null}
-                  onClick={() => updateStatus('rejected')}
+                  onClick={openRejectModal}
                 >
                   Reject
                 </Button>
@@ -180,13 +209,25 @@ const StaffApplicantShow = ({ applicant, documents }: Props) => {
 
           <div className="grid gap-5 p-6 xl:grid-cols-[1fr_360px]">
             <div className="space-y-5">
+              {status === 'rejected' && (
+                <section className="rounded-lg border border-red-200 bg-red-50 p-4">
+                  <div className="flex items-center gap-2 text-red-800">
+                    <CloseOutlined />
+                    <h2 className="text-base font-semibold">Rejection Reason</h2>
+                  </div>
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-red-900">
+                    {valueOrDash(applicant.rejection_reason)}
+                  </p>
+                </section>
+              )}
+
               <InfoPanel title="Personal Information" icon={<UserOutlined />}>
                 <Descriptions column={{ xs: 1, md: 2 }} size="middle">
                   <Descriptions.Item label="Last name">{valueOrDash(applicant.lname)}</Descriptions.Item>
                   <Descriptions.Item label="First name">{valueOrDash(applicant.fname)}</Descriptions.Item>
                   <Descriptions.Item label="Middle name">{valueOrDash(applicant.mname)}</Descriptions.Item>
                   <Descriptions.Item label="Suffix">{valueOrDash(applicant.suffix)}</Descriptions.Item>
-                  <Descriptions.Item label="Birth date">{valueOrDash(applicant.birth_date)}</Descriptions.Item>
+                  <Descriptions.Item label="Birth date">{formatDate(applicant.birth_date)}</Descriptions.Item>
                   <Descriptions.Item label="Sex">{valueOrDash(applicant.sex)}</Descriptions.Item>
                   <Descriptions.Item label="Civil status">{valueOrDash(applicant.civil_status)}</Descriptions.Item>
                   <Descriptions.Item label="Email">{valueOrDash(applicant.email)}</Descriptions.Item>
@@ -197,13 +238,13 @@ const StaffApplicantShow = ({ applicant, documents }: Props) => {
               <InfoPanel title="Address" icon={<HomeOutlined />}>
                 <Descriptions column={{ xs: 1, md: 2 }} size="middle">
                   <Descriptions.Item label="Province">
-                    {addressLabel(applicant.province?.provDesc, applicant.provCode)}
+                    {addressLabel(applicant.province?.provDesc)}
                   </Descriptions.Item>
                   <Descriptions.Item label="City / municipality">
-                    {addressLabel(applicant.city?.citymunDesc, applicant.citymunCode)}
+                    {addressLabel(applicant.city?.citymunDesc)}
                   </Descriptions.Item>
                   <Descriptions.Item label="Barangay">
-                    {addressLabel(applicant.barangay?.brgyDesc, applicant.brgyCode)}
+                    {addressLabel(applicant.barangay?.brgyDesc)}
                   </Descriptions.Item>
                   <Descriptions.Item label="ZIP code">{valueOrDash(applicant.zip_code)}</Descriptions.Item>
                   <Descriptions.Item label="Street address" span={2}>
@@ -259,6 +300,41 @@ const StaffApplicantShow = ({ applicant, documents }: Props) => {
           </div>
         </section>
       </div>
+
+      <Modal
+        open={rejectOpen}
+        title="Reject application"
+        okText="Reject"
+        okButtonProps={{
+          danger: true,
+          loading: updatingStatus === 'rejected',
+        }}
+        cancelButtonProps={{
+          disabled: updatingStatus !== null,
+        }}
+        onCancel={() => {
+          setRejectOpen(false);
+          rejectForm.resetFields();
+        }}
+        onOk={() => {
+          rejectForm.validateFields().then((values) => {
+            saveStatus('rejected', values.rejection_reason.trim());
+          });
+        }}
+      >
+        <Form form={rejectForm} layout="vertical" requiredMark={false}>
+          <Form.Item
+            name="rejection_reason"
+            label="Rejection reason"
+            rules={[
+              { required: true, message: 'Please enter the rejection reason.' },
+              { max: 2000, message: 'The rejection reason must not be greater than 2000 characters.' },
+            ]}
+          >
+            <Input.TextArea rows={5} placeholder="Explain why this application is being rejected." />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 };

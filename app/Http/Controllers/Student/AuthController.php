@@ -26,10 +26,10 @@ class AuthController extends Controller
             $req->session()->regenerate();
             $student = Auth::guard('student')->user();
 
-            if ($student->registration_status === 'pending') {
+            if ($student->registration_status !== 'approved') {
                 return response()->json([
                     'success' => true,
-                    'status' => 'pending',
+                    'status' => $student->registration_status,
                     'redirect' => route('student.pending-page.index'),
                 ]);
             }
