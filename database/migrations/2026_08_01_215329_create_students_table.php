@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->string('username')->unique();
+            $table->string('email')->unique();
             $table->string('lname');
             $table->string('fname')->nullable();
             $table->string('mname')->nullable();
@@ -44,7 +44,6 @@ return new class extends Migration
             $table->string('school_id_path')->nullable();
             $table->string('psa_path')->nullable();
 
-            $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role', 30)->default('student');

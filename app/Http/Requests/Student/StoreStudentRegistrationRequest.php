@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Student;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Validator;
 use Illuminate\Validation\Rules\Password;
 
@@ -25,7 +26,6 @@ class StoreStudentRegistrationRequest extends FormRequest
 
         $this->merge([
             'email' => $email,
-            'username' => $this->username ?: str($email)->before('@')->slug('_')->toString(),
             'mobile_number' => preg_replace('/\D+/', '', (string) $this->mobile_number),
             'guardian_contact_number' => preg_replace('/\D+/', '', (string) $this->guardian_contact_number),
         ]);
@@ -42,7 +42,6 @@ class StoreStudentRegistrationRequest extends FormRequest
         $oldestAllowedBirthDate = now()->subYears(31)->addDay()->toDateString();
 
         return [
-          //  'username' => ['required', 'string', 'max:30', 'alpha_dash:ascii', 'unique:students,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:students,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
 
@@ -69,6 +68,15 @@ class StoreStudentRegistrationRequest extends FormRequest
             'guardian_name' => ['required', 'string', 'max:255'],
             'guardian_contact_number' => ['required', 'string', 'max:30', 'regex:/^09[0-9]{9}$/'],
             'monthly_family_income' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
+
+            'coe' => ['nullable', 'array'],
+            'coe.0.response.filename' => ['nullable', 'string'],
+            'cog' => ['nullable', 'array'],
+            'cog.0.response.filename' => ['nullable', 'string'],
+            'sedula' => ['nullable', 'array'],
+            'sedula.0.response.filename' => ['nullable', 'string'],
+            'school_id' => ['nullable', 'array'],
+            'school_id.0.response.filename' => ['nullable', 'string'],
         ];
     }
 
@@ -94,6 +102,45 @@ class StoreStudentRegistrationRequest extends FormRequest
                 if (! $barangayBelongsToCity) {
                     $validator->errors()->add('brgyCode', 'The selected barangay does not belong to the selected city / municipality.');
                 }
+
+                $documentFields = [
+                    'coe' => 'Certificate of Enrolment',
+                    'cog' => 'Certificate of Grade',
+                    'sedula' => 'Cedula',
+                    'school_id' => 'School ID',
+                ];
+                $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+
+                foreach ($documentFields as $field => $label) {
+                    $filename = data_get($this->input($field), '0.response.filename');
+
+                    if (! is_string($filename) || $filename === '') {
+                        $validator->errors()->add($field, "Please upload your {$label}.");
+                        continue;
+                    }
+
+                    if ($filename !== basename($filename)) {
+                        $validator->errors()->add($field, "The uploaded {$label} filename is invalid.");
+                        continue;
+                    }
+
+                    $from = 'temp/' . $filename;
+                    $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+                    if (! in_array($extension, $allowedExtensions, true)) {
+                        $validator->errors()->add($field, "The uploaded {$label} must be a PDF, JPG, JPEG, or PNG file.");
+                        continue;
+                    }
+
+                    if (! Storage::disk('public')->exists($from)) {
+                        $validator->errors()->add($field, "The uploaded {$label} was not found. Please upload it again.");
+                        continue;
+                    }
+
+                    if (Storage::disk('public')->size($from) > 5 * 1024 * 1024) {
+                        $validator->errors()->add($field, "The uploaded {$label} must not be greater than 5MB.");
+                    }
+                }
             },
         ];
     }
@@ -114,6 +161,10 @@ class StoreStudentRegistrationRequest extends FormRequest
             'citymunCode' => 'city / municipality',
             'brgyCode' => 'barangay',
             'previous_semester_gwa' => 'GWA for previous semester',
+            'coe' => 'certificate of enrolment',
+            'cog' => 'certificate of grade',
+            'sedula' => 'cedula',
+            'school_id' => 'school ID',
         ];
     }
 

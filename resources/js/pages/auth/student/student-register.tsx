@@ -4,15 +4,14 @@ import SelectBarangay from '@/components/select-barangay';
 import SelectCity from '@/components/select-city';
 import SelectProvince from '@/components/select-province';
 import { Head, Link } from '@inertiajs/react';
-import { Button, DatePicker, Form, Input, InputNumber, Select, Steps, Typography } from 'antd';
-import axios from 'axios';
+import { App, Button, DatePicker, Form, Input, InputNumber, Select, Steps, Typography } from 'antd';
+import axios, { isAxiosError } from 'axios';
 import { ArrowLeft, ArrowRight, BookOpen, GraduationCap, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import UploadDocument from './form/upload-document';
 import Education from './form/education';
 
 type StudentRegistrationForm = {
-  username: string;
   email: string;
   password: string;
   password_confirmation: string;
@@ -62,6 +61,7 @@ type Props = {
 }
 
 export default function StudentRegister( { xToken } : Props ) {
+  const { modal } = App.useApp();
   const [form] = Form.useForm<StudentRegistrationForm>();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [processing, setProcessing] = useState(false);
@@ -79,11 +79,29 @@ export default function StudentRegister( { xToken } : Props ) {
         ...values,
         birth_date: values.birth_date?.format('YYYY-MM-DD'),
       })
-      .then(() => {
-        window.location.href = route('student-login');
+      .then((res) => {
+        if(res.data.success){
+          //window.location.href = route('student-login');
+        }
       })
       .catch((error) => {
-        setErrors(error.response?.data?.errors ?? {});
+        if (isAxiosError(error) && error.response?.status === 422) {
+          const validationErrors = error.response.data.errors ?? {};
+          const errorMessages = [...new Set(Object.values(validationErrors).flat() as string[])];
+
+          setErrors(validationErrors);
+
+          modal.error({
+            title: 'Please check your registration details',
+            content: (
+              <ul className="mb-0 list-disc pl-5">
+                {errorMessages.map((message, index) => (
+                  <li key={`${message}-${index}`}>{message}</li>
+                ))}
+              </ul>
+            ),
+          });
+        }
       })
       .finally(() => {
         setProcessing(false);

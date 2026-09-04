@@ -24,93 +24,30 @@ class UserSeeder extends Seeder
             ],
 
             [
-                'lname' => 'Santos',
-                'fname' => 'Maria Angela',
-                'mname' => 'Reyes',
-                'email' => 'maria.santos@example.com',
+                'lname' => 'Reyes',
+                'fname' => 'Paolo',
+                'mname' => 'Cruz',
+                'email' => 'publisher@localhost',
                 'password' => Hash::make('a'),
-                'role' => 'student'
+                'role' => 'publisher'
             ],
 
             [
-                'lname' => 'Garcia',
-                'fname' => 'John Michael',
-                'mname' => 'Lopez',
-                'email' => 'john.garcia@example.com',
+                'lname' => 'Villanueva',
+                'fname' => 'Grace',
+                'mname' => 'Santos',
+                'email' => 'encoder@localhost',
                 'password' => Hash::make('a'),
-                'role' => 'student'
-            ],
-
-            [
-                'lname' => 'Mendoza',
-                'fname' => 'Christine Joy',
-                'mname' => 'Villanueva',
-                'email' => 'christine.mendoza@example.com',
-                'password' => Hash::make('a'),
-                'role' => 'student'
-            ],
-
-            [
-                'lname' => 'Ramos',
-                'fname' => 'Joshua',
-                'mname' => 'Fernandez',
-                'email' => 'joshua.ramos@example.com',
-                'password' => Hash::make('a'),
-                'role' => 'student'
-            ],
-
-            [
-                'lname' => 'Torres',
-                'fname' => 'Angelica Mae',
-                'mname' => 'Castillo',
-                'email' => 'angelica.torres@example.com',
-                'password' => Hash::make('a'),
-                'role' => 'student'
-            ],
-
-            [
-                'lname' => 'Aquino',
-                'fname' => 'Mark Anthony',
-                'mname' => 'Diaz',
-                'email' => 'mark.aquino@example.com',
-                'password' => Hash::make('a'),
-                'role' => 'student'
-            ],
-
-            [
-                'lname' => 'Navarro',
-                'fname' => 'Princess Anne',
-                'mname' => 'Rivera',
-                'email' => 'princess.navarro@example.com',
-                'password' => Hash::make('a'),
-                'role' => 'student'
+                'role' => 'encoder'
             ],
 
             [
                 'lname' => 'Bautista',
-                'fname' => 'Kevin',
-                'mname' => 'Morales',
-                'email' => 'kevin.bautista@example.com',
+                'fname' => 'Carlo',
+                'mname' => 'Reyes',
+                'email' => 'external.encoder@localhost',
                 'password' => Hash::make('a'),
-                'role' => 'student'
-            ],
-
-            [
-                'lname' => 'Cruz',
-                'fname' => 'Nicole',
-                'mname' => 'Salazar',
-                'email' => 'nicole.cruz@example.com',
-                'password' => Hash::make('a'),
-                'role' => 'student'
-            ],
-
-            [
-                'lname' => 'Flores',
-                'fname' => 'Daniel',
-                'mname' => 'Torres',
-                'email' => 'daniel.flores@example.com',
-                'password' => Hash::make('a'),
-                'role' => 'student'
+                'role' => 'external-encoder'
             ],
         ];
 

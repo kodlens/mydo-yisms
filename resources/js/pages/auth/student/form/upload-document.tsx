@@ -2,46 +2,17 @@ import FormSection from '@/components/form-section'
 import { App, Form, Upload, UploadProps } from 'antd'
 import axios from 'axios';
 import { FileText, UploadCloud } from 'lucide-react'
-import { useState } from 'react';
-
 
 type Props = {
   errors: Record<string, unknown[]>;
   xToken: string
 }
 
-const documents = [
-  {
-    name: 'coe',
-    label: 'Certification of Enrolment (COE)',
-    uploadText: 'Upload Certification of Enrolment',
-  },
-  {
-    name: 'cog',
-    label: 'Certification of Grades (COG)',
-    uploadText: 'Upload Certification of Grades',
-  },
-  {
-    name: 'cedula',
-    label: 'Cedula',
-    uploadText: 'Upload Cedula',
-  },
-  {
-    name: 'school_id',
-    label: 'School ID',
-    uploadText: 'Upload School ID',
-  },
-  {
-    name: 'psa',
-    label: 'PSA Birth Certificate',
-    uploadText: 'Upload PSA Birth Certificate',
-  },
-];
+
 
 const UploadDocument = ( { errors, xToken } : Props  ) => {
 
   const { notification } = App.useApp();
-  const [ uploadErrors, setUploadErrors] = useState<Record<string, unknown[]>>({});
 
   const uploadProps: UploadProps = {
     name: "upload",
@@ -74,7 +45,6 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
     },
 
     onChange(info) {
-      setUploadErrors({})
 
       if (info.file.status === "done") {
         notification.success(
@@ -92,7 +62,11 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
             title: `${info.file.name} file upload failed.`,
             placement: "topRight",
           });
-          setUploadErrors(info.file.response.errors);
+          notification.error({
+            title: `${info.file.response.errors}`,
+            placement: "topRight",
+          });
+
         } else {
           notification.error({
             title: `${info.file.name} file upload failed.`,
@@ -122,6 +96,7 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
     <>
 
       <FormSection icon={FileText} title="Document Uploads">
+
         <div className="grid gap-4 md:grid-cols-2">
           {/* { documents.map((document) => (
             <Form.Item
@@ -153,7 +128,7 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
               return e?.fileList;
             }}
             validateStatus={errors.upload ? "error" : ""}
-            help={errors.upload ? errors.upload[0] as string : ""}
+            help={errors.upload ? errors.coe[0] as string : ""}
           >
             <Upload.Dragger
               maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
@@ -167,7 +142,7 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
           </Form.Item>
 
           <Form.Item
-            name="coe"
+            name="cog"
             valuePropName="fileList"
             className="w-full"
             label="Upload Certificate of Grade (Last semester)"
@@ -179,7 +154,7 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
               return e?.fileList;
             }}
             validateStatus={errors.upload ? "error" : ""}
-            help={errors.upload ? errors.upload[0] as string : ""}
+            help={errors.upload ? errors.cog[0] as string : ""}
           >
             <Upload.Dragger
               maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
@@ -198,7 +173,7 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
 
         <div className='grid md:grid-cols-2 gap-4'>
           <Form.Item
-            name="coe"
+            name="sedula"
             valuePropName="fileList"
             className="w-full"
             label="Photocopy of Sedula"
@@ -210,7 +185,7 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
               return e?.fileList;
             }}
             validateStatus={errors.upload ? "error" : ""}
-            help={errors.upload ? errors.upload[0] as string : ""}
+            help={errors.upload ? errors.sedula[0] as string : ""}
           >
             <Upload.Dragger
               maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
@@ -224,7 +199,7 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
           </Form.Item>
 
           <Form.Item
-            name="coe"
+            name="school_id"
             valuePropName="fileList"
             className="w-full"
             label="Photocopy of School Id"
@@ -236,7 +211,7 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
               return e?.fileList;
             }}
             validateStatus={errors.upload ? "error" : ""}
-            help={errors.upload ? errors.upload[0] as string : ""}
+            help={errors.upload ? errors.school_id[0] as string : ""}
           >
             <Upload.Dragger
               maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
