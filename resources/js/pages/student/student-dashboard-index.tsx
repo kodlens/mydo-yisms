@@ -1,4 +1,4 @@
-import StudentAuthLayout from '@/layouts/student-sidebar-layout';
+import StudentAuthLayout from '@/layouts/student-auth-layout';
 import { SharedData } from '@/types';
 import { Head } from '@inertiajs/react';
 import { ReactElement, ReactNode } from 'react';

@@ -24,9 +24,6 @@ Route::middleware('guest')->group(function () {
 
 });
 
-Route::middleware('auth:student')->group(function () {
-    Route::get('/student/dashboard', [App\Http\Controllers\Student\StudentDashboardController::class, 'index'])->name('student.dashboard');
-});
 
 
 Route::post('/temp-upload', [App\Http\Controllers\Base\UploadFileController::class, 'tempUpload'])->name('open.temp-upload');
@@ -64,3 +61,4 @@ Route::middleware(['auth'])->group(function () {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+require __DIR__.'/student.php';

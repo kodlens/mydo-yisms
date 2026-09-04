@@ -81,7 +81,7 @@ export default function StudentRegister( { xToken } : Props ) {
       })
       .then((res) => {
         if(res.data.success){
-          //window.location.href = route('student-login');
+          //window.location.href = route('student-login.index');
         }
       })
       .catch((error) => {
@@ -135,7 +135,7 @@ export default function StudentRegister( { xToken } : Props ) {
               Back to portal
             </Link>
 
-            <Link href={route('student-login')} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
+            <Link href={route('student-login.index')} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
               Already registered?
             </Link>
           </div>
@@ -458,7 +458,7 @@ export default function StudentRegister( { xToken } : Props ) {
 
                 <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
                   { currentStep === 0 ? (
-                    <Link href={route('student-login')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                    <Link href={route('student-login.index')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
                       I already have an account
                     </Link>
                   ) : (
