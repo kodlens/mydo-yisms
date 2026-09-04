@@ -1,13 +1,45 @@
 import BrandLogo from '@/components/brand-logo';
-import { Head, Link } from '@inertiajs/react';
-import { Button, Input } from 'antd';
+import { Head, Link, router } from '@inertiajs/react';
+import { App, Button, Form, Input } from 'antd';
+import axios from 'axios';
 import { ArrowLeft, BookOpen, GraduationCap, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import {  useState } from 'react';
 
-
+type LoginProps = {
+  email: string
+  password: string
+}
 export default function StudentLogin() {
-  const submit: FormEventHandler = (event) => {
-    event.preventDefault();
+  const [errors, setErrors] = useState<Record<string, unknown[]>>({})
+  const { notification } = App.useApp()
+  const [loading, setLoading] = useState<boolean>(false)
+
+  const submit = (values:LoginProps) => {
+    console.log(values);
+    setLoading(true)
+    axios.post('/student-login', values).then(res=>{
+      setLoading(false)
+      if (res.data.success) {
+        router.visit(res.data.redirect);
+      }
+    }).catch(err => {
+     if (axios.isAxiosError(err)) {
+        if (err.response?.status === 422) {
+          // Laravel validation error
+          setErrors(err.response.data.errors)
+          console.log(err.response.data.errors);
+        } else {
+          // Other HTTP errors
+          console.log(err.response?.data);
+          notification.error({
+            description: err.response?.data.message
+          });
+        }
+      }
+    }).finally(() => {
+      setLoading(false)
+    })
+
   };
 
   return (
@@ -62,7 +94,7 @@ export default function StudentLogin() {
                 Back to portal
               </Link>
 
-              <Link href={route('student-register')} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
+              <Link href={route('student-register.index')} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
                 Register
               </Link>
             </div>
@@ -79,17 +111,22 @@ export default function StudentLogin() {
                   </p>
                 </div>
 
-                <form className="space-y-5" onSubmit={submit}>
-                  <div className="grid gap-2">
-                    <label htmlFor="email" className="text-sm font-medium">Email address</label>
+                <Form className="space-y-5" onFinish={submit}
+                  initialValues={{
+                    email: '',
+                    password: ''
+                  }}>
+
+                  <Form.Item
+                    name="email"
+                    validateStatus={errors.email ? "error" : ""}
+                    help={errors.email ? errors.email[0] as string : ""}
+                    >
                     <Input
-                      id="email"
-                      type="email"
-                      autoComplete="email"
                       placeholder="student@example.com"
                       prefix={<Mail className="h-4 w-4 text-slate-400" />}
                     />
-                  </div>
+                  </Form.Item>
 
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
@@ -98,12 +135,17 @@ export default function StudentLogin() {
                         Forgot password?
                       </Link>
                     </div>
-                    <Input.Password
-                      id="password"
-                      autoComplete="current-password"
-                      placeholder="Enter your password"
-                      prefix={<LockKeyhole className="h-4 w-4 text-slate-400" />}
-                    />
+
+                    <Form.Item
+                      name="password"
+                      validateStatus={errors.password ? "error" : ""}
+                      help={errors.password ? errors.password[0] as string : ""}>
+                      <Input.Password
+                        autoComplete="current-password"
+                        placeholder="Enter your password"
+                        prefix={<LockKeyhole className="h-4 w-4 text-slate-400" />}
+                      />
+                    </Form.Item>
                   </div>
 
                   {/* <div className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-3">
@@ -115,18 +157,20 @@ export default function StudentLogin() {
                   </div> */}
 
                   <Button
+                    loading={loading}
                     htmlType="submit"
                     type="primary"
                     className="w-full bg-emerald-700 hover:bg-emerald-800 text-white">
                     Sign in
                   </Button>
-                </form>
+
+                </Form>
 
 
                 <div className="mt-6">
                   <p className="text-center text-sm text-slate-600">
                     New applicant?{' '}
-                    <Link href={route('student-register')} className="font-semibold text-emerald-700 hover:text-emerald-900">
+                    <Link href={route('student-register.index')} className="font-semibold text-emerald-700 hover:text-emerald-900">
                       Create an account
                     </Link>
                   </p>

@@ -15,6 +15,7 @@ class StudentSeeder extends Seeder
     {
         $data = [
             [
+                'username' => 'maria_santos',
                 'lname' => 'Santos',
                 'fname' => 'Maria Angela',
                 'mname' => 'Reyes',
@@ -37,6 +38,7 @@ class StudentSeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'username' => 'john_garcia',
                 'lname' => 'Garcia',
                 'fname' => 'John Michael',
                 'mname' => 'Lopez',
@@ -59,6 +61,7 @@ class StudentSeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'username' => 'christine_mendoza',
                 'lname' => 'Mendoza',
                 'fname' => 'Christine Joy',
                 'mname' => 'Villanueva',

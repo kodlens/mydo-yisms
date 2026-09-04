@@ -17,16 +17,20 @@ Route::get('/load-barangays', [App\Http\Controllers\OpenController::class, 'load
 
 
 Route::middleware('guest')->group(function () {
-    Route::get('/student-login', [AuthController::class, 'index'])->name('student-login');
-    Route::get('/student-register', [StudentRegistrationController::class, 'index'])->name('student-register');
+    Route::get('/student-login', [AuthController::class, 'index'])->name('student-login.index');
+    Route::post('/student-login', [AuthController::class, 'login'])->name('student-login.login');
+    Route::get('/student-register', [StudentRegistrationController::class, 'index'])->name('student-register.index');
     Route::post('/student-register', [StudentRegistrationController::class, 'store'])->name('student-register.store');
-
-
 
 });
 
-    Route::post('/temp-upload', [App\Http\Controllers\Base\UploadFileController::class, 'tempUpload'])->name('open.temp-upload');
-    Route::post('/temp-remove/{filename}', [App\Http\Controllers\Base\UploadFileController::class, 'tempRemove'])->name('open.temp-remove');
+Route::middleware('auth:student')->group(function () {
+    Route::get('/student/dashboard', [App\Http\Controllers\Student\StudentDashboardController::class, 'index'])->name('student.dashboard');
+});
+
+
+Route::post('/temp-upload', [App\Http\Controllers\Base\UploadFileController::class, 'tempUpload'])->name('open.temp-upload');
+Route::post('/temp-remove/{filename}', [App\Http\Controllers\Base\UploadFileController::class, 'tempRemove'])->name('open.temp-remove');
 
 
 
