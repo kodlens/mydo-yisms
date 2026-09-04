@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreStudentRegistrationRequest;
 use App\Models\Student;
-use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Storage;
@@ -22,25 +21,39 @@ class StudentRegistrationController extends Controller
 
     public function store(StoreStudentRegistrationRequest $req)
     {
-        //return $req;
+        $validated = $req->validated();
+        $documentInputs = ['coe', 'cog', 'sedula', 'school_id'];
 
-        Student::create([
-            ...$req->validated(),
+        foreach ($documentInputs as $documentInput) {
+            unset($validated[$documentInput]);
+        }
+
+        $student = Student::create([
+            ...$validated,
             'role' => 'student',
             'registration_status' => 'pending',
             'is_active' => true,
         ]);
 
-        $documentFields = ['coe', 'cog', 'sedula', 'school_id'];
+        $documentFields = [
+            'coe' => 'coe_path',
+            'cog' => 'cog_path',
+            'sedula' => 'cedula_path',
+            'school_id' => 'school_id_path',
+        ];
         $uploadedFiles = [];
+        $folder = $this->documentFolderName($student);
 
-        foreach ($documentFields as $field) {
+        Storage::disk('public')->makeDirectory('upfiles/' . $folder);
+
+        foreach ($documentFields as $field => $pathColumn) {
             $fileList = $req->input($field);
 
             if (!empty($fileList[0]['response']['filename'])) {
                 $filename = basename($fileList[0]['response']['filename']);
                 $from = 'temp/' . $filename;
-                $to = 'upfiles/' . $filename;
+                $prefixedFilename = $field . '_' . $filename;
+                $to = 'upfiles/' . $folder . '/' . $prefixedFilename;
                 $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
                 $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
@@ -57,17 +70,30 @@ class StudentRegistrationController extends Controller
                 }
 
                 Storage::disk('public')->move($from, $to);
-                $uploadedFiles[$field] = $to;
+                $uploadedFiles[$pathColumn] = $to;
             }
+        }
+
+        if (! empty($uploadedFiles)) {
+            $student->forceFill($uploadedFiles)->save();
         }
 
         return response()->json([
             'success' => true,
+            'student_id' => $student->id,
+            'document_folder' => $folder,
             'uploaded_files' => $uploadedFiles,
         ], 200);
 
         //return to_route('student-login')->with('status', 'Registration submitted. Please sign in once your account is approved.');
     }
 
+    private function documentFolderName(Student $student): string
+    {
+        $firstInitial = strtoupper(substr((string) $student->fname, 0, 1));
+        $surname = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', (string) $student->lname));
+
+        return "{$student->id}_{$firstInitial}{$surname}";
+    }
 
 }
