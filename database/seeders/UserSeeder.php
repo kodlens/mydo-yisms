@@ -15,6 +15,7 @@ class UserSeeder extends Seeder
     {
         $data = [
             [
+                'username' => 'admin',
                 'lname' => 'Dela Cruz',
                 'fname' => 'Juan',
                 'mname' => '',
@@ -22,32 +23,23 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('a'),
                 'role' => 'admin'
             ],
-
             [
-                'lname' => 'Reyes',
-                'fname' => 'Paolo',
-                'mname' => 'Cruz',
-                'email' => 'publisher@localhost',
-                'password' => Hash::make('a'),
-                'role' => 'publisher'
-            ],
-
-            [
+                'username' => 'grace',
                 'lname' => 'Villanueva',
                 'fname' => 'Grace',
                 'mname' => 'Santos',
                 'email' => 'encoder@localhost',
                 'password' => Hash::make('a'),
-                'role' => 'encoder'
+                'role' => 'staff'
             ],
-
             [
+                'username' => 'carlo',
                 'lname' => 'Bautista',
                 'fname' => 'Carlo',
                 'mname' => 'Reyes',
                 'email' => 'external.encoder@localhost',
                 'password' => Hash::make('a'),
-                'role' => 'external-encoder'
+                'role' => 'staff'
             ],
         ];
 

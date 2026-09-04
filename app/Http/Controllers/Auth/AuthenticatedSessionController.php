@@ -34,10 +34,8 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $dashboardRoute = match ($request->user()->role) {
-            'publisher' => 'publisher.dashboard',
-            'encoder' => 'encoder.dashboard',
-            'external-encoder' => 'external-encoder.dashboard',
             'admin' => 'admin.dashboard',
+            'staff' => 'staff.dashboard.index',
             default => 'dashboard',
         };
 
