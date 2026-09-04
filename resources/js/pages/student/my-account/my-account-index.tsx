@@ -14,3 +14,4 @@ MyAccountIndex.layout = (page: ReactNode) =>
   >
     {page}
   </StudentAuthLayout>
+export default MyAccountIndex
