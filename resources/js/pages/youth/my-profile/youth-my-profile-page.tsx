@@ -127,7 +127,7 @@ const YouthMyProfilePage = ({ youth }: { youth: Profile }) => {
                                     {display(youth.mobile_number) || 'Mobile number not provided'}
                                 </span>
                             </div>
-                            {location && (
+                            { location && (
                                 <p className="mt-2 flex items-start gap-2 text-sm leading-6 text-slate-600">
                                     <MapPin size={16} aria-hidden="true" className="mt-1 shrink-0 text-teal-700" />
                                     <span className="break-words">{location}</span>

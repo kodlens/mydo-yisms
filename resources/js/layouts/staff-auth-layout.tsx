@@ -45,13 +45,19 @@ export default function StaffAuthLayout({
         onClick: () => router.visit('/staff/dashboard'),
       },
       {
-        key: 'staff.applicants.index',
+        key: 'staff.scholarship-applicants.index',
         icon: <FileSearchOutlined />,
-        label: 'Applicants',
+        label: 'Scholarship Applicants',
         onClick: () => router.visit('/staff/applicants'),
       },
       {
         type: 'divider',
+      },
+      {
+        key: 'staff.youth-profiles.index',
+        icon: <FileSearchOutlined />,
+        label: 'Youth Profiles',
+        onClick: () => router.visit('/staff/youth-profiles'),
       },
       {
         key: 'logout',
