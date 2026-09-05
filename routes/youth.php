@@ -34,5 +34,5 @@ Route::middleware('auth:youth')->group(function () {
     Route::get('/youth/my-account', [StudentMyAccountController::class, 'index'])->name('youth.my-account.index');
 
     Route::get('/youth/services', [YouthServiceController::class, 'index'])->name('youth.youth-services.index');
-    Route::get('/youth/services/{service}', [YouthServiceController::class, 'show'])->name('youth.youth-services.show');
+    // Route::get('/youth/services/{service}', [YouthServiceController::class, 'show'])->name('youth.youth-services.show');
 });

@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 
 import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, MenuProps } from 'antd';
-import { LogOut } from 'lucide-react';
+import { LogOut, WalletCards } from 'lucide-react';
 import PanelSidebarLogo from '@/components/mydo-components/panel-sidebar-logo';
 
 
@@ -30,7 +30,7 @@ export default function YouthAuthLayout(
 
   const { post } = useForm();
   const [collapsed, setCollapsed] = useState(false);
-  const [openKeys, setOpenKeys] = useState<string[]>([]);
+  const [openKeys, setOpenKeys] = useState<string[]>(['youth.youth-services']);
 
   const handleLogout = useCallback(() => {
     post(route('youth-logout'));
@@ -45,10 +45,23 @@ export default function YouthAuthLayout(
         onClick: () => router.visit('/youth/dashboard')
     },
     {
-        key: 'youth.youth-services.index',
+        key: 'youth.youth-services',
         icon: <AppstoreOutlined />,
         label: 'Services',
-        onClick: () => router.visit('/youth/services')
+        children: [
+          {
+            key: 'youth.youth-services.scholar.index',
+            icon: <UserOutlined />,
+            label: 'Scholarship',
+            onClick: () => router.visit('/youth/services/scholarship')
+          },
+          {
+            key: 'youth.youth-services.cash-incentives.index',
+            icon: <WalletCards size={15} />,
+            label: 'Cash Incentives',
+            onClick: () => router.visit('/youth/services/cash-incentives')
+          },
+        ]
     },
     {
       type: 'divider'
@@ -80,15 +93,16 @@ export default function YouthAuthLayout(
   ]), [handleLogout]);
 
   const currentRoute = `${route().current() ?? ''}`;
-  const selectedMenuKey = currentRoute.startsWith('youth.services.')
-    ? 'youth.services.index'
+  const selectedMenuKey = currentRoute.startsWith('youth.youth-services.')
+    ? 'youth.youth-services'
     : currentRoute;
+
   const userInitials = `${user?.fname?.[0] ?? ''}${user?.lname?.[0] ?? ''}`.toUpperCase();
   const fullName = `${user?.lname ?? ''}, ${user?.fname ?? ''}`.trim();
   const compactName = `${user?.lname ?? ''}, ${user?.fname?.[0] ?? ''}.`.trim();
-  const pageTitle = currentRoute === 'youth.dashboard.index'
+  const pageTitle = currentRoute === 'youth.youth-dashboard.index'
     ? 'Dashboard'
-    : currentRoute.startsWith('youth.services.')
+    : currentRoute.startsWith('youth.youth-services.')
       ? 'Services'
       : currentRoute === 'youth.my-account.index'
         ? 'My Account'
@@ -106,7 +120,7 @@ export default function YouthAuthLayout(
           breakpoint='md'
           onBreakpoint={(broken) => {
             setCollapsed(broken);
-            if (!broken) setOpenKeys([]);
+            if (!broken) setOpenKeys(['youth.youth-services']);
           }}
           collapsed={collapsed} width={260}>
           <div className='border-b border-cyan-100/20 pb-3'>
@@ -154,7 +168,7 @@ export default function YouthAuthLayout(
               }}
               selectedKeys={[selectedMenuKey]}
               openKeys={collapsed ? [] : openKeys}
-              defaultOpenKeys={[]}
+              defaultOpenKeys={['youth.youth-services']}
               onOpenChange={(keys) => setOpenKeys(keys as string[])}
               items={navigationItems}
             />
