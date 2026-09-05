@@ -14,19 +14,20 @@ return new class extends Migration
         Schema::create('youth_profiles', function (Blueprint $table) {
             $table->id();
             $table->string('email')->unique();
-            $table->string('lname');
-            $table->string('fname')->nullable();
-            $table->string('mname')->nullable();
+            $table->string('student_id', 30)->nullable();
+            $table->string('lname', 100);
+            $table->string('fname', 100)->nullable();
+            $table->string('mname', 100)->nullable();
             $table->string('suffix', 30)->nullable();
             $table->date('birth_date')->nullable();
             $table->string('sex', 20)->nullable();
             $table->string('civil_status', 30)->nullable();
             $table->string('mobile_number', 30)->nullable();
 
-            $table->string('provCode')->nullable();
-            $table->string('citymunCode')->nullable();
-            $table->string('brgyCode')->nullable();
-            $table->string('street_address')->nullable();
+            $table->string('provCode', 50)->nullable();
+            $table->string('citymunCode', 50)->nullable();
+            $table->string('brgyCode', 50)->nullable();
+            $table->string('street_address', 255)->nullable();
             $table->string('zip_code', 10)->nullable();
 
             $table->string('school_name')->nullable();
@@ -48,9 +49,6 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role', 30)->default('youth');
-
-            $table->string('registration_status', 30)->default('draft');
-            $table->text('rejection_reason')->nullable();
 
             $table->boolean('is_active')->default(true);
 

@@ -6,7 +6,7 @@ use App\Models\Student;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class StudentSeeder extends Seeder
+class YouthProfileSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,7 +15,6 @@ class StudentSeeder extends Seeder
     {
         $data = [
             [
-                'username' => 'maria_santos',
                 'lname' => 'Santos',
                 'fname' => 'Maria Angela',
                 'mname' => 'Reyes',
@@ -38,7 +37,6 @@ class StudentSeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'username' => 'john_garcia',
                 'lname' => 'Garcia',
                 'fname' => 'John Michael',
                 'mname' => 'Lopez',
@@ -61,7 +59,6 @@ class StudentSeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'username' => 'christine_mendoza',
                 'lname' => 'Mendoza',
                 'fname' => 'Christine Joy',
                 'mname' => 'Villanueva',
@@ -85,6 +82,6 @@ class StudentSeeder extends Seeder
             ],
         ];
 
-        Student::insertOrIgnore($data);
+        YouthProfile::insertOrIgnore($data);
     }
 }

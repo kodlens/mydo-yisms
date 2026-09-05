@@ -13,7 +13,7 @@ class AuthController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('auth/student/student-login');
+        return Inertia::render('auth/youth/youth-login');
     }
 
     public function login(Request $req){
@@ -25,20 +25,17 @@ class AuthController extends Controller
         if (Auth::guard('youth')->attempt($credentials)) {
             $req->session()->regenerate();
             $youth = Auth::guard('youth')->user();
-
-            if ($youth->registration_status !== 'approved') {
-                return response()->json([
-                    'success' => true,
-                    'status' => $youth->registration_status,
-                    'redirect' => route('youth.pending-page.index'),
-                ]);
-            }
-
-
+            // if ($youth->registration_status !== 'approved') {
+            //     return response()->json([
+            //         'success' => true,
+            //         'status' => $youth->registration_status,
+            //         'redirect' => route('youth.youth-dashboard.index'),
+            //     ]);
+            // }
             return response()->json([
                 'success' => true,
                 'status' => $youth->registration_status,
-                'redirect' => route('youth.dashboard.index'),
+                'redirect' => route('youth.youth-dashboard.index'),
             ]);
         }
 
