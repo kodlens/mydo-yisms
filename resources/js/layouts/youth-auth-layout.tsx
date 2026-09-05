@@ -25,7 +25,7 @@ const siderStyle: React.CSSProperties = {
   borderRight: '1px solid rgba(148, 210, 228, 0.22)',
 };
 
-export default function StudentAuthLayout(
+export default function YouthAuthLayout(
   { user, children, header }: PropsWithChildren<{ user: Youth, header?: ReactNode }>) {
 
   const { post } = useForm();
@@ -45,7 +45,7 @@ export default function StudentAuthLayout(
         onClick: () => router.visit('/youth/dashboard')
     },
     {
-        key: 'youth.services.index',
+        key: 'youth.youth-services.index',
         icon: <AppstoreOutlined />,
         label: 'Services',
         onClick: () => router.visit('/youth/services')

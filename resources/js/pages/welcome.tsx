@@ -93,7 +93,7 @@ export default function Welcome() {
           <nav className="flex items-center gap-2">
             {auth.user ? (
               <Link
-                href={route('dashboard')}
+                href={route('youth.youth-dashboard.index')}
                 className="inline-flex items-center gap-2 rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
               >
                 <BarChart3 className="h-4 w-4" />

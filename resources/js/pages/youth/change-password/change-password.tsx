@@ -3,7 +3,7 @@ import { ReactElement, ReactNode, useState } from "react";
 import { LockOutlined, SaveOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { SharedData } from "@/types";
-import StudentAuthLayout from "@/layouts/student-auth-layout";
+import StudentAuthLayout from "@/layouts/youth-auth-layout";
 
 export default function ChangePassword() {
 

@@ -1,4 +1,4 @@
-import StudentAuthLayout from '@/layouts/student-auth-layout';
+import YouthAuthLayout from '@/layouts/youth-auth-layout';
 import { SharedData } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { Button } from 'antd';
@@ -7,7 +7,7 @@ import { ReactElement, ReactNode } from 'react';
 
 
 
-const StudentDashboardIndex = () => {
+const YouthDashboardPage = () => {
   return (
     <>
       <Head title="Youth Dashboard" />
@@ -20,7 +20,7 @@ const StudentDashboardIndex = () => {
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href={route('youth.services.index')}>
+            <Link href={route('youth.youth-services.index')}>
               <Button type="primary" icon={<LayoutGrid className="h-4 w-4" />}>
                 Browse Services
               </Button>
@@ -45,11 +45,11 @@ const StudentDashboardIndex = () => {
 };
 
 
-StudentDashboardIndex.layout = (page: ReactNode) =>
-  <StudentAuthLayout
+YouthDashboardPage.layout = (page: ReactNode) =>
+  <YouthAuthLayout
     user={(page as ReactElement<SharedData>).props.auth.user}
   >
     {page}
-  </StudentAuthLayout>
+  </YouthAuthLayout>
 
-export default StudentDashboardIndex
+export default YouthDashboardPage

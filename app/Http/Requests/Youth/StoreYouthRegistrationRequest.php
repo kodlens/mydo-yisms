@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Student;
+namespace App\Http\Requests\Youth;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
-class StoreStudentRegistrationRequest extends FormRequest
+class StoreYouthRegistrationRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -40,7 +40,7 @@ class StoreStudentRegistrationRequest extends FormRequest
         $oldestAllowedBirthDate = now()->subYears(31)->addDay()->toDateString();
 
         return [
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:students,email'],
+            'email' => ['required', 'string', 'email', 'max:100', 'unique:youth_profiles,email'],
             //'password' => ['required', 'confirmed', Password::defaults()],
             'password' => ['required', 'confirmed'],
 

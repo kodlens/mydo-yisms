@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Student;
+namespace App\Http\Controllers\Youth;
 
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
@@ -9,15 +9,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 
-class AuthController extends Controller
+class YouthAuthController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('auth/youth/youth-login');
+        return Inertia::render('auth/youth/youth-login-page');
     }
 
     public function login(Request $req){
-         $credentials = $req->validate([
+        $credentials = $req->validate([
             'email' => ['required', 'email', 'string', 'max:100'],
             'password' => ['required'],
         ]);
@@ -34,7 +34,6 @@ class AuthController extends Controller
             // }
             return response()->json([
                 'success' => true,
-                'status' => $youth->registration_status,
                 'redirect' => route('youth.youth-dashboard.index'),
             ]);
         }

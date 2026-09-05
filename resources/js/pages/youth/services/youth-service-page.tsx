@@ -1,6 +1,6 @@
-import StudentAuthLayout from '@/layouts/student-auth-layout';
+import YouthAuthLayout from '@/layouts/youth-auth-layout';
 import { SharedData } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { Button, Tag } from 'antd';
 import { Award, Banknote, CalendarCheck, FileText, type LucideIcon } from 'lucide-react';
 import { ReactElement, ReactNode } from 'react';
@@ -24,7 +24,7 @@ const serviceIcons: Record<string, LucideIcon> = {
   documents: FileText,
 };
 
-const ServiceIndex = ({ services }: Props) => {
+const YouthServicePage = ({ services }: Props) => {
   const serviceList = Object.values(services);
 
   return (
@@ -60,7 +60,7 @@ const ServiceIndex = ({ services }: Props) => {
                 <Button
                   type={isOpen ? 'primary' : 'default'}
                   disabled={!isOpen}
-                  href={isOpen ? route('youth.services.show', service.key) : undefined}
+                  href={isOpen ? route('youth.youth-services.show', service.key) : undefined}
                   className="mt-5 w-full"
                 >
                   Apply
@@ -74,8 +74,8 @@ const ServiceIndex = ({ services }: Props) => {
   );
 };
 
-ServiceIndex.layout = (page: ReactNode) => (
-  <StudentAuthLayout user={(page as ReactElement<SharedData>).props.auth.user}>{page}</StudentAuthLayout>
+YouthServicePage.layout = (page: ReactNode) => (
+  <YouthAuthLayout user={(page as ReactElement<SharedData>).props.auth.user}>{page}</YouthAuthLayout>
 );
 
-export default ServiceIndex;
+export default YouthServicePage;

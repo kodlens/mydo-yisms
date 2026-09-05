@@ -11,8 +11,14 @@ use Illuminate\Notifications\Notifiable;
 
 class YouthProfile extends Authenticatable
 {
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected $fillable = [
         'student_id',
+        'email',
         'lname',
         'fname',
         'mname',
@@ -33,6 +39,8 @@ class YouthProfile extends Authenticatable
         'guardian_name',
         'guardian_contact_number',
         'monthly_family_income',
+        'password',
+        'email_verified_at',
         'is_active',
     ];
 

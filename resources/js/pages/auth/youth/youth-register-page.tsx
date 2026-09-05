@@ -50,7 +50,7 @@ const civilStatusOptions = [
   { value: 'Separated', label: 'Separated' },
 ];
 
-export default function StudentRegister() {
+export default function YouthRegisterPage() {
   const { modal } = App.useApp();
   const [form] = Form.useForm<YouthRegistrationForm>();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -115,10 +115,6 @@ export default function StudentRegister() {
 
 
     const allValues = form.getFieldsValue(true);
-    // console.log('onFinish values:', values);
-    // console.log('all form values:', allValues);
-
-    // return
 
     axios
       .post(route('youth-register.store'), {

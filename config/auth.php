@@ -40,13 +40,9 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-        'student' => [
-            'driver' => 'session',
-            'provider' => 'students',
-        ],
         'youth' => [
             'driver' => 'session',
-            'provider' => 'youth',
+            'provider' => 'youths',
         ],
     ],
 
@@ -74,7 +70,7 @@ return [
         ],
         'youths' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Youth::class,
+            'model' => App\Models\YouthProfile::class,
         ],
 
         // 'users' => [

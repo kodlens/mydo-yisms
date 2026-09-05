@@ -9,7 +9,7 @@ type LoginProps = {
   email: string
   password: string
 }
-export default function StudentLogin() {
+export default function YouthLoginPage() {
   const [errors, setErrors] = useState<Record<string, unknown[]>>({})
   const { notification } = App.useApp()
   const [loading, setLoading] = useState<boolean>(false)

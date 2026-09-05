@@ -1,4 +1,4 @@
-import StudentAuthLayout from '@/layouts/student-auth-layout'
+import StudentAuthLayout from '@/layouts/youth-auth-layout'
 import { SharedData } from '@/types'
 import React, { ReactElement, ReactNode } from 'react'
 

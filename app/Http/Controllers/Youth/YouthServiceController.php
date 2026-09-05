@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Student;
+namespace App\Http\Controllers\Youth;
 
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
@@ -10,7 +10,7 @@ class YouthServiceController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('student/services/index', [
+        return Inertia::render('youth/services/youth-service-page', [
             'services' => $this->services(),
         ]);
     }
@@ -19,7 +19,7 @@ class YouthServiceController extends Controller
     {
         abort_unless(array_key_exists($service, $this->services()), 404);
 
-        return Inertia::render('student/services/show', [
+        return Inertia::render('youth/services/youth-show-page', [
             'service' => $this->services()[$service],
         ]);
     }
