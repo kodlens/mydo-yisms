@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('scholarship_applications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('youth_profile_id')->constrained('youth_profiles')->cascadeOnDelete();
+            $table->foreignId('scholarship_type_id')->constrained('scholarship_types')->cascadeOnDelete();
 
             $table->string('coe_path')->nullable();
             $table->string('cog_path')->nullable();

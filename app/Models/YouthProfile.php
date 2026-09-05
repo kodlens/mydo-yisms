@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
 
 class YouthProfile extends Authenticatable
 {
@@ -44,15 +47,6 @@ class YouthProfile extends Authenticatable
         ];
     }
 
-    public function youth(): BelongsTo
-    {
-        return $this->belongsTo(Youth::class, 'student_id');
-    }
-
-    public function student(): BelongsTo
-    {
-        return $this->belongsTo(Student::class);
-    }
 
     public function province(): BelongsTo
     {
@@ -73,4 +67,5 @@ class YouthProfile extends Authenticatable
     {
         return $this->hasMany(ScholarshipApplication::class);
     }
+
 }

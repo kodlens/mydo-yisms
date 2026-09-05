@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Student;
+use App\Models\YouthProfile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,6 +15,7 @@ class YouthProfileSeeder extends Seeder
     {
         $data = [
             [
+                'student_id' => '2026-112233',
                 'lname' => 'Santos',
                 'fname' => 'Maria Angela',
                 'mname' => 'Reyes',
@@ -33,10 +34,10 @@ class YouthProfileSeeder extends Seeder
                 'guardian_contact_number' => '09181234567',
                 'monthly_family_income' => 15000,
                 'role' => 'youth',
-                'registration_status' => 'pending',
                 'is_active' => true,
             ],
             [
+                'student_id' => '2026-2235',
                 'lname' => 'Garcia',
                 'fname' => 'John Michael',
                 'mname' => 'Lopez',
@@ -47,7 +48,7 @@ class YouthProfileSeeder extends Seeder
                 'civil_status' => 'Single',
                 'mobile_number' => '09201234567',
                 'street_address' => 'Purok 2',
-                'school_name' => 'MYDO State College',
+                'school_name' => 'Dumingag National High School',
                 'program' => 'BS Criminology',
                 'year' => 3,
                 'previous_semester_gwa' => 2.00,
@@ -55,10 +56,10 @@ class YouthProfileSeeder extends Seeder
                 'guardian_contact_number' => '09211234567',
                 'monthly_family_income' => 18000,
                 'role' => 'youth',
-                'registration_status' => 'pending',
                 'is_active' => true,
             ],
             [
+                'student_id' => '2026-1164',
                 'lname' => 'Mendoza',
                 'fname' => 'Christine Joy',
                 'mname' => 'Villanueva',
@@ -69,7 +70,7 @@ class YouthProfileSeeder extends Seeder
                 'civil_status' => 'Single',
                 'mobile_number' => '09301234567',
                 'street_address' => 'Purok 3',
-                'school_name' => 'MYDO Community College',
+                'school_name' => 'Dumingag Technological Training School',
                 'program' => 'BS Education',
                 'year' => 1,
                 'previous_semester_gwa' => 1.50,
@@ -77,7 +78,6 @@ class YouthProfileSeeder extends Seeder
                 'guardian_contact_number' => '09311234567',
                 'monthly_family_income' => 12000,
                 'role' => 'youth',
-                'registration_status' => 'approved',
                 'is_active' => true,
             ],
         ];

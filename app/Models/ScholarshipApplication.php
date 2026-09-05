@@ -10,6 +10,12 @@ class ScholarshipApplication extends Model
 {
     protected $fillable = [
         'youth_profile_id',
+        'scholarship_type_id',
+        'coe_path',
+        'cog_path',
+        'cedula_path',
+        'school_id_path',
+        'psa_path',
         'status',
         'rejection_reason',
         'reviewed_by',
@@ -35,8 +41,5 @@ class ScholarshipApplication extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
-    public function documents(): HasMany
-    {
-        return $this->hasMany(ScholarshipDocument::class);
-    }
+
 }
