@@ -15,7 +15,6 @@ export default function YouthLoginPage() {
   const [loading, setLoading] = useState<boolean>(false)
 
   const submit = (values:LoginProps) => {
-    console.log(values);
     setLoading(true)
     axios.post('/youth-login', values).then(res=>{
       setLoading(false)

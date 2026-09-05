@@ -76,7 +76,7 @@ export default function YouthAuthLayout(
         key: 'youth.my-account.index',
         icon: <UserOutlined />,
         label: 'My Account',
-        onClick: () => router.visit('/youth/my-account')
+        onClick: () => router.visit('/youth/my-profile')
 
     },
     {

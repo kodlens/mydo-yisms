@@ -25,7 +25,7 @@ const YouthDashboardPage = () => {
                 Browse Services
               </Button>
             </Link>
-            <Link href={route('youth.my-account.index')}>
+            <Link href={route('youth.youth-my-profile.index')}>
               <Button icon={<UserRound className="h-4 w-4" />}>
                 View Profile
               </Button>
