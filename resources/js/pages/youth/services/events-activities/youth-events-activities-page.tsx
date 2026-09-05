@@ -4,22 +4,22 @@ import { ReactElement, ReactNode } from 'react';
 
 
 
-const YouthScholarshipsPage = () => {
+const YouthEventActivitiesPage = () => {
   return (
     <>
 
-      YouthScholarshipsPage Page Sample
+      YouthEventActivitiesPage Page Sample
 
     </>
   );
 };
 
 
-YouthScholarshipsPage.layout = (page: ReactNode) =>
+YouthEventActivitiesPage.layout = (page: ReactNode) =>
   <YouthAuthLayout
     user={(page as ReactElement<SharedData>).props.auth.user}
   >
     {page}
   </YouthAuthLayout>
 
-export default YouthScholarshipsPage
+export default YouthEventActivitiesPage
