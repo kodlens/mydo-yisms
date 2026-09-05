@@ -163,7 +163,6 @@ const UploadDocument = ( { errors, xToken } : Props  ) => {
                 </div>
               </Upload.Dragger>
           </Form.Item>
-
         </div>
 
 

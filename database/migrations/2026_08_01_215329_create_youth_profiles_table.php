@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('students', function (Blueprint $table) {
+        Schema::create('youth_profiles', function (Blueprint $table) {
             $table->id();
             $table->string('email')->unique();
             $table->string('lname');
@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('zip_code', 10)->nullable();
 
             $table->string('school_name')->nullable();
+            $table->string('school_address')->nullable();
             $table->string('program')->nullable();
             $table->unsignedTinyInteger('year')->nullable();
             $table->decimal('previous_semester_gwa', 5, 2)->nullable();
@@ -46,9 +47,13 @@ return new class extends Migration
 
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('role', 30)->default('student');
+            $table->string('role', 30)->default('youth');
+
             $table->string('registration_status', 30)->default('draft');
+            $table->text('rejection_reason')->nullable();
+
             $table->boolean('is_active')->default(true);
+
             $table->rememberToken();
             $table->timestamps();
         });
@@ -59,6 +64,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('students');
+        Schema::dropIfExists('youth_profiles');
     }
 };

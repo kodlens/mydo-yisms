@@ -25,26 +25,22 @@ Route::middleware('auth:youth')->group(function () {
     Route::post('youth-logout', [AuthController::class, 'destroy'])->name('youth-logout');
     Route::post('student-logout', [AuthController::class, 'destroy'])->name('student-logout');
 
-    Route::get('/youth/account-status', [PendingPageController::class, 'index'])->name('youth.pending-page.index');
-    Route::get('/student/account-pending', fn () => redirect()->route('youth.pending-page.index'))->name('student.pending-page.index');
+    // Route::get('/youth/account-status', [PendingPageController::class, 'index'])->name('youth.pending-page.index');
+    // Route::get('/student/account-pending', fn () => redirect()->route('youth.pending-page.index'))->name('student.pending-page.index');
 
     Route::get('/youth/dashboard', [StudentDashboardController::class, 'index'])
-        ->middleware('youth.approved')
         ->name('youth.dashboard.index');
 
     Route::get('/student/dashboard', fn () => redirect()->route('youth.dashboard.index'))->name('student.dashboard.index');
 
     Route::get('/youth/my-account', [StudentMyAccountController::class, 'index'])
-        ->middleware('youth.approved')
         ->name('youth.my-account.index');
 
     Route::get('/student/my-account', fn () => redirect()->route('youth.my-account.index'))->name('student.my-account.index');
 
     Route::get('/youth/services', [YouthServiceController::class, 'index'])
-        ->middleware('youth.approved')
         ->name('youth.services.index');
 
     Route::get('/youth/services/{service}', [YouthServiceController::class, 'show'])
-        ->middleware('youth.approved')
         ->name('youth.services.show');
 });

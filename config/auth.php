@@ -72,11 +72,7 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
-        'students' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\Youth::class,
-        ],
-        'youth' => [
+        'youths' => [
             'driver' => 'eloquent',
             'model' => App\Models\Youth::class,
         ],
