@@ -10,6 +10,7 @@ import { route as routeFn } from 'ziggy-js';
 
 import { App as AntApp, ConfigProvider } from 'antd';
 import { StyleProvider } from '@ant-design/cssinjs';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 declare global {
   const route: typeof routeFn;
@@ -32,6 +33,16 @@ const antdTheme = {
 };
 
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 30_000,
+    },
+  },
+});
+
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,
 
@@ -45,13 +56,15 @@ createInertiaApp({
     const root = createRoot(el);
 
     root.render(
-      <StyleProvider layer>
-        <ConfigProvider theme={antdTheme}>
-          <AntApp>
-            <App {...props} />
-          </AntApp>
-        </ConfigProvider>
-      </StyleProvider>,
+      <QueryClientProvider client={queryClient}>
+        <StyleProvider layer>
+          <ConfigProvider theme={antdTheme}>
+            <AntApp>
+              <App {...props} />
+            </AntApp>
+          </ConfigProvider>
+        </StyleProvider>,
+      </QueryClientProvider>
     );
   },
 
