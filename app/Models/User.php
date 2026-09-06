@@ -60,7 +60,7 @@ class User extends Authenticatable
     public function dashboardRoute(): string
     {
         return match ($this->role) {
-            'admin' => 'admin.dashboard',
+            'admin' => 'admin.dashboard.index',
             'staff' => 'staff.dashboard.index',
             default => 'staff.dashboard.index',
         };

@@ -19,7 +19,7 @@ class AdminScholarShipTypeController extends Controller
         $perPage = (int) $req->input('perpage', 10);
         $search = trim((string) $req->input('search', ''));
 
-        $data = ScholarshipType::when($search !== '', function($q){
+        $data = ScholarshipType::when($search !== '', function($q) use ($search){
             $q->where('scholarship', 'like', "%{$search}%");
         })
             ->orderBy('id', 'desc')

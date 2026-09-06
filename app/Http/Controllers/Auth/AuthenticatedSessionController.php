@@ -34,9 +34,9 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $dashboardRoute = match ($request->user()->role) {
-            'admin' => 'admin.dashboard',
+            'admin' => 'admin.dashboard.index',
             'staff' => 'staff.dashboard.index',
-            default => 'dashboard',
+            default => 'staff.dashboard.index',
         };
 
         return redirect()->route($dashboardRoute);
