@@ -1,5 +1,5 @@
 import AdminAuthLayout from '@/layouts/admin-auth-layout';
-import { SharedData, Youth } from '@/types';
+import { SharedData } from '@/types';
 import { ScholarshipType } from '@/types/scholarship';
 import { DeleteOutlined, EditOutlined, FileSearchOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { Head, router } from '@inertiajs/react';
@@ -151,9 +151,10 @@ const AdminScholarshipTypesPage = () => {
               scroll={{ x: 1080 }}
               className="[&_.ant-table-thead>tr>th]:bg-stone-50 [&_.ant-table-thead>tr>th]:text-stone-700"
             >
-              <Column<Youth> title="Id" dataIndex="id" width={90} />
-
-              <Column<Youth> title="Scholarship" dataIndex="scholarship" key="scholarship" />
+              <Column<ScholarshipType> title="Id" dataIndex="id" width={90} />
+              <Column<ScholarshipType> title="Scholarship" dataIndex="scholarship" key="scholarship" />
+              <Column<ScholarshipType> title="Target Beneficiary" dataIndex="target_beneficiary" key="target_beneficiary" />
+              <Column<ScholarshipType> title="Benefit" dataIndex="benefit" key="benefit" />
 
               <Column title="Active" dataIndex="active" key="active" render={(active) => (
                 active ? (
