@@ -72,6 +72,35 @@ const requirements = [
 
 export default function Welcome() {
   const { auth } = usePage<SharedData>().props;
+  const unAuthMenu = () => (
+    <>
+      <Link
+        href={route('youth-login.index')}
+        className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
+      >
+        <LockKeyhole className="h-4 w-4" />
+        Log in
+      </Link>
+      <Link
+        href={route('youth-register.index')}
+        className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 sm:inline-flex"
+      >
+        Register
+      </Link>
+    </>
+  )
+
+  const authMenu = () => (
+    <Link
+      href={route('youth.youth-dashboard.index')}
+      className="inline-flex items-center gap-2 rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
+    >
+      <BarChart3 className="h-4 w-4" />
+      Dashboard
+    </Link>
+  )
+
+
 
   return (
     <>
@@ -92,30 +121,10 @@ export default function Welcome() {
 
           <nav className="flex items-center gap-2">
             {auth.user ? (
-              <Link
-                href={route('youth.youth-dashboard.index')}
-                className="inline-flex items-center gap-2 rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
-              >
-                <BarChart3 className="h-4 w-4" />
-                Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href={route('youth-login.index')}
-                  className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
-                >
-                  <LockKeyhole className="h-4 w-4" />
-                  Log in
-                </Link>
-                <Link
-                  href={route('youth-register.index')}
-                  className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 sm:inline-flex"
-                >
-                  Register
-                </Link>
-              </>
-            )}
+              auth.user.role === 'youth' ? (
+                authMenu()
+              ): unAuthMenu()
+            ) : unAuthMenu()}
           </nav>
         </header>
 
@@ -138,7 +147,7 @@ export default function Welcome() {
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
-                  href={auth.user ? route('dashboard') : route('youth-register.index')}
+                  href={auth.user ? route('youth.youth-dashboard.index') : route('youth-register.index')}
                   className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-6 py-3 text-sm font-bold text-emerald-900 shadow-sm transition hover:bg-emerald-50"
                 >
                   {auth.user ? 'Open Services' : 'Create Youth Profile'}
@@ -212,7 +221,7 @@ export default function Welcome() {
               <h2 className="mt-2 text-3xl font-bold text-slate-950">Prepare first, then submit once.</h2>
             </div>
             <Link
-              href={auth.user ? route('dashboard') : route('youth-register.index')}
+              href={auth.user ? route('youth.youth-dashboard.index') : route('youth-register.index')}
               className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
             >
               {auth.user ? 'Open Services' : 'Create Youth Profile'}

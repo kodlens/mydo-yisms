@@ -30,7 +30,7 @@ Route::middleware('auth:youth')->group(function () {
     // Route::get('/youth/account-status', [PendingPageController::class, 'index'])->name('youth.pending-page.index');
     // Route::get('/student/account-pending', fn () => redirect()->route('youth.pending-page.index'))->name('student.pending-page.index');
 
-    Route::get('/youth/dashboard', [YouthDashboardController::class, 'index'])->name('youth.youth-dashboard.index');
+    Route::get('/youth/youth-dashboard', [YouthDashboardController::class, 'index'])->name('youth.youth-dashboard.index');
 
     Route::get('/youth/my-profile', [YouthMyProfileController::class, 'index'])->name('youth.youth-my-profile.index');
 

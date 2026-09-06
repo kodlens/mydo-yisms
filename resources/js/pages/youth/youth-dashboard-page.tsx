@@ -7,7 +7,10 @@ import { ReactElement, ReactNode } from 'react';
 
 
 
-const YouthDashboardPage = () => {
+const YouthDashboardPage = ( ) => {
+
+
+
   return (
     <>
       <Head title="Youth Dashboard" />

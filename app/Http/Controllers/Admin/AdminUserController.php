@@ -46,29 +46,6 @@ class AdminUserController extends Controller
     }
 
 
-      // public function store(Request $req){
-
-    //     $validate = $req->validate([
-    //         'encoder_users' => ['required', 'array'],
-    //         'publisher_user_id' => ['required', 'integer'],
-    //     ]);
-
-    //     $encoderUserId = [];
-    //     foreach($req->encoder_users as $user){
-    //         $data[] = [
-    //             'encoder_user_id' => $user['encoder_user_id'],
-    //             'publisher_user_id' => $req->publisher_user_id,
-    //         ];
-    //     }
-
-    //     MaterialAssignment::insert($data);
-
-    //     return response()->json([
-    //         'status' => 'saved'
-    //     ], 200);
-    // }
-
-
     public function store(Request $req){
         $req->validate([
             'username' => ['required', 'string', 'unique:users'],
@@ -87,10 +64,7 @@ class AdminUserController extends Controller
             'fname' => $req->fname,
             'mname' => $req->mname,
             'email' => $req->email,
-            //'sex' => strtoupper($req->sex),
             'role' => $req->role,
-            'is_ojt' =>$req->is_ojt ? 1 : 0,
-            'active' => $req->active ? 1 : 0,
         ]);
 
         return response()->json([
@@ -115,9 +89,7 @@ class AdminUserController extends Controller
                 'fname' => $req->fname,
                 'mname' => $req->mname,
                 'email' => $req->email,
-               // 'sex' => strtoupper($req->sex),
                 'role' => $req->role,
-                'is_ojt' =>$req->is_ojt ? 1 : 0,
             ]);
 
         return response()->json([

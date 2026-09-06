@@ -73,7 +73,6 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
         onCancel={() => onClose()}
         okButtonProps={{ htmlType: 'submit', loading: loading }}
         destroyOnHidden
-
         modalRender={(dom) => (
           <Form
             form={form}
@@ -86,8 +85,7 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
               fname: null,
               mname: null,
               sex: 'MALE',
-              role: null,
-              is_ojt: false
+              role: null
             }}
           >
 
@@ -117,7 +115,7 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
                 validateStatus={errors.email ? 'error' : ''}
                 help={errors.email?.[0]}>
                 <Input
-                  tabIndex={1}
+                  tabIndex={2}
                   prefix={<Mail size={15}/>}
                   placeholder='e.g. juan@mail.com'/>
               </Form.Item>
@@ -129,6 +127,7 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
                   validateStatus={errors.password ? 'error' : ''}
                   help={errors.password?.[0]}>
                   <Input.Password
+                    tabIndex={3}
                     prefix={<KeyRound size={15}/>}
                     placeholder='Password'
                     iconRender={(v) => (v ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
@@ -142,6 +141,7 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
                   help={errors.password_confirmation?.[0]}
                 >
                   <Input.Password
+                    tabIndex={4}
                     prefix={<Keyboard size={15}/>}
                     placeholder='Confirm Password'
                     iconRender={(v) => (v ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
@@ -157,6 +157,7 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
                 validateStatus={errors.lname ? 'error' : ''}
                 help={errors.lname?.[0]}>
                 <Input
+                  tabIndex={5}
                   prefix={<UserIcon size={15}/>}
                   placeholder='e.g. Dela Cruz'/>
               </Form.Item>
@@ -166,6 +167,7 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
                 validateStatus={errors.fname ? 'error' : ''}
                 help={errors.fname?.[0]}>
                 <Input
+                  tabIndex={6}
                   prefix={<UserIcon size={15}/>}
                   placeholder='e.g. Juan'/>
               </Form.Item>
@@ -176,6 +178,7 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
               <Form.Item name="mname" label="Middle Name"
                 className='w-full'>
                 <Input
+                  tabIndex={7}
                   prefix={<UserIcon size={15}/>}
                   placeholder='Middlename'/>
               </Form.Item>
@@ -185,6 +188,7 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
                 validateStatus={errors.role ? 'error' : ''}
                 help={errors.role?.[0]}>
                 <Select
+                  tabIndex={8}
                   placeholder="e.g. STAFF, ADMIN"
                   prefix={<FileLock size={15}/>}
                   options={[
@@ -194,18 +198,6 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
                 />
               </Form.Item>
             </div>
-
-
-
-            <Form.Item
-              name="is_ojt"
-              valuePropName="checked"
-              className="w-full"
-              validateStatus={errors.is_ojt ? "error" : ""}
-              help={errors.is_ojt ? errors.is_ojt[0] : ""}
-            >
-              <Checkbox>Is OJT</Checkbox>
-            </Form.Item>
           </div>
 
         </div>

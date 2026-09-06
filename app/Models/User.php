@@ -23,15 +23,11 @@ class User extends Authenticatable
         'lname',
         'mname',
         'suffix',
-        'sex',
-        'contact_no',
-        'agency_code',
-        'region',
-        'designation',
-        'role',
+
         'email',
         'password',
-        'is_ojt'
+
+        'role'
     ];
 
     /**
