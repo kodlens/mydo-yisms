@@ -81,7 +81,11 @@ export default function YouthLoginPage() {
               </div>
               <div className="rounded-md bg-white/10 p-4">
                 <LockKeyhole className="h-5 w-5 text-emerald-100" />
-                <p className="mt-3 text-sm font-semibold">Private Account</p>
+                <p className="mt-3 text-sm font-semibold">
+                  <Link href={'/login'} className="font-semibold text-white hover:text-blue-300">
+                    System Management
+                  </Link>
+                </p>
               </div>
             </div>
           </section>

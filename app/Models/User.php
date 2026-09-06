@@ -62,7 +62,7 @@ class User extends Authenticatable
         return match ($this->role) {
             'admin' => 'admin.dashboard',
             'staff' => 'staff.dashboard.index',
-            default => 'dashboard',
+            default => 'staff.dashboard.index',
         };
     }
 }

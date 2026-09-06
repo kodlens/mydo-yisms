@@ -44,8 +44,7 @@ export interface User {
 }
 
 export interface Youth extends User {
-    youth_id?: number | null;
-    youth_profile_id?: number | null;
+    id: number;
     birth_date?: string | null;
     civil_status?: string | null;
     mobile_number?: string | null;
@@ -82,5 +81,3 @@ export interface Youth extends User {
         brgyDesc: string;
     } | null;
 }
-
-export type Student = Youth;

@@ -18,10 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
         //custom redirection
         $middleware->redirectGuestsTo('/');
 
-        // $middleware->redirectUsersTo(function ($request) {
-        //     $student = $request->user('youth') ?? $request->user('student');
-        //     return route('youth.youth-dashboard.index');
-        // });
+        $middleware->redirectUsersTo(function ($request) {
+            // $student = $request->user('youth') ?? $request->user('student');
+            // return route('youth.youth-dashboard.index');
+            return route($request->user()->dashboardRoute());
+        });
 
         $middleware->web(append: [
             HandleInertiaRequests::class,

@@ -1,8 +1,9 @@
 import StaffAuthLayout from '@/layouts/staff-auth-layout';
 import { SharedData, Youth } from '@/types';
-import { EyeOutlined, FileSearchOutlined, SearchOutlined } from '@ant-design/icons';
+import { ScholarshipType } from '@/types/scholarship';
+import { DeleteOutlined, EditOutlined, FileSearchOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { Head, router } from '@inertiajs/react';
-import { App, Button, Input, Pagination, Segmented, Space, Table } from 'antd';
+import { App, Button, Input, Pagination, Space, Table } from 'antd';
 import axios from 'axios';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
 
@@ -16,27 +17,18 @@ type PaginatedResponse<T> = {
 const { Column } = Table;
 const { Search } = Input;
 
-
-
-const statusOptions = [
-  { label: 'All', value: 'all' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Approved', value: 'approved' },
-  { label: 'Rejected', value: 'rejected' },
-  { label: 'Draft', value: 'draft' },
-];
-
-const StaffYouthProfilesPage = () => {
+const AdminScholarshipTypesPage = () => {
   const { notification } = App.useApp();
 
-  const [applicants, setApplicants] = useState<PaginatedResponse<Youth>>();
+  const [data, setData] = useState<PaginatedResponse<ScholarshipType>>();
   const [loading, setLoading] = useState(false);
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('all');
 
-  const loadApplicants = async (
+  const { modal } = App.useApp();
+
+  const loadData = async (
     overrides?: Partial<{
       search: string;
       page: number;
@@ -49,19 +41,17 @@ const StaffYouthProfilesPage = () => {
     const nextSearch = overrides?.search ?? search;
     const nextPage = overrides?.page ?? page;
     const nextPerPage = overrides?.perPage ?? perPage;
-    const nextStatus = overrides?.status ?? status;
 
     try {
-      const res = await axios.get<PaginatedResponse<Youth>>('/staff/get-youth-profiles', {
+      const res = await axios.get<PaginatedResponse<ScholarshipType>>('/admin/get-scholarship-types', {
         params: {
           search: nextSearch,
-          status: nextStatus === 'all' ? undefined : nextStatus,
           perpage: nextPerPage,
           page: nextPage,
         },
       });
 
-      setApplicants(res.data);
+      setData(res.data);
     } catch {
       notification.error({
         message: 'Unable to load applicants',
@@ -74,15 +64,15 @@ const StaffYouthProfilesPage = () => {
   };
 
   useEffect(() => {
-    loadApplicants();
-  }, [page, perPage, status]);
+    loadData();
+  }, [page, perPage]);
 
   const handleSearch = (value: string) => {
     const nextSearch = value.trim();
     setSearch(nextSearch);
 
     if (page === 1) {
-      loadApplicants({ search: nextSearch, page: 1 });
+      loadData({ search: nextSearch, page: 1 });
       return;
     }
 
@@ -94,17 +84,25 @@ const StaffYouthProfilesPage = () => {
     setPerPage(nextPerPage);
   };
 
-  const handleStatusChange = (nextStatus: string) => {
-    setStatus(nextStatus);
+  const handleEditClick = (rowId:number) => {
+    router.visit('/admin/scholarship-types/' + rowId + '/edit')
+  }
 
-    if (page !== 1) {
-      setPage(1);
+  const handleDeleteClick = async (rowId:number) => {
+    const res = await axios.delete('/admin/scholarship-types/' + rowId);
+    if (res.data.success) {
+      notification.success({
+        message: 'Deleted!',
+        description: 'Category successfully deleted.',
+        placement: 'topRight'
+      })
+      loadData()
     }
-  };
+  }
 
   return (
     <>
-      <Head title="Youth Profiles Management" />
+      <Head title="Scholarship Type Management" />
 
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
@@ -114,14 +112,14 @@ const StaffYouthProfilesPage = () => {
             </div>
 
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-green-700">Staff Workspace</p>
-              <h1 className="mt-1 text-2xl font-semibold text-stone-950">Youth Profiles Review</h1>
-              <p className="mt-1 text-sm text-stone-500">Review Youth Profiles.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-green-700">Admin Workspace</p>
+              <h1 className="mt-1 text-2xl font-semibold text-stone-950">Scholarship Type</h1>
+              <p className="mt-1 text-sm text-stone-500">Review Scholarship Type.</p>
             </div>
 
             <div className="ml-auto rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
               <p className="text-[11px] uppercase tracking-wide text-stone-500">Total Applicants</p>
-              <p className="text-2xl font-semibold leading-none text-stone-950">{applicants?.total ?? 0}</p>
+              <p className="text-2xl font-semibold leading-none text-stone-950">{data?.total ?? 0}</p>
             </div>
           </div>
 
@@ -142,45 +140,57 @@ const StaffYouthProfilesPage = () => {
                 onSearch={handleSearch}
                 className="w-full md:max-w-[460px]"
               />
-              <Segmented
-                options={statusOptions}
-                value={status}
-                onChange={(value) => handleStatusChange(String(value))}
-                className="md:ml-auto"
-              />
+
             </div>
 
-            <Table<Youth>
-              dataSource={applicants?.data ?? []}
+            <Table<ScholarshipType>
+              dataSource={data?.data ?? []}
               loading={loading}
-              rowKey={(youth) => youth.id}
+              rowKey={(s) => s.id}
               pagination={false}
               scroll={{ x: 1080 }}
               className="[&_.ant-table-thead>tr>th]:bg-stone-50 [&_.ant-table-thead>tr>th]:text-stone-700"
             >
-              <Column<Youth> title="App ID" dataIndex="id" width={90} />
-              <Column<Youth> title="Youth" key="applicant" render={(_, youth) => (
-                <div>
-                  {youth.lname}, {youth.fname} {youth.mname}
-                </div>
-              )} />
-              <Column<Youth> title="Email" dataIndex="email" key="email" />
-              <Column<Youth> title="Mobile" dataIndex="mobile_number" key="mobile_number" />
-              <Column<Youth> title="School" dataIndex="school_name" key="school_name" />
-              <Column<Youth> title="Program" dataIndex="program" key="program" />
+              <Column<Youth> title="Id" dataIndex="id" width={90} />
 
-              <Column<Youth>
+              <Column<Youth> title="Scholarship" dataIndex="scholarship" key="scholarship" />
+
+              <Column title="Active" dataIndex="active" key="active" render={(active) => (
+                active ? (
+                  <span className='rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700'>Active</span>
+                ) : (
+                  <span className='rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-semibold text-rose-700'>Inactive</span>
+                )
+              )} />
+
+
+              <Column<ScholarshipType>
                 title="Action"
                 key="action"
                 fixed="right"
                 width={100}
-                render={(_, youth) => (
+                render={(_, s) => (
                   <Space size="small">
+
                     <Button
-                      title="View applicant"
-                      icon={<EyeOutlined />}
-                      onClick={() => router.visit(`/staff/applicants/${youth.id}`)}
-                    />
+                      title='Edit subject'
+                      icon={<EditOutlined />} onClick={() => handleEditClick(s.id ? s.id : 0)} />
+
+                    <Button danger
+                      title='Delete subject'
+                      onClick={() => (
+                        modal.confirm({
+                          title: 'Delete?',
+                          icon: <QuestionCircleOutlined />,
+                          content: 'Are you sure you want to delete this data?',
+                          okText: 'Yes',
+                          cancelText: 'No',
+                          onOk() {
+                            handleDeleteClick(s.id ? s.id : 0)
+                          }
+                        })
+                      )}
+                      icon={<DeleteOutlined />} />
                   </Space>
                 )}
               />
@@ -189,10 +199,10 @@ const StaffYouthProfilesPage = () => {
             <div className="mt-5 flex justify-end">
               <Pagination
                 onChange={handlePageChange}
-                current={applicants?.current_page ?? page}
-                pageSize={applicants?.per_page ?? perPage}
+                current={data?.current_page ?? page}
+                pageSize={data?.per_page ?? perPage}
                 showSizeChanger
-                total={applicants?.total ?? 0}
+                total={data?.total ?? 0}
                 showTotal={(value, range) => `${range[0]}-${range[1]} of ${value} applicants`}
               />
             </div>
@@ -203,8 +213,8 @@ const StaffYouthProfilesPage = () => {
   );
 };
 
-StaffYouthProfilesPage.layout = (page: ReactNode) => (
+AdminScholarshipTypesPage.layout = (page: ReactNode) => (
   <StaffAuthLayout user={(page as ReactElement<SharedData>).props.auth.user}>{page}</StaffAuthLayout>
 );
 
-export default StaffYouthProfilesPage;
+export default AdminScholarshipTypesPage;

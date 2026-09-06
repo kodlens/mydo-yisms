@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 
 import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, MenuProps } from 'antd';
-import { CalendarCheck, LogOut, WalletCards } from 'lucide-react';
+import { CalendarCheck, LogOut } from 'lucide-react';
 import PanelSidebarLogo from '@/components/mydo-components/panel-sidebar-logo';
 
 
@@ -55,12 +55,12 @@ export default function YouthAuthLayout(
             label: 'Scholarship',
             onClick: () => router.visit('/youth/services/scholarship')
           },
-          {
-            key: 'youth.youth-services.cash-incentives.index',
-            icon: <WalletCards size={15} />,
-            label: 'Cash Incentives',
-            onClick: () => router.visit('/youth/services/cash-incentives')
-          },
+          // {
+          //   key: 'youth.youth-services.cash-incentives.index',
+          //   icon: <WalletCards size={15} />,
+          //   label: 'Cash Incentives',
+          //   onClick: () => router.visit('/youth/services/cash-incentives')
+          // },
           {
             key: 'youth.youth-services.events-activities.index',
             icon: <CalendarCheck size={15} />,

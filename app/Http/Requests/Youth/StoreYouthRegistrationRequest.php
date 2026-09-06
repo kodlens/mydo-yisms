@@ -53,9 +53,9 @@ class StoreYouthRegistrationRequest extends FormRequest
             'civil_status' => ['required', 'string', 'in:Single,Married,Widowed,Separated'],
             'mobile_number' => ['required', 'string', 'max:30', 'regex:/^09[0-9]{9}$/'],
 
-            'provCode' => ['required', 'string', 'exists:provinces,provCode'],
-            'citymunCode' => ['required', 'string', 'exists:cities,citymunCode'],
-            'brgyCode' => ['required', 'string', 'exists:barangays,brgyCode'],
+            'provCode' => ['required', 'exists:provinces,provCode'],
+            'citymunCode' => ['required', 'exists:cities,citymunCode'],
+            'brgyCode' => ['required', 'exists:barangays,brgyCode'],
             'street_address' => ['required', 'string', 'max:255'],
             'zip_code' => ['nullable', 'string', 'max:10'],
 
