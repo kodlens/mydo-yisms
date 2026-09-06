@@ -45,7 +45,7 @@ export default function AdminAuthLayout({
         onClick: () => router.visit('/admin/dashboard'),
       },
       {
-        key: 'admin.scholarships.index',
+        key: 'admin.scholarship-types.index',
         icon: <NotebookPen size={15}/>,
         label: 'Scholarship Types',
         onClick: () => router.visit('/admin/scholarship-types'),

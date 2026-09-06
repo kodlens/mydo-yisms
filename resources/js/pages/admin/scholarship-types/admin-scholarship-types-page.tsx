@@ -1,4 +1,4 @@
-import StaffAuthLayout from '@/layouts/staff-auth-layout';
+import AdminAuthLayout from '@/layouts/admin-auth-layout';
 import { SharedData, Youth } from '@/types';
 import { ScholarshipType } from '@/types/scholarship';
 import { DeleteOutlined, EditOutlined, FileSearchOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
@@ -214,7 +214,7 @@ const AdminScholarshipTypesPage = () => {
 };
 
 AdminScholarshipTypesPage.layout = (page: ReactNode) => (
-  <StaffAuthLayout user={(page as ReactElement<SharedData>).props.auth.user}>{page}</StaffAuthLayout>
+  <AdminAuthLayout user={(page as ReactElement<SharedData>).props.auth.user}>{page}</AdminAuthLayout>
 );
 
 export default AdminScholarshipTypesPage;
