@@ -66,6 +66,12 @@ export default function AdminAuthLayout({
         onClick: () => router.visit('/admin/youth-profiles'),
       },
       {
+        key: 'admin.users.index',
+        icon: <UserRound size={15} />,
+        label: 'Users',
+        onClick: () => router.visit('/admin/users'),
+      },
+      {
         key: 'logout',
         danger: true,
         icon: <LogOut size={15} />,
