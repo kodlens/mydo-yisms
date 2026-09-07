@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\ScholarshipType;
+use Illuminate\Support\Facades\Validator;
+
 
 class AdminScholarShipTypeController extends Controller
 {
@@ -68,6 +70,25 @@ class AdminScholarShipTypeController extends Controller
          return response()->json([
             'message' => 'Scholarship type updated successfully.',
             'success' => true
+        ], 200);
+    }
+
+
+    public function setActive($id){
+        Validator::make(
+            ['id' => $id],
+            [
+                'id' => ['required', 'integer', 'exists:scholarship_types,id']
+            ]
+        )->validate();
+
+        $data = ScholarshipType::findOrFail($id);
+        $data->is_active = 1;
+        $data->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Scholarship type set to active."
         ], 200);
     }
 

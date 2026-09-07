@@ -1,11 +1,12 @@
 import AdminAuthLayout from '@/layouts/admin-auth-layout';
 import { SharedData } from '@/types';
 import { ScholarshipType } from '@/types/scholarship';
-import { DeleteOutlined, EditOutlined, FileSearchOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseCircleOutlined,
+  FileSearchOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { Head } from '@inertiajs/react';
-import { App, Button, Empty, Input, Pagination, Space, Table } from 'antd';
+import { App, Button, Dropdown, Empty, Input, MenuProps, Pagination, Space, Table, Tooltip } from 'antd';
 import axios from 'axios';
-import { Plus } from 'lucide-react';
+import { GitCompareArrows, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
 import ModalCreateEditScholarshipType from './partials/modal-create-edit-scholarship-types';
 
@@ -106,6 +107,37 @@ const AdminScholarshipTypesPage = () => {
       loadData();
     }
   };
+
+  const handleSetActiveClick = async (rowId:number) => {
+
+    try {
+      const res = await axios.post(`/admin/scholarship-types/${rowId}/active`)
+      if (res.data.success) {
+      notification.success({
+        message: 'Deleted!',
+        description: 'Scholarship type successfully deleted.',
+        placement: 'topRight',
+      });
+    }
+    }catch(err:unknown) {
+      let description = 'Something went wrong. Please try again.';
+
+      if (axios.isAxiosError(err)) {
+        description =
+          err.response?.data?.message ??
+          err.message ??
+          description;
+      }
+
+      notification.error({
+        message: 'Error!',
+        description,
+        placement: 'topRight',
+      });
+    }finally{
+      loadData()
+    }
+  }
 
   return (
     <>
@@ -263,34 +295,61 @@ const AdminScholarshipTypesPage = () => {
                 key="action"
                 fixed="right"
                 width={110}
-                render={(_, s) => (
+                render={(_, row) => (
                   <Space size="small">
-                    <Button
-                      title="Edit scholarship type"
-                      aria-label={`Edit ${s.scholarship}`}
-                      icon={<EditOutlined />}
-                      onClick={() => handleEditClick(s)}
-                    />
-
-                    <Button
-                      danger
-                      title="Delete scholarship type"
-                      aria-label={`Delete ${s.scholarship}`}
-                      onClick={() =>
-                        modal.confirm({
-                          title: 'Delete scholarship type?',
-                          icon: <QuestionCircleOutlined />,
-                          content: `Delete “${s.scholarship}”? This action cannot be undone.`,
-                          okText: 'Delete scholarship',
-                          okButtonProps: { danger: true },
-                          cancelText: 'Cancel',
-                          onOk() {
-                            handleDeleteClick(s.id ? s.id : 0);
+                    <Dropdown
+                      trigger={['click']}
+                      placement="bottomRight"
+                      menu={{
+                        items: [
+                          {
+                            label: 'Edit',
+                            key: `admin.scholarship-types.edit`,
+                            icon: <Pencil size={15} />,
+                            onClick: () => handleEditClick(row)
                           },
-                        })
-                      }
-                      icon={<DeleteOutlined />}
-                    />
+                          {
+                            label: 'Set Active',
+                            key: `admin.materials.update-classification`,
+                            icon: <GitCompareArrows size={15} />,
+                            onClick: () => handleSetActiveClick(row.id)
+                          },
+                          {
+                            type: 'divider'
+                          },
+                          {
+                            label: 'Delete',
+                            key: `admin.scholarship-types.delete`,
+                            danger: true,
+                            icon: <Trash2 size={15} />,
+                            onClick: () => (
+                              modal.confirm({
+                                title: 'Delete scholarship type?',
+                                icon: <QuestionCircleOutlined />,
+                                content: 'Are you sure you want to delete this scholarship type?',
+                                okText: 'Yes',
+                                okButtonProps: {
+                                  danger: true,
+                                  icon: <CheckOutlined />,
+                                },
+                                cancelText: 'No',
+                                cancelButtonProps: {
+                                  icon: <CloseCircleOutlined />,
+                                },
+                                onOk: () => handleDeleteClick(row.id as number)
+                              })
+                            )
+                          }
+                        ] as MenuProps['items']
+                      }}>
+                        <Tooltip title="Actions">
+                          <Button
+                            size="small"
+                            type="text"
+                            icon={<MoreHorizontal size={18} />}
+                          />
+                        </Tooltip>
+                    </Dropdown>
                   </Space>
                 )}
               />

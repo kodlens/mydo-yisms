@@ -8,6 +8,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('/scholarship-types', App\Http\Controllers\Admin\AdminScholarshipTypeController::class)->names('scholarship-types');
     Route::get('/get-scholarship-types', [App\Http\Controllers\Admin\AdminScholarshipTypeController::class, 'getData'])->name('scholarship-types.get-data');
+    Route::post('/scholarship-types/{id}/active', [App\Http\Controllers\Admin\AdminScholarshipTypeController::class, 'setActive'])->name('scholarship-types.set-active');
 
 
 
