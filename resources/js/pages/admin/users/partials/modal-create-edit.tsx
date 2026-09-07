@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Select, App, Checkbox, FormInstance } from 'antd'
+import { Modal, Form, Input, Select, App, FormInstance } from 'antd'
 import { useEffect, useState } from 'react'
 import { EyeInvisibleOutlined, EyeTwoTone, UserOutlined } from '@ant-design/icons'
 import { User } from '@/types'

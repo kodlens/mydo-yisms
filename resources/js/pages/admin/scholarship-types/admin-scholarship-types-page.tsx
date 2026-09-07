@@ -5,7 +5,9 @@ import { DeleteOutlined, EditOutlined, FileSearchOutlined, QuestionCircleOutline
 import { Head, router } from '@inertiajs/react';
 import { App, Button, Empty, Input, Pagination, Space, Table } from 'antd';
 import axios from 'axios';
+import { Plus } from 'lucide-react';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
+import ModalCreateEditScholarshipType from './partials/modal-create-edit-scholarship-types';
 
 type PaginatedResponse<T> = {
   data: T[];
@@ -25,6 +27,7 @@ const AdminScholarshipTypesPage = () => {
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [open, setOpen] = useState<boolean>(false)
 
   const { modal } = App.useApp();
 
@@ -129,6 +132,19 @@ const AdminScholarshipTypesPage = () => {
           </div>
 
           <div className="p-4 sm:p-6">
+
+            <div className='my-2'>
+              <Button
+                onClick={()=> {
+                  setOpen(true)
+                }}
+                type='primary'
+                icon={<Plus size={15} />}
+              >
+                  New Scholarship/Program
+              </Button>
+            </div>
+
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h2 className="text-base font-semibold text-stone-900">Scholarship directory</h2>
@@ -290,6 +306,16 @@ const AdminScholarshipTypesPage = () => {
           </div>
         </section>
       </div>
+
+      <ModalCreateEditScholarshipType
+        modalOpen={open}
+        onClose={()=>{
+          setOpen(false)
+        }} refetch={()=>{
+          loadData()
+        }}
+      />
+
     </>
   );
 };
