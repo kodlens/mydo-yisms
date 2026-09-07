@@ -29,6 +29,58 @@ class AdminScholarShipTypeController extends Controller
     }
 
 
+    public function store(Request $req){
+        $validated = $req->validate([
+            'scholarship' => ['required', 'string', 'max:255', 'unique:scholarship_types,scholarship'],
+            'target_beneficiary' => ['nullable', 'string', 'max:255'],
+            'benefit' => ['nullable', 'string', 'max:255'],
+            'amount' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
+            'is_active' => ['required', 'boolean']
+        ]);
+
+        ScholarshipType::create($validated);
+
+        return response()->json([
+            'message' => 'Scholarship type created successfully.',
+            'success' => true
+        ], 201);
+    }
+
+
+    public function update(Request $req, $id){
+        $validated = $req->validate([
+            'scholarship' => ['required', 'string', 'max:255', 'unique:scholarship_types,scholarship,'.$id.',id'],
+            'target_beneficiary' => ['nullable', 'string', 'max:255'],
+            'benefit' => ['nullable', 'string', 'max:255'],
+            'amount' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
+            'is_active' => ['required', 'boolean']
+        ]);
+
+
+        $data = ScholarshipType::findOrFail($id);
+        $data->scholarship = $validated['scholarship'];
+        $data->target_beneficiary = $validated['target_beneficiary'];
+        $data->benefit = $validated['benefit'];
+        $data->amount = $validated['amount'];
+        $data->is_active = $validated['is_active'] ? 1 : 0;
+        $data->save();
+
+         return response()->json([
+            'message' => 'Scholarship type updated successfully.',
+            'success' => true
+        ], 200);
+    }
+
+    public function destroy($id){
+        ScholarshipType::destroy($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Scholarship type successfully deleted.'
+        ], 200);
+    }
+
+
 
 
 }

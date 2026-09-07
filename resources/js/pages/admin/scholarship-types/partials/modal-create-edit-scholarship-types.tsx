@@ -1,4 +1,4 @@
-import { Modal, Form, Input, App, InputNumber } from 'antd'
+import { Modal, Form, Input, App, InputNumber, Checkbox } from 'antd'
 import { useEffect, useState } from 'react'
 import { User } from '@/types'
 import axios from 'axios'
@@ -83,7 +83,7 @@ const ModalCreateEditScholarshipType = ({ data, modalOpen, onClose, refetch }: P
               scholarship: null,
               target_beneficiary: null,
               benefit: null,
-              is_active: null
+              is_active: false
             }}
           >
             {dom}
@@ -139,6 +139,16 @@ const ModalCreateEditScholarshipType = ({ data, modalOpen, onClose, refetch }: P
                 prefix={<PhilippinePeso size={15} />}
                 tabIndex={5}
                 placeholder='10000'/>
+            </Form.Item>
+
+            <Form.Item
+              name="is_active"
+              valuePropName="checked"
+              className="w-full"
+              validateStatus={errors.is_active ? "error" : ""}
+              help={errors.is_active ? errors.is_active[0] as string : ""}
+            >
+              <Checkbox>Active</Checkbox>
             </Form.Item>
 
           </div>

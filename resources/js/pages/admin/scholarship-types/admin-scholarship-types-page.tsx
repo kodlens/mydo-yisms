@@ -2,7 +2,7 @@ import AdminAuthLayout from '@/layouts/admin-auth-layout';
 import { SharedData } from '@/types';
 import { ScholarshipType } from '@/types/scholarship';
 import { DeleteOutlined, EditOutlined, FileSearchOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { App, Button, Empty, Input, Pagination, Space, Table } from 'antd';
 import axios from 'axios';
 import { Plus } from 'lucide-react';
@@ -23,11 +23,13 @@ const AdminScholarshipTypesPage = () => {
   const { notification } = App.useApp();
 
   const [data, setData] = useState<PaginatedResponse<ScholarshipType>>();
+  const [scholarshipType, setScholarshipType] = useState<ScholarshipType>();
   const [loading, setLoading] = useState(false);
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState<boolean>(false)
+
 
   const { modal } = App.useApp();
 
@@ -87,8 +89,10 @@ const AdminScholarshipTypesPage = () => {
     setPerPage(nextPerPage);
   };
 
-  const handleEditClick = (rowId: number) => {
-    router.visit('/admin/scholarship-types/' + rowId + '/edit');
+  const handleEditClick = (row: ScholarshipType) => {
+    // router.visit('/admin/scholarship-types/' + rowId + '/edit');
+    setScholarshipType(row)
+    setOpen(true)
   };
 
   const handleDeleteClick = async (rowId: number) => {
@@ -265,7 +269,7 @@ const AdminScholarshipTypesPage = () => {
                       title="Edit scholarship type"
                       aria-label={`Edit ${s.scholarship}`}
                       icon={<EditOutlined />}
-                      onClick={() => handleEditClick(s.id ? s.id : 0)}
+                      onClick={() => handleEditClick(s)}
                     />
 
                     <Button
@@ -309,6 +313,7 @@ const AdminScholarshipTypesPage = () => {
 
       <ModalCreateEditScholarshipType
         modalOpen={open}
+        data={scholarshipType}
         onClose={()=>{
           setOpen(false)
         }} refetch={()=>{
