@@ -108,10 +108,12 @@ const AdminScholarshipTypesPage = () => {
     }
   };
 
-  const handleSetActiveClick = async (rowId:number) => {
+  const handleSetActiveClick = async (row:ScholarshipType) => {
 
     try {
-      const res = await axios.post(`/admin/scholarship-types/${rowId}/active`)
+      const res = await axios.post(`/admin/scholarship-types/${row.id}/active`, {
+        is_active: row.is_active
+      })
       if (res.data.success) {
       notification.success({
         message: 'Deleted!',
@@ -309,10 +311,10 @@ const AdminScholarshipTypesPage = () => {
                             onClick: () => handleEditClick(row)
                           },
                           {
-                            label: 'Set Active',
-                            key: `admin.materials.update-classification`,
+                            label: `${row.is_active ? 'Deactivate' : 'Set Active'}`,
+                            key: `admin.scholarship-types.active`,
                             icon: <GitCompareArrows size={15} />,
-                            onClick: () => handleSetActiveClick(row.id)
+                            onClick: () => handleSetActiveClick(row)
                           },
                           {
                             type: 'divider'

@@ -74,7 +74,9 @@ class AdminScholarShipTypeController extends Controller
     }
 
 
-    public function setActive($id){
+    public function setActive(Request $req, $id){
+
+        //return $req;
         Validator::make(
             ['id' => $id],
             [
@@ -83,7 +85,7 @@ class AdminScholarShipTypeController extends Controller
         )->validate();
 
         $data = ScholarshipType::findOrFail($id);
-        $data->is_active = 1;
+        $data->is_active = $req->is_active ? 0 : 1;
         $data->save();
 
         return response()->json([
