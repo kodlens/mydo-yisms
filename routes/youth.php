@@ -4,6 +4,7 @@ use App\Http\Controllers\Youth\YouthAuthController;
 use App\Http\Controllers\Youth\PendingPageController;
 use App\Http\Controllers\Youth\YouthDashboardController;
 use App\Http\Controllers\Youth\YouthMyAccountController;
+use App\Http\Controllers\Youth\YouthScholarshipController;
 use App\Http\Controllers\Youth\YouthRegistrationController;
 use App\Http\Controllers\Youth\YouthServiceController;
 use App\Http\Controllers\Youth\YouthMyProfileController;
@@ -31,6 +32,10 @@ Route::middleware('auth:youth')->group(function () {
     // Route::get('/student/account-pending', fn () => redirect()->route('youth.pending-page.index'))->name('student.pending-page.index');
 
     Route::get('/youth/youth-dashboard', [YouthDashboardController::class, 'index'])->name('youth.youth-dashboard.index');
+
+
+    Route::get('/youth/services/youth-scholarships', [YouthScholarshipController::class, 'index'])->name('youth.services.youth-scholarships.index');
+    Route::get('/youth/services/get-youth-scholarships', [YouthScholarshipController::class, 'getData'])->name('youth.services.youth-scholarships.get-data');
 
     Route::get('/youth/my-profile', [YouthMyProfileController::class, 'index'])->name('youth.youth-my-profile.index');
 
