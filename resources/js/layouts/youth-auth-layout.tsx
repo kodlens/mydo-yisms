@@ -53,7 +53,7 @@ export default function YouthAuthLayout(
             key: 'youth.youth-services.scholar.index',
             icon: <UserOutlined />,
             label: 'Scholarship',
-            onClick: () => router.visit('/youth/services/scholarship')
+            onClick: () => router.visit('/youth/services/youth-scholarships')
           },
           // {
           //   key: 'youth.youth-services.cash-incentives.index',
