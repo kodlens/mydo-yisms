@@ -39,7 +39,9 @@ Route::middleware('auth:youth')->group(function () {
     Route::get('/youth/services/get-youth-scholarships', [YouthScholarshipController::class, 'getData'])->name('youth.services.youth-scholarships.get-data');
 
     //apply scholapship
-    Route::get('/youth/services/apply-scholarship', [YouthApplyScholarshipController::class, 'index'])->name('youth.services.apply-scholarship.index');
+    Route::get('/youth/services/apply-scholarship/{id}', [YouthApplyScholarshipController::class, 'index'])->name('youth.services.apply-scholarship.index');
+    Route::post('/youth/services/apply-scholarship/{id}', [YouthApplyScholarshipController::class, 'store'])->name('youth.services.apply-scholarship.store');
+
 
     Route::get('/youth/my-profile', [YouthMyProfileController::class, 'index'])->name('youth.youth-my-profile.index');
 

@@ -1,0 +1,213 @@
+import { App, Form, Upload, UploadProps } from 'antd'
+import axios from 'axios';
+import { UploadCloud } from 'lucide-react'
+
+type Props = {
+  errors: Record<string, unknown[]>;
+  xToken: string
+}
+
+
+
+const DocumentUploads = ({ errors, xToken }: Props) => {
+
+  const { notification } = App.useApp();
+
+  const uploadProps: UploadProps = {
+    name: "upload",
+    action: "/temp-upload",
+    headers: {
+      "X-CSRF-TOKEN": xToken,
+    },
+    beforeUpload: (file) => {
+      const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg'];
+      const isAllowedType = allowedTypes.includes(file.type);
+      const isUnder5MB = file.size / 1024 / 1024 <= 5;
+
+      if (!isAllowedType) {
+        notification.error({
+          title: `${file.name} is not a valid file type`,
+          placement: "topRight",
+          description: `Please upload a PDF, JPG, JPEG, or PNG file.`,
+        });
+      }
+
+      if (!isUnder5MB) {
+        notification.error({
+          title: `${file.name} is too large`,
+          placement: "topRight",
+          description: `Please upload a file not greater than 5MB.`,
+        });
+      }
+
+      return (isAllowedType && isUnder5MB) || Upload.LIST_IGNORE;
+    },
+
+    onChange(info) {
+
+      if (info.file.status === "done") {
+        notification.success(
+          {
+            title: 'File uploaded successfully',
+            description: `${info.file.name} uploaded successfully`,
+            placement: "topRight",
+          }
+        );
+        //console.log(info.file.response.path);
+        //form.setFieldValue("thumbnail", info.file.response);
+      } else if (info.file.status === "error") {
+        if (info.file.error.status === 422) {
+          notification.error({
+            title: `${info.file.name} file upload failed.`,
+            placement: "topRight",
+          });
+          notification.error({
+            title: `${info.file.response.errors}`,
+            placement: "topRight",
+          });
+
+        } else {
+          notification.error({
+            title: `${info.file.name} file upload failed.`,
+            placement: "topRight",
+          });
+        }
+      }
+    },
+    onRemove(info) {
+      axios
+        .post("/temp-remove/" + info.response.filename)
+        .then((res) => {
+          if (res.data.status === "temp_deleted") {
+            notification.success({
+              message: `File removed successfully`,
+            });
+          }
+        });
+    },
+  };
+
+
+  return (
+    <>
+      <div className='font-bold'>
+        Document Uploads
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+
+        <Form.Item
+          name="coe"
+          valuePropName="fileList"
+          className="w-full"
+          label="Upload Certificate of Enrolment"
+          getValueFromEvent={(e) => {
+            // Normalize the value to fit what the Upload component expects
+            if (Array.isArray(e)) {
+              return e;
+            }
+            return e?.fileList;
+          }}
+          validateStatus={errors.coe ? "error" : ""}
+          help={errors.coe ? errors.coe[0] as string : ""}
+        >
+          <Upload.Dragger
+            maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
+            {...uploadProps}>
+            <div className="flex flex-col items-center py-5 text-center">
+              <UploadCloud className="mb-3 h-8 w-8 text-emerald-700" />
+              <p className="text-sm font-semibold text-slate-800">{"Certificate of Enrolment"}</p>
+              <p className="mt-1 text-xs text-slate-500">PDF, JPG, or PNG only</p>
+            </div>
+          </Upload.Dragger>
+        </Form.Item>
+
+        <Form.Item
+          name="cog"
+          valuePropName="fileList"
+          className="w-full"
+          label="Upload Certificate of Grade (Last semester)"
+          getValueFromEvent={(e) => {
+            // Normalize the value to fit what the Upload component expects
+            if (Array.isArray(e)) {
+              return e;
+            }
+            return e?.fileList;
+          }}
+          validateStatus={errors.cog ? "error" : ""}
+          help={errors.cog ? errors.cog[0] as string : ""}
+        >
+          <Upload.Dragger
+            maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
+            {...uploadProps}>
+            <div className="flex flex-col items-center py-5 text-center">
+              <UploadCloud className="mb-3 h-8 w-8 text-emerald-700" />
+              <p className="text-sm font-semibold text-slate-800">Certificate of Grade (Last semester)</p>
+              <p className="mt-1 text-xs text-slate-500">PDF, JPG, or PNG only</p>
+            </div>
+          </Upload.Dragger>
+        </Form.Item>
+      </div>
+
+
+
+      <div className='grid md:grid-cols-2 gap-4'>
+        <Form.Item
+          name="cedula"
+          valuePropName="fileList"
+          className="w-full"
+          label="Photocopy of Cedula"
+          getValueFromEvent={(e) => {
+            // Normalize the value to fit what the Upload component expects
+            if (Array.isArray(e)) {
+              return e;
+            }
+            return e?.fileList;
+          }}
+          validateStatus={errors.cedula ? "error" : ""}
+          help={errors.cedula ? errors.cedula[0] as string : ""}
+        >
+          <Upload.Dragger
+            maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
+            {...uploadProps}>
+            <div className="flex flex-col items-center py-5 text-center">
+              <UploadCloud className="mb-3 h-8 w-8 text-emerald-700" />
+              <p className="text-sm font-semibold text-slate-800">Photocopy of Cedula</p>
+              <p className="mt-1 text-xs text-slate-500">PDF, JPG, or PNG only</p>
+            </div>
+          </Upload.Dragger>
+        </Form.Item>
+
+        <Form.Item
+          name="school_id"
+          valuePropName="fileList"
+          className="w-full"
+          label="Photocopy of School Id"
+          getValueFromEvent={(e) => {
+            // Normalize the value to fit what the Upload component expects
+            if (Array.isArray(e)) {
+              return e;
+            }
+            return e?.fileList;
+          }}
+          validateStatus={errors.school_id ? "error" : ""}
+          help={errors.school_id ? errors.school_id[0] as string : ""}
+        >
+          <Upload.Dragger
+            maxCount={1} accept=".pdf,.jpg,.jpeg,.png"
+            {...uploadProps}>
+            <div className="flex flex-col items-center py-5 text-center">
+              <UploadCloud className="mb-3 h-8 w-8 text-emerald-700" />
+              <p className="text-sm font-semibold text-slate-800">Photocopy of School Id</p>
+              <p className="mt-1 text-xs text-slate-500">PDF, JPG, or PNG only</p>
+            </div>
+          </Upload.Dragger>
+        </Form.Item>
+
+      </div>
+
+    </>
+  )
+}
+
+export default DocumentUploads

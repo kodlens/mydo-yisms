@@ -229,8 +229,9 @@ const YouthScholarshipPage = () => {
               </div>
             )}
 
+
             {!loading && !error && !!data?.total && (
-              <div className="mt-6 flex justify-end border-t border-stone-200 pt-5">
+              <div className="mt-6 flex justify-end border-t border-stone-200 py-5 px-5 rounded-2xl bg-white">
                 <Pagination
                   current={data.current_page}
                   pageSize={Number(data.per_page)}
@@ -245,6 +246,7 @@ const YouthScholarshipPage = () => {
                 />
               </div>
             )}
+
           </section>
           <aside aria-label="Scholarship guidance" className="space-y-4 xl:sticky xl:top-6">
             <div className="overflow-hidden rounded-2xl bg-teal-950 p-6 text-white">
@@ -288,7 +290,7 @@ const YouthScholarshipPage = () => {
         footer={
           <div className='flex w-full gap-2 md:justify-end flex-col md:flex-row items-center'>
             <Button onClick={() => setSelected(null)}>Back to scholarships</Button>
-            <Link href="/youth/services/apply-scholarship"
+            <Link href={`/youth/services/apply-scholarship/${selected?.id}`}
               className="inline-flex h-8 items-center justify-center
                 rounded-md bg-[#047857] px-4
                 text-sm font-medium text-white
