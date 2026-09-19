@@ -28,4 +28,10 @@ class YouthScholarshipController extends Controller
 
         return $data;
     }
+
+
+    //store scholarship application
+    public function applyScholarship(Request $req){
+
+    }
 }
