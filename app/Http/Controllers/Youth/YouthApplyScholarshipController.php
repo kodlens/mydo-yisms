@@ -59,10 +59,10 @@ class YouthApplyScholarshipController extends Controller
         ScholarshipApplication::create([
             'youth_profile_id' => $user->id,
             'scholarship_type_id' => $validated['scholarship_type_id'],
-            'coe_path' => $movedFiles['coe']['filename'] ?? null,
-            'cog_path' => $movedFiles['cog']['filename'] ?? null,
-            'cedula_path' => $movedFiles['cedula']['filename'] ?? null,
-            'school_id_path' => $movedFiles['school_id']['filename'] ?? null,
+            'coe_path' => $movedFiles['coe']['path'] ?? null,
+            'cog_path' => $movedFiles['cog']['path'] ?? null,
+            'cedula_path' => $movedFiles['cedula']['path'] ?? null,
+            'school_id_path' => $movedFiles['school_id']['path'] ?? null,
             'status' => 'pending',
             'submitted_at' => now()
         ]);

@@ -30,8 +30,5 @@ class YouthScholarshipController extends Controller
     }
 
 
-    //store scholarship application
-    public function applyScholarship(Request $req){
 
-    }
 }

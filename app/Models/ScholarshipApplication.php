@@ -31,6 +31,12 @@ class ScholarshipApplication extends Model
         ];
     }
 
+    public function academicYear(): BelongsTo
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
+
     public function youthProfile(): BelongsTo
     {
         return $this->belongsTo(YouthProfile::class);
