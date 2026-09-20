@@ -8,14 +8,26 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Support\FileMover;
+use App\Models\ScholarshipApplication;
+use App\Models\ScholarshipType;
 
 
 class YouthApplyScholarshipController extends Controller
 {
     public function index($id){
+
+        $user = Auth::guard('youth')->user();
+        $scholarshipType = ScholarshipType::find($id);
+
+        $scholarshipApplication = ScholarshipApplication::where('youth_profile_id', $user->id)
+            ->where('scholarship_type_id', $id)
+            ->first();
+
         return Inertia::render('youth/services/scholarships/youth-apply-scholarship-page',[
             'xToken' => csrf_token(),
-            'scholarshipTypeId' => $id
+            'scholarshipType' => $scholarshipType,
+            'scholarshipApplication' => $scholarshipApplication
         ]);
     }
 
@@ -31,52 +43,26 @@ class YouthApplyScholarshipController extends Controller
             'school_id' => ['array', 'required']
         ]);
 
-
-        //return $validated['coe'][0]['response']['filename]
-        //originalName = $validate['coe']['0]['name']
-
-        $coeFilename = $validated['coe'][0]['response']['filename'] ?? '';
-        $cogFilename = $validated['cog'][0]['response']['filename'] ?? '';
-        $cedulaFilename = $validated['cedula'][0]['response']['filename'] ?? '';
-        $schoolIdFilename = $validated['school_id'][0]['response']['filename'] ?? '';
-
-        $userFolderName = $user->id . '_'. $user->fname[0] . $user->lname;
-
-        if (Storage::disk('public')->exists('temp/' . $coeFilename)) {
-            // File exists
-
-            Storage::disk('public')->move(
-                'temp/' . $coeFilename,
-                'upfiles/' . $coeFilename
-            );
-            return $coeFilename;
-        }
-
-        if (Storage::disk('public')->exists('temp/' . $cogFilename)) {
-            // File exists
-            return $coeFilename;
-        }
-
-        if (Storage::disk('public')->exists('temp/' . $cedulaFilename)) {
-            // File exists
-            return $coeFilename;
-        }
-
-        if (Storage::disk('public')->exists('temp/' . $schoolIdFilename)) {
-            // File exists
-            return $coeFilename;
-        }
-
-        return [];
+        $files = [
+            'coe' => $validated['coe'][0]['response']['filename'] ?? null,
+            'cog' => $validated['cog'][0]['response']['filename'] ?? null,
+            'cedula' => $validated['cedula'][0]['response']['filename'] ?? null,
+            'school_id' => $validated['school_id'][0]['response']['filename'] ?? null,
+        ];
 
         $user = Auth::guard('youth')->user();
+        $fileMover = new FileMover($user);
+
+        $movedFiles = $fileMover->moveFromTemp($files);
+
 
         ScholarshipApplication::create([
             'youth_profile_id' => $user->id,
             'scholarship_type_id' => $validated['scholarship_type_id'],
-            'coe_path' => $coeFilename,
-            'cedula_path' => $cedulaFilename,
-            'school_id_path' => $schoolIdFilename,
+            'coe_path' => $movedFiles['coe']['filename'] ?? null,
+            'cog_path' => $movedFiles['cog']['filename'] ?? null,
+            'cedula_path' => $movedFiles['cedula']['filename'] ?? null,
+            'school_id_path' => $movedFiles['school_id']['filename'] ?? null,
             'status' => 'pending',
             'submitted_at' => now()
         ]);
