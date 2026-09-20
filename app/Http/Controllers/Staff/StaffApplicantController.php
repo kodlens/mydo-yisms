@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ScholarshipApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,11 +19,10 @@ class StaffApplicantController extends Controller
 
     public function show(ScholarshipApplication $applicant): Response
     {
-        $applicant->load(['youthProfile.youth', 'youthProfile.province', 'youthProfile.city', 'youthProfile.barangay', 'documents']);
+        $applicant->load(['youthProfile', 'youthProfile.province', 'youthProfile.city', 'youthProfile.barangay']);
 
         return Inertia::render('staff/staff-applicant-show', [
-            'applicant' => $this->applicantPayload($applicant),
-            'documents' => $this->documentsFor($applicant),
+            'applicant' => $this->applicantPayload($applicant)
         ]);
     }
 
@@ -33,7 +33,7 @@ class StaffApplicantController extends Controller
         $status = $request->input('status');
 
         return ScholarshipApplication::query()
-            ->with(['youthProfile.youth', 'youthProfile.province', 'youthProfile.city', 'youthProfile.barangay'])
+            ->with(['youthProfile', 'youthProfile.province', 'youthProfile.city', 'youthProfile.barangay'])
             ->when(in_array($status, ['pending', 'approved', 'rejected', 'draft'], true), function ($query) use ($status) {
                 $query->where('status', $status);
             })
@@ -43,9 +43,7 @@ class StaffApplicantController extends Controller
                         ->orWhere('fname', 'like', $search . '%')
                         ->orWhere('school_name', 'like', '%' . $search . '%')
                         ->orWhere('program', 'like', '%' . $search . '%')
-                        ->orWhereHas('youth', function ($query) use ($search) {
-                            $query->where('email', 'like', '%' . $search . '%');
-                        });
+                        ->orWhere('email', 'like', '%' . $search . '%');
                 });
             })
             ->latest()
@@ -71,25 +69,15 @@ class StaffApplicantController extends Controller
             'reviewed_at' => now(),
         ])->save();
 
-        $applicant->loadMissing('youthProfile.youth');
-        $applicant->youthProfile?->youth?->forceFill([
-            'registration_status' => $validated['registration_status'],
-            'rejection_reason' => $validated['registration_status'] === 'rejected'
-                ? $validated['rejection_reason']
-                : null,
-        ])->save();
-
         return back()->with('status', 'Applicant status updated.');
     }
 
     private function applicantPayload(ScholarshipApplication $application): array
     {
         $profile = $application->youthProfile;
-        $youth = $profile?->youth;
 
         return [
             'id' => $application->id,
-            'youth_id' => $youth?->id,
             'youth_profile_id' => $profile?->id,
             'lname' => $profile?->lname,
             'fname' => $profile?->fname,
@@ -99,7 +87,7 @@ class StaffApplicantController extends Controller
             'sex' => $profile?->sex,
             'civil_status' => $profile?->civil_status,
             'mobile_number' => $profile?->mobile_number,
-            'email' => $youth?->email,
+            'email' => $profile?->email,
             'provCode' => $profile?->provCode,
             'citymunCode' => $profile?->citymunCode,
             'brgyCode' => $profile?->brgyCode,
@@ -119,32 +107,37 @@ class StaffApplicantController extends Controller
             'province' => $profile?->province,
             'city' => $profile?->city,
             'barangay' => $profile?->barangay,
+            'coe_path' => $this->documentUrl($application, $application->coe_path, 'coe'),
+            'cog_path' => $this->documentUrl($application, $application->cog_path, 'cog'),
+            'cedula_path' => $this->documentUrl($application, $application->cedula_path, 'cedula'),
+            'school_id_path' => $this->documentUrl($application, $application->school_id_path, 'school_id'),
         ];
     }
 
-    private function documentsFor(ScholarshipApplication $application): array
+    private function documentUrl(ScholarshipApplication $application, ?string $path, string $type): ?string
     {
-        $labels = [
-            'coe' => 'Certificate of Enrolment',
-            'cog' => 'Certificate of Grade',
-            'cedula' => 'Cedula',
-            'school_id' => 'School ID',
-            'psa' => 'PSA',
-        ];
+        if (!$path) {
+            return null;
+        }
 
-        return $application->documents
-            ->map(function ($document) use ($labels) {
-                $path = $document->path;
+        $disk = Storage::disk('public');
 
-                return [
-                    'key' => $document->type,
-                    'label' => $labels[$document->type] ?? strtoupper((string) $document->type),
-                    'path' => $path,
-                    'url' => $path ? Storage::disk('public')->url($path) : null,
-                    'exists' => $path ? Storage::disk('public')->exists($path) : false,
-                ];
-            })
-            ->values()
-            ->all();
+        // New applications already store the complete public-disk path.
+        if (str_starts_with($path, 'upfiles/')) {
+            return $disk->url($path);
+        }
+
+        $profile = $application->youthProfile;
+        $name = strtoupper(Str::slug(mb_substr($profile?->fname ?? 'X', 0, 1) . ($profile?->lname ?? 'X'), ''));
+        $directory = "upfiles/{$application->youth_profile_id}_{$name}";
+        $filename = basename($path);
+        $documentPath = "{$directory}/{$filename}";
+
+        // Older uploads stored the original filename before FileMover added its type prefix.
+        if (!$disk->exists($documentPath) && $disk->exists("{$directory}/{$type}_{$filename}")) {
+            $documentPath = "{$directory}/{$type}_{$filename}";
+        }
+
+        return $disk->url($documentPath);
     }
 }

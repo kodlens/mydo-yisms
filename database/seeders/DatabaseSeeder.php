@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
+            AcademicYearSeeder::class,
             UserSeeder::class,
             YouthProfileSeeder::class,
             ScholarshipTypeSeeder::class,

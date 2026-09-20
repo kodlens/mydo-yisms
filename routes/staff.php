@@ -14,6 +14,6 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
 
 
     Route::patch('/applicants/{applicant}/status', [StaffApplicantController::class, 'updateStatus'])->name('applicants.status.update');
-    Route::resource('/applicants', StaffApplicantController::class)->only(['index', 'show'])->names('scholarship-applicants');
+    Route::resource('/applicants', StaffApplicantController::class)->names('scholarship-applicants');
     Route::get('/get-applicants', [StaffApplicantController::class, 'getData'])->name('scholarship-applicants.get-data');
 });

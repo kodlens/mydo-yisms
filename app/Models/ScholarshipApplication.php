@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ScholarshipApplication extends Model
 {
     protected $fillable = [
+        'academic_year_id',
         'youth_profile_id',
         'scholarship_type_id',
         'coe_path',
@@ -30,6 +31,12 @@ class ScholarshipApplication extends Model
             'submitted_at' => 'datetime',
         ];
     }
+
+    public function academicYear(): BelongsTo
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
 
     public function youthProfile(): BelongsTo
     {

@@ -8,6 +8,7 @@ use App\Http\Controllers\Youth\YouthScholarshipController;
 use App\Http\Controllers\Youth\YouthRegistrationController;
 use App\Http\Controllers\Youth\YouthServiceController;
 use App\Http\Controllers\Youth\YouthMyProfileController;
+use App\Http\Controllers\Youth\YouthApplyScholarshipController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest:youth')->group(function () {
@@ -36,6 +37,11 @@ Route::middleware('auth:youth')->group(function () {
 
     Route::get('/youth/services/youth-scholarships', [YouthScholarshipController::class, 'index'])->name('youth.services.youth-scholarships.index');
     Route::get('/youth/services/get-youth-scholarships', [YouthScholarshipController::class, 'getData'])->name('youth.services.youth-scholarships.get-data');
+
+    //apply scholapship
+    Route::get('/youth/services/apply-scholarship/{id}', [YouthApplyScholarshipController::class, 'index'])->name('youth.services.apply-scholarship.index');
+    Route::post('/youth/services/apply-scholarship/{id}', [YouthApplyScholarshipController::class, 'store'])->name('youth.services.apply-scholarship.store');
+
 
     Route::get('/youth/my-profile', [YouthMyProfileController::class, 'index'])->name('youth.youth-my-profile.index');
 

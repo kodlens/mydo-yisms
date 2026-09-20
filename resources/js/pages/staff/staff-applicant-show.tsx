@@ -13,20 +13,13 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { Head, Link, router } from '@inertiajs/react';
-import { App, Button, Descriptions, Empty, Form, Input, Modal, Space, Tag } from 'antd';
+import { App, Button, Descriptions, Form, Input, Modal, Space, Tag } from 'antd';
 import { ReactElement, ReactNode, useState } from 'react';
 
-type DocumentItem = {
-  key: string;
-  label: string;
-  path: string | null;
-  url: string | null;
-  exists: boolean;
-};
+
 
 type Props = {
   applicant: Youth;
-  documents: DocumentItem[];
 };
 
 const statusColor: Record<string, string> = {
@@ -81,7 +74,7 @@ const addressLabel = (name: unknown) => {
   return `${displayName}`;
 };
 
-const StaffApplicantShow = ({ applicant, documents }: Props) => {
+const StaffApplicantShow = ({ applicant }: Props) => {
   const { modal, notification } = App.useApp();
   const [rejectForm] = Form.useForm<{ rejection_reason: string }>();
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -273,28 +266,10 @@ const StaffApplicantShow = ({ applicant, documents }: Props) => {
 
             <InfoPanel title="Documents" icon={<FileTextOutlined />}>
               <div className="space-y-3">
-                {documents.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No documents" />}
-
-                {documents.map((document) => (
-                  <div key={document.key} className="rounded-lg border border-stone-200 p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-medium text-stone-900">{document.label}</p>
-                        <p className="mt-1 truncate text-xs text-stone-500">{document.path ?? 'No file uploaded'}</p>
-                      </div>
-                      <Tag color={document.exists ? 'green' : 'default'}>{document.exists ? 'Ready' : 'Missing'}</Tag>
-                    </div>
-
-                    <Button
-                      className="mt-3 w-full"
-                      href={document.url ?? undefined}
-                      target="_blank"
-                      disabled={!document.exists || !document.url}
-                    >
-                      Open document
-                    </Button>
-                  </div>
-                ))}
+                <DocumentCard label="Certificate of Enrolment" path={applicant.coe_path} />
+                <DocumentCard label="Certificate of Grade" path={applicant.cog_path} />
+                <DocumentCard label="Cedula" path={applicant.cedula_path} />
+                <DocumentCard label="School ID" path={applicant.school_id_path} />
               </div>
             </InfoPanel>
           </div>
@@ -338,6 +313,30 @@ const StaffApplicantShow = ({ applicant, documents }: Props) => {
     </>
   );
 };
+
+function DocumentCard({ label, path }: { label: string; path?: string | null }) {
+  return (
+    <div className="rounded-lg border border-stone-200 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-medium text-stone-900">{label}</p>
+          <p className="mt-1 truncate text-xs text-stone-500">{path?.split('/').pop() || 'No file uploaded'}</p>
+        </div>
+        <Tag color={path ? 'green' : 'default'}>{path ? 'Uploaded' : 'Missing'}</Tag>
+      </div>
+      <Button
+        className="mt-3 w-full"
+        href={path || undefined}
+        target="_blank"
+        rel="noopener noreferrer"
+        disabled={!path}
+        aria-label={`Open ${label}`}
+      >
+        Open document
+      </Button>
+    </div>
+  );
+}
 
 function InfoPanel({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
   return (

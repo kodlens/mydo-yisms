@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('scholarship_applications', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('academic_year_id')->constrained('academic_years')->cascadeOnDelete();
             $table->foreignId('youth_profile_id')->constrained('youth_profiles')->cascadeOnDelete();
             $table->foreignId('scholarship_type_id')->constrained('scholarship_types')->cascadeOnDelete();
 
+            $table->string('reference')->unique()->nullable();
             $table->string('coe_path')->nullable();
             $table->string('cog_path')->nullable();
             $table->string('cedula_path')->nullable();

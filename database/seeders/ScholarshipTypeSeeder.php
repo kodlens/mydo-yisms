@@ -21,21 +21,21 @@ class ScholarshipTypeSeeder extends Seeder
                 'target_beneficiary' => 'Dumingag youth aged 18 and above interested in organic agriculture training at Dumingag Institute of Sustainable Organic Agriculture (DISOA).',
                 'benefit' => 'Free tuition, ID, uniform, tool kits and allowance; training in organic crop and livestock production. Cash amount and current availability require MYDO confirmation.',
                 'amount' => 0.00,
-                'is_active' => false,
+                'is_active' => true,
             ],
             [
                 'scholarship' => 'Indigent Youth Educational Assistance',
                 'target_beneficiary' => 'Students from low-income families.',
                 'benefit' => '₱5,000–₱8,000/semester',
                 'amount' => 8000.00,
-                'is_active' => false,
+                'is_active' => true,
             ],
             [
                 'scholarship' => 'GPA Youth Scholarship Program - DTTS',
                 'target_beneficiary' => 'Dumingag youth aged 18 and above interested in technical-vocational training at Dumingag Technological Training School (DTTS).',
                 'benefit' => 'Free tuition, ID, uniform, tool kits and allowance; technical-vocational training leading to TESDA competency certification. Cash amount and current availability require MYDO confirmation.',
                 'amount' => 0.00,
-                'is_active' => false,
+                'is_active' => true,
             ],
         ];
 
