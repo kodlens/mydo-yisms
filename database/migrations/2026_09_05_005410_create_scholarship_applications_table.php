@@ -19,7 +19,6 @@ return new class extends Migration
 
             $table->string('reference')->unique()->nullable();
             $table->string('coe_path')->nullable();
-            $table->string('coe_path')->nullable();
             $table->string('cog_path')->nullable();
             $table->string('cedula_path')->nullable();
             $table->string('school_id_path')->nullable();
