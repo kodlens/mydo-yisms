@@ -11,7 +11,9 @@ class FileMover {
 
     public function __construct(
         private readonly object $user,
-        string $disk = 'public'
+        private readonly object $acadYear,
+        string $disk = 'public',
+
     ) {
         $this->storage = Storage::disk($disk);
     }
@@ -20,7 +22,8 @@ class FileMover {
         $results = [];
 
         $userDirectory = $this->getUserDirectory();
-        $directory = "upfiles/{$userDirectory}";
+        //$directory = "upfiles/{$userDirectory}";
+        $directory = "upfiles/academic-year-{$this->acadYear->id}/{$userDirectory}";
 
 
         $this->storage->makeDirectory($directory);

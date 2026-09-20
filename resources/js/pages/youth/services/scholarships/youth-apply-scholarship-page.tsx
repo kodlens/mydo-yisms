@@ -11,12 +11,11 @@ import { ScholarshipApplication } from '@/types/scholarshipApplication';
 
 type Props = {
   xToken: string
-  scholarshipTypeId: number
   scholarshipApplication: ScholarshipApplication
   scholarshipType: ScholarshipType
 }
 
-const YouthApplyScholarshipPage = ({ xToken, scholarshipTypeId, scholarshipApplication, scholarshipType }: Props) => {
+const YouthApplyScholarshipPage = ({ xToken, scholarshipApplication, scholarshipType }: Props) => {
 
   const [errors, setErrors] = useState<Record<string, unknown[]>>({})
   const [form] = Form.useForm();
@@ -27,7 +26,7 @@ const YouthApplyScholarshipPage = ({ xToken, scholarshipTypeId, scholarshipAppli
     setLoading(true)
 
     axios
-      .post(`/youth/services/apply-scholarship/${scholarshipTypeId}`, values)
+      .post(`/youth/services/apply-scholarship/${scholarshipType.id}`, values)
       .then((res) => {
         if (res.data.success) {
           //window.location.href = route('youth-login.index');
@@ -93,7 +92,7 @@ const YouthApplyScholarshipPage = ({ xToken, scholarshipTypeId, scholarshipAppli
               layout='vertical'
               onFinish={submit}
               initialValues={{
-                'scholarship_type_id': scholarshipTypeId ?? 0
+                'scholarship_type_id': scholarshipType.id ?? 0
               }}
               onFinishFailed={(errInfo) => {
                 console.log('Youth registration validation failed:', errInfo);

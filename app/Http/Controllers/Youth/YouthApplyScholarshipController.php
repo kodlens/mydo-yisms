@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Support\FileMover;
 use App\Models\ScholarshipApplication;
 use App\Models\ScholarshipType;
-
+use App\Models\AcademicYear;
 
 class YouthApplyScholarshipController extends Controller
 {
@@ -36,7 +36,7 @@ class YouthApplyScholarshipController extends Controller
         //return $req;;
 
         $validated = $req->validate([
-            'scholarship_type_id' => ['required', 'string'],
+            'scholarship_type_id' => ['required', 'integer', 'exists:scholarship_types,id',],
             'coe' => ['array', 'required'],
             'cog' => ['array', 'required'],
             'cedula' => ['array', 'required'],
@@ -51,12 +51,21 @@ class YouthApplyScholarshipController extends Controller
         ];
 
         $user = Auth::guard('youth')->user();
-        $fileMover = new FileMover($user);
+
+        $acadYear = AcademicYear::where('is_active', 1)->first();
+        if(!$acadYear){
+            return response()->json([
+                'message' => 'No active academic year found.'
+            ], 404);
+        }
+
+        $fileMover = new FileMover($user, $acadYear);
 
         $movedFiles = $fileMover->moveFromTemp($files);
 
 
         ScholarshipApplication::create([
+            'academic_year_id' => $acadYear->id,
             'youth_profile_id' => $user->id,
             'scholarship_type_id' => $validated['scholarship_type_id'],
             'coe_path' => $movedFiles['coe']['path'] ?? null,
@@ -72,9 +81,6 @@ class YouthApplyScholarshipController extends Controller
             'success' => true,
             'message' => 'Application successfully saved.'
         ], 200);
-
-
-
 
     }
 }
