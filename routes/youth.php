@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Youth\YouthAuthController;
+use App\Http\Controllers\Youth\YouthEventActivitiyController;
 use App\Http\Controllers\Youth\PendingPageController;
 use App\Http\Controllers\Youth\YouthDashboardController;
 use App\Http\Controllers\Youth\YouthMyAccountController;
@@ -26,6 +27,10 @@ Route::middleware('guest:youth')->group(function () {
 });
 
 Route::middleware('auth:youth')->group(function () {
+
+    Route::get('/youth/services/events-activities', [YouthEventActivitiyController::class, 'index'])
+        ->name('youth.youth-services.events-activities.index');
+
     Route::post('youth-logout', [YouthAuthController::class, 'destroy'])->name('youth-logout');
     Route::post('student-logout', [YouthAuthController::class, 'destroy'])->name('student-logout');
 
@@ -41,6 +46,9 @@ Route::middleware('auth:youth')->group(function () {
     //apply scholapship
     Route::get('/youth/services/apply-scholarship/{id}', [YouthApplyScholarshipController::class, 'index'])->name('youth.services.apply-scholarship.index');
     Route::post('/youth/services/apply-scholarship/{id}', [YouthApplyScholarshipController::class, 'store'])->name('youth.services.apply-scholarship.store');
+
+
+    Route::get('/youth/my-profile', [YouthMyProfileController::class, 'index'])->name('youth.youth-my-profile.index');
 
 
     Route::get('/youth/my-profile', [YouthMyProfileController::class, 'index'])->name('youth.youth-my-profile.index');

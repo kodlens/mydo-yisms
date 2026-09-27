@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             YouthProfileSeeder::class,
             ScholarshipTypeSeeder::class,
+            ActivitySeeder::class,
         ]);
     }
 }

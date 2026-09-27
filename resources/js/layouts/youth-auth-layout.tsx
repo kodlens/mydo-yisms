@@ -99,7 +99,9 @@ export default function YouthAuthLayout(
   ]), [handleLogout]);
 
   const currentRoute = `${route().current() ?? ''}`;
-  const selectedMenuKey = currentRoute.startsWith('youth.youth-services.')
+  const selectedMenuKey = currentRoute === 'youth.youth-services.events-activities.index'
+    ? currentRoute
+    : currentRoute.startsWith('youth.youth-services.')
     ? 'youth.youth-services'
     : currentRoute;
 
