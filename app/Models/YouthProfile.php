@@ -42,6 +42,7 @@ class YouthProfile extends Authenticatable
         'password',
         'email_verified_at',
         'is_active',
+        'is_graduated',
     ];
 
     protected function casts(): array

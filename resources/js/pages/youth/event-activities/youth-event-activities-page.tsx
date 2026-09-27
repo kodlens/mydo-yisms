@@ -22,6 +22,8 @@ import { ReactElement, ReactNode, useState } from 'react';
 type Activity = {
     id: number;
     title: string;
+    status: string;
+    registrations?: { id: number; status: string; registered_at: string; cancelled_at: string | null }[];
     category: { id: number; name: string };
     starts_at: string;
     ends_at: string;
@@ -42,6 +44,8 @@ type Activity = {
 
 function registrationStatus(activity: Activity) {
     const now = Date.now();
+    if (activity.status === 'cancelled') return 'Activity cancelled';
+    if (activity.status !== 'published') return 'Registration unavailable';
     if (!activity.requires_registration) return 'No registration required';
     if (new Date(activity.starts_at).getTime() <= now) return 'Registration closed';
     if (activity.registration_closes_at && new Date(activity.registration_closes_at).getTime() <= now) return 'Registration closed';
@@ -115,14 +119,24 @@ function Artwork({ activity, featured = false }: { activity: Activity; featured?
         </div>
     );
 }
-const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[] }) => {
+const YouthEventActivitiesPage = ({ activities = [], myActivities = [] }: { activities?: Activity[]; myActivities?: Activity[] }) => {
+    const [tab, setTab] = useState('explore');
+    const [period, setPeriod] = useState('upcoming');
+    const now = Date.now();
+    const upcomingCount = myActivities.filter(
+        (activity) => activity.has_joined && activity.status === 'published' && new Date(activity.ends_at).getTime() > now,
+    ).length;
+    const myList = myActivities.filter((activity) =>
+        period === 'past' ? new Date(activity.ends_at).getTime() <= now : new Date(activity.ends_at).getTime() > now,
+    );
+    if (period === 'past') myList.reverse();
     const [category, setCategory] = useState<string>('All activities');
     const [query, setQuery] = useState('');
     const [sort, setSort] = useState('soonest');
     const [selectedId, setSelectedId] = useState<number | null>(null);
-    const selected = activities.find((activity) => activity.id === selectedId) ?? null;
+    const selected = myActivities.find((activity) => activity.id === selectedId) ?? activities.find((activity) => activity.id === selectedId) ?? null;
     const { post, processing, errors, clearErrors } = useForm<{ activity?: string }>({});
-    const [joinedTitle, setJoinedTitle] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [modal, contextHolder] = Modal.useModal();
     function joinActivity(activity: Activity) {
         modal.confirm({
@@ -133,17 +147,46 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
             cancelText: 'Cancel',
             onOk: () => {
                 clearErrors();
-                setJoinedTitle('');
+                setSuccessMessage('');
                 return new Promise<void>((resolve) => {
                     post(route('youth.youth-services.events-activities.join', activity.id), {
                         preserveScroll: true,
-                        onSuccess: () => setJoinedTitle(activity.title),
+                        onSuccess: () => setSuccessMessage(`You are registered for ${activity.title}.`),
                         onFinish: () => resolve(),
                     });
                 });
             },
         });
     }
+    function cancelParticipation(activity: Activity) {
+        modal.confirm({
+            centered: true,
+            title: 'Cancel your participation?',
+            content:
+                'Your reserved slot for "' +
+                activity.title +
+                '" will be released. You can join again if registration is still open and a slot is available.',
+            okText: 'Yes, cancel participation',
+            cancelText: 'Keep my registration',
+            okButtonProps: { danger: true },
+            onOk: () => {
+                clearErrors();
+                setSuccessMessage('');
+                return new Promise<void>((resolve) => {
+                    post(route('youth.youth-services.events-activities.cancel', activity.id), {
+                        preserveScroll: true,
+                        onSuccess: () => setSuccessMessage('Your participation in ' + activity.title + ' has been cancelled.'),
+                        onFinish: () => resolve(),
+                    });
+                });
+            },
+        });
+    }
+    const canCancel =
+        selected?.has_joined &&
+        new Date(selected.starts_at).getTime() > now &&
+        new Date(selected.ends_at).getTime() > now &&
+        (!selected.registration_closes_at || new Date(selected.registration_closes_at).getTime() > now);
     const feedback = (
         <>
             {errors.activity && (
@@ -151,9 +194,9 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
                     {errors.activity}
                 </p>
             )}
-            {joinedTitle && (
+            {successMessage && (
                 <p role="status" className="rounded-lg bg-teal-50 p-3 text-sm text-teal-800">
-                    You are registered for {joinedTitle}.
+                    {successMessage}
                 </p>
             )}
         </>
@@ -184,183 +227,307 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
                     </div>
                     <a
                         href="#activities"
+                        onClick={() => setTab('explore')}
                         className="inline-flex items-center gap-2 rounded-xl bg-teal-800 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-900"
                     >
                         Explore activities <ArrowDown size={16} />
                     </a>
                 </header>
                 {feedback}
-                {featured && (
-                    <section
-                        aria-labelledby="featured-title"
-                        className="grid overflow-hidden rounded-2xl border border-white bg-white shadow-sm md:grid-cols-[0.85fr_1.15fr]"
+                <nav aria-label="Activity views" className="flex gap-2 border-b border-slate-300 pb-3">
+                    <button
+                        type="button"
+                        aria-pressed={tab === 'explore'}
+                        onClick={() => setTab('explore')}
+                        className={
+                            tab === 'explore'
+                                ? 'rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white'
+                                : 'rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-white'
+                        }
                     >
-                        <Artwork activity={featured} featured />
-                        <div className="p-6 sm:p-8">
-                            <p className="flex items-center gap-2 text-xs font-bold tracking-widest text-teal-700 uppercase">
-                                <Sparkles size={15} /> In the spotlight
-                            </p>
-                            <h2 id="featured-title" className="mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                                {featured.title}
-                            </h2>
-                            <p className="mt-3 text-sm leading-6 text-slate-500">{featured.summary ?? featured.description}</p>
-                            <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
-                                <span className="flex items-center gap-2">
-                                    <CalendarDays size={16} className="text-teal-700" />
-                                    {dateLabel(featured.starts_at, { month: 'long', day: 'numeric', year: 'numeric' })}
-                                </span>
-                                <span className="flex items-center gap-2">
-                                    <MapPin size={16} className="text-teal-700" />
-                                    {featured.venue_name}
-                                </span>
+                        Explore activities
+                    </button>
+                    <button
+                        type="button"
+                        aria-pressed={tab === 'mine'}
+                        onClick={() => setTab('mine')}
+                        className={
+                            tab === 'mine'
+                                ? 'rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white'
+                                : 'rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-white'
+                        }
+                    >
+                        My activities ({upcomingCount})
+                    </button>
+                </nav>
+                {tab === 'mine' && (
+                    <section aria-labelledby="my-activities-title" className="space-y-5">
+                        <div className="flex flex-wrap items-center justify-between gap-4">
+                            <div>
+                                <h2 id="my-activities-title" className="text-xl font-bold">
+                                    My activities
+                                </h2>
+                                <p className="mt-1 text-sm text-slate-500">Your registrations, schedules, and participation history.</p>
                             </div>
-                            <Availability activity={featured} />
-                            <JoinButton activity={featured} processing={processing} onJoin={joinActivity} />
-                            <button
-                                onClick={() => setSelectedId(featured.id)}
-                                className="mt-6 inline-flex items-center gap-3 rounded-lg bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-900"
-                            >
-                                View activity <ArrowRight size={16} />
-                            </button>
+                            <label className="text-sm text-slate-600">
+                                Show{' '}
+                                <select
+                                    value={period}
+                                    onChange={(event) => setPeriod(event.target.value)}
+                                    className="ml-2 rounded-lg border border-slate-200 bg-white px-3 py-2"
+                                >
+                                    <option value="upcoming">Upcoming & ongoing</option>
+                                    <option value="past">Past activities</option>
+                                </select>
+                            </label>
                         </div>
+                        {myList.length > 0 ? (
+                            <ul className="space-y-3">
+                                {myList.map((activity) => {
+                                    const cancelled = activity.registrations?.[0]?.status === 'cancelled';
+                                    return (
+                                        <li
+                                            key={activity.id}
+                                            className="grid items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto]"
+                                        >
+                                            <div>
+                                                <p className="text-xs font-semibold text-teal-700">{activity.category.name}</p>
+                                                <h3 className="mt-1 font-bold text-slate-900">{activity.title}</h3>
+                                                <span
+                                                    className={
+                                                        cancelled
+                                                            ? 'mt-2 inline-block rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600'
+                                                            : 'mt-2 inline-block rounded-full bg-teal-50 px-2.5 py-1 text-xs text-teal-800'
+                                                    }
+                                                >
+                                                    {cancelled ? 'Cancelled' : 'Registered'}
+                                                </span>
+                                                {activity.status === 'cancelled' && (
+                                                    <p className="mt-2 text-xs text-red-700">This activity was cancelled by the organizer.</p>
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-slate-600">
+                                                <p>{dateLabel(activity.starts_at, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                                <p className="mt-1 text-xs">{activityTime(activity)}</p>
+                                            </div>
+                                            <p className="flex items-center gap-2 text-sm text-slate-600">
+                                                <MapPin size={16} className="shrink-0" />
+                                                {activity.venue_name}
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedId(activity.id)}
+                                                className="rounded-lg border border-teal-200 px-4 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50"
+                                            >
+                                                View details
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        ) : (
+                            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                                <CalendarDays className="mx-auto text-teal-700" size={30} />
+                                <h3 className="mt-4 font-semibold">
+                                    {myActivities.length === 0
+                                        ? "You haven't joined any activities yet"
+                                        : period === 'past'
+                                          ? 'No past activities yet'
+                                          : 'No upcoming activities'}
+                                </h3>
+                                <p className="mt-2 text-sm text-slate-500">Explore activities and find something you would like to join.</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setTab('explore')}
+                                    className="mt-4 rounded-lg bg-teal-800 px-4 py-2 text-sm font-semibold text-white"
+                                >
+                                    Explore activities
+                                </button>
+                            </div>
+                        )}
                     </section>
                 )}
-                <section id="activities" aria-labelledby="activities-title" className="scroll-mt-5">
-                    <div className="flex flex-wrap items-end justify-between gap-4">
-                        <div>
-                            <h2 id="activities-title" className="text-xl font-bold text-slate-950">
-                                Find your next activity
-                            </h2>
-                            <p className="mt-1 text-sm text-slate-500">A little curiosity can take you somewhere new.</p>
-                        </div>
-                        <div className="relative w-full sm:w-72">
-                            <Search aria-hidden="true" size={17} className="absolute top-3.5 left-3.5 text-slate-400" />
-                            <input
-                                type="search"
-                                aria-label="Search activities"
-                                value={query}
-                                onChange={(event) => setQuery(event.target.value)}
-                                placeholder="Search activities or venues..."
-                                className="w-full rounded-xl border border-slate-200 bg-white py-3 pr-4 pl-10 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20"
-                            />
-                        </div>
-                    </div>
-                    <div className="mt-5 flex flex-wrap gap-2" aria-label="Activity categories">
-                        {categories.map((item) => (
-                            <button
-                                key={item}
-                                aria-pressed={category === item}
-                                onClick={() => setCategory(item)}
-                                className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${category === item ? 'border-teal-800 bg-teal-800 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-teal-600 hover:text-teal-800'}`}
+                {tab === 'explore' && (
+                    <>
+                        {featured && (
+                            <section
+                                aria-labelledby="featured-title"
+                                className="grid overflow-hidden rounded-2xl border border-white bg-white shadow-sm md:grid-cols-[0.85fr_1.15fr]"
                             >
-                                {item}
-                            </button>
-                        ))}
-                    </div>
-                    <div className="my-5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-                        <p role="status">
-                            {filtered.length} {filtered.length === 1 ? 'activity' : 'activities'} to explore
-                        </p>
-                        <label className="flex items-center gap-2">
-                            Sort by
-                            <select
-                                value={sort}
-                                onChange={(event) => setSort(event.target.value)}
-                                className="rounded-lg border border-slate-200 bg-white px-2 py-2 font-medium text-slate-700"
-                            >
-                                <option value="soonest">Soonest first</option>
-                                <option value="latest">Latest date first</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                        {filtered.map((activity) => (
-                            <article
-                                key={activity.id}
-                                className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none"
-                            >
-                                <Artwork activity={activity} />
-                                <div className="flex flex-1 flex-col p-5">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">{activity.category.name}</p>
-                                            <h3 className="mt-2 text-lg leading-6 font-bold text-slate-900">{activity.title}</h3>
-                                        </div>
-                                        <div className="min-w-12 rounded-lg bg-slate-50 px-2 py-1.5 text-center">
-                                            <p className="text-[10px] font-bold text-teal-700 uppercase">
-                                                {dateLabel(activity.starts_at, { month: 'short' })}
-                                            </p>
-                                            <p className="text-xl font-bold">{dateLabel(activity.starts_at, { day: '2-digit' })}</p>
-                                        </div>
+                                <Artwork activity={featured} featured />
+                                <div className="p-6 sm:p-8">
+                                    <p className="flex items-center gap-2 text-xs font-bold tracking-widest text-teal-700 uppercase">
+                                        <Sparkles size={15} /> In the spotlight
+                                    </p>
+                                    <h2 id="featured-title" className="mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+                                        {featured.title}
+                                    </h2>
+                                    <p className="mt-3 text-sm leading-6 text-slate-500">{featured.summary ?? featured.description}</p>
+                                    <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
+                                        <span className="flex items-center gap-2">
+                                            <CalendarDays size={16} className="text-teal-700" />
+                                            {dateLabel(featured.starts_at, { month: 'long', day: 'numeric', year: 'numeric' })}
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <MapPin size={16} className="text-teal-700" />
+                                            {featured.venue_name}
+                                        </span>
                                     </div>
-                                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">{activity.summary ?? activity.description}</p>
-                                    <div className="mt-4 space-y-2 text-xs text-slate-500">
-                                        <p className="flex items-center gap-2">
-                                            <Clock3 size={14} className="shrink-0" />
-                                            {activityTime(activity)}
-                                        </p>
-                                        <p className="flex items-center gap-2">
-                                            <MapPin size={14} className="shrink-0" />
-                                            {activity.venue_name}
-                                        </p>
-                                    </div>
-                                    <Availability activity={activity} />
-                                    <JoinButton activity={activity} processing={processing} onJoin={joinActivity} />
-                                    <div className="mt-auto pt-5">
-                                        <button
-                                            aria-label={`View details for ${activity.title}`}
-                                            onClick={() => setSelectedId(activity.id)}
-                                            className="flex w-full items-center justify-between border-t border-slate-100 pt-4 text-sm font-semibold text-teal-800 hover:text-teal-600"
-                                        >
-                                            View details <ArrowRight size={16} />
-                                        </button>
-                                    </div>
+                                    <Availability activity={featured} />
+                                    <JoinButton activity={featured} processing={processing} onJoin={joinActivity} />
+                                    <button
+                                        onClick={() => setSelectedId(featured.id)}
+                                        className="mt-6 inline-flex items-center gap-3 rounded-lg bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-900"
+                                    >
+                                        View activity <ArrowRight size={16} />
+                                    </button>
                                 </div>
-                            </article>
-                        ))}
-                    </div>
-                    {filtered.length === 0 && (
-                        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-                            <Search className="mx-auto text-teal-700" size={30} />
-                            <h3 className="mt-4 text-lg font-semibold">
-                                {activities.length ? 'No matching activities' : 'Good things are on the way'}
-                            </h3>
-                            <p className="mt-2 text-sm text-slate-500">
-                                {activities.length
-                                    ? 'Try another keyword or explore a different category.'
-                                    : 'Check back here for new activities from the youth office.'}
-                            </p>
-                            {activities.length > 0 && (
-                                <button
-                                    onClick={() => {
-                                        setQuery('');
-                                        setCategory('All activities');
-                                    }}
-                                    className="mt-4 text-sm font-semibold text-teal-700 underline"
-                                >
-                                    Clear filters
-                                </button>
+                            </section>
+                        )}
+                        <section id="activities" aria-labelledby="activities-title" className="scroll-mt-5">
+                            <div className="flex flex-wrap items-end justify-between gap-4">
+                                <div>
+                                    <h2 id="activities-title" className="text-xl font-bold text-slate-950">
+                                        Find your next activity
+                                    </h2>
+                                    <p className="mt-1 text-sm text-slate-500">A little curiosity can take you somewhere new.</p>
+                                </div>
+                                <div className="relative w-full sm:w-72">
+                                    <Search aria-hidden="true" size={17} className="absolute top-3.5 left-3.5 text-slate-400" />
+                                    <input
+                                        type="search"
+                                        aria-label="Search activities"
+                                        value={query}
+                                        onChange={(event) => setQuery(event.target.value)}
+                                        placeholder="Search activities or venues..."
+                                        className="w-full rounded-xl border border-slate-200 bg-white py-3 pr-4 pl-10 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20"
+                                    />
+                                </div>
+                            </div>
+                            <div className="mt-5 flex flex-wrap gap-2" aria-label="Activity categories">
+                                {categories.map((item) => (
+                                    <button
+                                        key={item}
+                                        aria-pressed={category === item}
+                                        onClick={() => setCategory(item)}
+                                        className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${category === item ? 'border-teal-800 bg-teal-800 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-teal-600 hover:text-teal-800'}`}
+                                    >
+                                        {item}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="my-5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+                                <p role="status">
+                                    {filtered.length} {filtered.length === 1 ? 'activity' : 'activities'} to explore
+                                </p>
+                                <label className="flex items-center gap-2">
+                                    Sort by
+                                    <select
+                                        value={sort}
+                                        onChange={(event) => setSort(event.target.value)}
+                                        className="rounded-lg border border-slate-200 bg-white px-2 py-2 font-medium text-slate-700"
+                                    >
+                                        <option value="soonest">Soonest first</option>
+                                        <option value="latest">Latest date first</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                                {filtered.map((activity) => (
+                                    <article
+                                        key={activity.id}
+                                        className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none"
+                                    >
+                                        <Artwork activity={activity} />
+                                        <div className="flex flex-1 flex-col p-5">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <p className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
+                                                        {activity.category.name}
+                                                    </p>
+                                                    <h3 className="mt-2 text-lg leading-6 font-bold text-slate-900">{activity.title}</h3>
+                                                </div>
+                                                <div className="min-w-12 rounded-lg bg-slate-50 px-2 py-1.5 text-center">
+                                                    <p className="text-[10px] font-bold text-teal-700 uppercase">
+                                                        {dateLabel(activity.starts_at, { month: 'short' })}
+                                                    </p>
+                                                    <p className="text-xl font-bold">{dateLabel(activity.starts_at, { day: '2-digit' })}</p>
+                                                </div>
+                                            </div>
+                                            <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">
+                                                {activity.summary ?? activity.description}
+                                            </p>
+                                            <div className="mt-4 space-y-2 text-xs text-slate-500">
+                                                <p className="flex items-center gap-2">
+                                                    <Clock3 size={14} className="shrink-0" />
+                                                    {activityTime(activity)}
+                                                </p>
+                                                <p className="flex items-center gap-2">
+                                                    <MapPin size={14} className="shrink-0" />
+                                                    {activity.venue_name}
+                                                </p>
+                                            </div>
+                                            <Availability activity={activity} />
+                                            <JoinButton activity={activity} processing={processing} onJoin={joinActivity} />
+                                            <div className="mt-auto pt-5">
+                                                <button
+                                                    aria-label={`View details for ${activity.title}`}
+                                                    onClick={() => setSelectedId(activity.id)}
+                                                    className="flex w-full items-center justify-between border-t border-slate-100 pt-4 text-sm font-semibold text-teal-800 hover:text-teal-600"
+                                                >
+                                                    View details <ArrowRight size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                            {filtered.length === 0 && (
+                                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
+                                    <Search className="mx-auto text-teal-700" size={30} />
+                                    <h3 className="mt-4 text-lg font-semibold">
+                                        {activities.length ? 'No matching activities' : 'Good things are on the way'}
+                                    </h3>
+                                    <p className="mt-2 text-sm text-slate-500">
+                                        {activities.length
+                                            ? 'Try another keyword or explore a different category.'
+                                            : 'Check back here for new activities from the youth office.'}
+                                    </p>
+                                    {activities.length > 0 && (
+                                        <button
+                                            onClick={() => {
+                                                setQuery('');
+                                                setCategory('All activities');
+                                            }}
+                                            className="mt-4 text-sm font-semibold text-teal-700 underline"
+                                        >
+                                            Clear filters
+                                        </button>
+                                    )}
+                                </div>
                             )}
-                        </div>
-                    )}
-                </section>
-                <aside className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-teal-900/10 bg-teal-50 p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="rounded-xl bg-white p-3 text-teal-700">
-                            <HeartHandshake size={26} />
-                        </div>
-                        <div>
-                            <h2 className="font-bold text-teal-950">Your next chapter starts with you.</h2>
-                            <p className="mt-1 text-sm text-teal-800/80">Keep your youth profile up to date for future activity applications.</p>
-                        </div>
-                    </div>
-                    <Link
-                        href={route('youth.youth-my-profile.index')}
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-teal-800 hover:underline"
-                    >
-                        View my profile <ArrowRight size={16} />
-                    </Link>
-                </aside>
+                        </section>
+                        <aside className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-teal-900/10 bg-teal-50 p-6">
+                            <div className="flex items-center gap-4">
+                                <div className="rounded-xl bg-white p-3 text-teal-700">
+                                    <HeartHandshake size={26} />
+                                </div>
+                                <div>
+                                    <h2 className="font-bold text-teal-950">Your next chapter starts with you.</h2>
+                                    <p className="mt-1 text-sm text-teal-800/80">
+                                        Keep your youth profile up to date for future activity applications.
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                href={route('youth.youth-my-profile.index')}
+                                className="inline-flex items-center gap-2 text-sm font-semibold text-teal-800 hover:underline"
+                            >
+                                View my profile <ArrowRight size={16} />
+                            </Link>
+                        </aside>
+                    </>
+                )}
             </div>
             <Modal centered open={selected !== null} onCancel={() => setSelectedId(null)} footer={null} title="Activity details" width={620}>
                 {selected && (
@@ -400,7 +567,25 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
                             </div>
                         )}
                         {feedback}
+                        {selected.registrations?.[0]?.status === 'cancelled' && (
+                            <p className="rounded-lg bg-slate-100 p-3 text-sm text-slate-600">You cancelled your participation in this activity.</p>
+                        )}
                         <JoinButton activity={selected} processing={processing} onJoin={joinActivity} />
+                        {canCancel && (
+                            <button
+                                type="button"
+                                disabled={processing}
+                                onClick={() => cancelParticipation(selected)}
+                                className="w-full rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                            >
+                                Cancel participation
+                            </button>
+                        )}
+                        {selected.has_joined && !canCancel && (
+                            <p className="text-xs text-slate-500">
+                                Cancellation closes at the registration deadline or when the activity starts, whichever comes first.
+                            </p>
+                        )}
                         {!selected.requires_registration && <p className="text-sm text-slate-600">No registration is required for this activity.</p>}
                     </div>
                 )}

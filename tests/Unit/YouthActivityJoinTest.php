@@ -93,4 +93,60 @@ class YouthActivityJoinTest extends TestCase
         }
         $this->assertDatabaseCount('activity_registrations', 2);
     }
+
+    public function test_cancelling_releases_a_slot_and_rejoining_reuses_the_registration(): void
+    {
+        DB::table('activities')->where('id', 1)->update(['capacity' => 1]);
+        $cancelUrl = route('youth.youth-services.events-activities.cancel', 1);
+        $this->actingAs(YouthProfile::find(1), 'youth')->post($this->joinUrl());
+        $this->post($cancelUrl)->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('activity_registrations', ['activity_id' => 1, 'youth_profile_id' => 1, 'status' => 'cancelled']);
+        $this->assertNotNull(DB::table('activity_registrations')->value('cancelled_at'));
+        $this->post($cancelUrl)->assertSessionHasNoErrors();
+
+        $this->actingAs(YouthProfile::find(2), 'youth')->post($this->joinUrl())->assertSessionHasNoErrors();
+        $this->actingAs(YouthProfile::find(1), 'youth')->post($this->joinUrl())->assertSessionHasErrors('activity');
+        $this->actingAs(YouthProfile::find(2), 'youth')->post($cancelUrl)->assertSessionHasNoErrors();
+        $this->actingAs(YouthProfile::find(1), 'youth')->post($this->joinUrl())->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('activity_registrations', ['youth_profile_id' => 1, 'status' => 'approved', 'cancelled_at' => null]);
+        $this->assertDatabaseCount('activity_registrations', 2);
+    }
+
+    public function test_cancellation_requires_ownership_and_respects_the_deadline(): void
+    {
+        $cancelUrl = route('youth.youth-services.events-activities.cancel', 1);
+        $this->postJson($cancelUrl)->assertUnauthorized();
+        $this->actingAs(YouthProfile::find(1), 'youth')->post($this->joinUrl());
+        $this->actingAs(YouthProfile::find(2), 'youth')->post($cancelUrl, ['youth_profile_id' => 1])->assertNotFound();
+        $this->actingAs(YouthProfile::find(1), 'youth');
+        DB::table('activities')->where('id', 1)->update(['registration_closes_at' => now('UTC')]);
+        $this->post($cancelUrl)->assertSessionHasErrors('activity');
+        DB::table('activities')->where('id', 1)->update(['registration_closes_at' => null, 'starts_at' => now('UTC')]);
+        $this->post($cancelUrl)->assertSessionHasErrors('activity');
+        $this->assertDatabaseHas('activity_registrations', ['youth_profile_id' => 1, 'status' => 'approved', 'cancelled_at' => null]);
+    }
+
+    public function test_my_activities_includes_own_history_without_other_youth_registrations(): void
+    {
+        $this->actingAs(YouthProfile::find(1), 'youth')->post($this->joinUrl());
+        $this->post(route('youth.youth-services.events-activities.join', 2));
+        $this->post(route('youth.youth-services.events-activities.cancel', 2));
+        $this->actingAs(YouthProfile::find(2), 'youth')->post($this->joinUrl());
+        $this->post(route('youth.youth-services.events-activities.join', 3));
+        DB::table('activities')->where('id', 1)->update(['starts_at' => now('UTC')->subDays(2), 'ends_at' => now('UTC')->subDay(), 'status' => 'archived']);
+
+        $this->actingAs(YouthProfile::find(1), 'youth');
+        $response = $this->getJson(route('youth.youth-services.events-activities.index'), [
+            'X-Inertia' => 'true', 'X-Inertia-Version' => Inertia::getVersion(),
+        ])->assertOk();
+        $mine = $response->json('props.myActivities');
+        $this->assertCount(2, $mine);
+        $this->assertSame(1, $mine[0]['id']);
+        $this->assertSame('archived', $mine[0]['status']);
+        $this->assertCount(1, $mine[0]['registrations']);
+        $this->assertArrayNotHasKey('youth_profile_id', $mine[0]['registrations'][0]);
+        $this->assertSame('cancelled', $mine[1]['registrations'][0]['status']);
+        $this->assertFalse($mine[1]['has_joined']);
+        $this->assertSame(0, $mine[1]['participants_count']);
+    }
 }

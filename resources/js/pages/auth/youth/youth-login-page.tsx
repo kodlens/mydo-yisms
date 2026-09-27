@@ -1,44 +1,39 @@
 import BrandLogo from '@/components/brand-logo';
 import { Head, Link, router } from '@inertiajs/react';
-import { App, Button, Form, Input } from 'antd';
+import { Button, Form, Input } from 'antd';
 import axios from 'axios';
-import { ArrowLeft, BookOpen, ClipboardList, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
-import {  useState } from 'react';
+import { ArrowLeft, BookOpen, CircleAlert, ClipboardList, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
 
 type LoginProps = {
-  email: string
-  password: string
-}
+  email: string;
+  password: string;
+};
 export default function YouthLoginPage() {
-  const [errors, setErrors] = useState<Record<string, unknown[]>>({})
-  const { notification } = App.useApp()
-  const [loading, setLoading] = useState<boolean>(false)
+  const [errors, setErrors] = useState<Record<string, string | string[]>>({});
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const submit = (values:LoginProps) => {
-    setLoading(true)
-    axios.post('/youth-login', values).then(res=>{
-      setLoading(false)
-      if (res.data.success) {
-        router.visit(res.data.redirect);
-      }
-    }).catch(err => {
-     if (axios.isAxiosError(err)) {
-        if (err.response?.status === 422) {
-          // Laravel validation error
-          setErrors(err.response.data.errors)
-          console.log(err.response.data.errors);
-        } else {
-          // Other HTTP errors
-          console.log(err.response?.data);
-          notification.error({
-            description: err.response?.data.message
-          });
-        }
-      }
-    }).finally(() => {
-      setLoading(false)
-    })
+  const errorMessages = [...new Set(Object.values(errors).flat().filter(Boolean))];
 
+  const submit = async (values: LoginProps) => {
+    setErrors({});
+    setLoading(true);
+    try {
+      const { data } = await axios.post('/youth-login', values, {
+        headers: { Accept: 'application/json' },
+      });
+      if (data.success) router.visit(data.redirect);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 422) {
+        setErrors(error.response.data.errors ?? { login: 'Please check your login details.' });
+      } else if (axios.isAxiosError(error) && error.response?.status === 401) {
+        setErrors({ login: 'Invalid email or password. Please try again.' });
+      } else {
+        setErrors({ login: 'Unable to sign in right now. Check your connection and try again.' });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -62,11 +57,11 @@ export default function YouthLoginPage() {
                 Youth Services Access
               </div>
 
-              <h1 className="text-5xl font-bold leading-tight">Welcome back to your youth portal.</h1>
+              <h1 className="text-5xl leading-tight font-bold">Welcome back to your youth portal.</h1>
 
               <p className="mt-5 text-lg leading-8 text-emerald-50">
-                Sign in to update your youth profile, apply for services, upload requirements when needed,
-                and check notices from the Municipal Youth Development Office.
+                Sign in to update your youth profile, apply for services, upload requirements when needed, and check notices from the
+                Municipal Youth Development Office.
               </p>
             </div>
 
@@ -92,7 +87,10 @@ export default function YouthLoginPage() {
 
           <section className="flex min-h-screen flex-col px-6 py-6 sm:px-10 lg:px-12">
             <div className="flex items-center justify-between">
-              <Link href={route('home')} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-950">
+              <Link
+                href={route('home')}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-950"
+              >
                 <ArrowLeft className="h-4 w-4" />
                 Back to portal
               </Link>
@@ -103,72 +101,78 @@ export default function YouthLoginPage() {
             </div>
 
             <div className="flex flex-1 items-center justify-center py-10">
-
               <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-xl shadow-emerald-900/10 sm:p-8">
-
                 <div className="mb-8 text-center">
                   <BrandLogo className="mx-auto h-16 w-16" />
                   <h2 className="mt-5 text-2xl font-bold text-slate-950">Youth Login</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Access your youth profile and available MYDO services.
-                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">Access your youth profile and available MYDO services.</p>
                 </div>
 
-                <Form className="space-y-5" onFinish={submit}
+                {errorMessages.length > 0 && (
+                  <div
+                    id="login-errors"
+                    role="alert"
+                    aria-atomic="true"
+                    className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4"
+                  >
+                    <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold text-red-900">Unable to sign in</h3>
+                      <ul className="mt-1 list-inside list-disc space-y-1 text-sm leading-5 text-red-700">
+                        {errorMessages.map((message) => (
+                          <li key={message}>{message}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                <Form
+                  onFinish={submit}
+                  layout="vertical"
                   initialValues={{
                     email: '',
-                    password: ''
-                  }}>
-
-                  <Form.Item
-                    name="email"
-                    validateStatus={errors.email ? "error" : ""}
-                    help={errors.email ? errors.email[0] as string : ""}
-                    >
+                    password: '',
+                  }}
+                >
+                  <Form.Item name="email" label={<span className="font-semibold">Username</span>}>
                     <Input
+                      autoComplete="username"
+                      aria-invalid={Boolean(errors.email || errors.login)}
+                      aria-describedby={errorMessages.length ? 'login-errors' : undefined}
                       placeholder="email@example.com"
                       prefix={<Mail className="h-4 w-4 text-slate-400" />}
                     />
                   </Form.Item>
 
-                  <div className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                      <label htmlFor="password" className="text-sm font-medium">Password</label>
-                      <Link href={route('password.request')} className="text-sm font-medium text-emerald-700 hover:text-emerald-900">
-                        Forgot password?
-                      </Link>
-                    </div>
+                  <Form.Item name="password" label={<span className="font-semibold">Password</span>}>
+                    <Input.Password
+                      autoComplete="current-password"
+                      aria-invalid={Boolean(errors.password || errors.login)}
+                      aria-describedby={errorMessages.length ? 'login-errors' : undefined}
 
-                    <Form.Item
-                      name="password"
-                      validateStatus={errors.password ? "error" : ""}
-                      help={errors.password ? errors.password[0] as string : ""}>
-                      <Input.Password
-                        autoComplete="current-password"
-                        placeholder="Enter your password"
-                        prefix={<LockKeyhole className="h-4 w-4 text-slate-400" />}
-                      />
-                    </Form.Item>
+                      placeholder="Enter your password"
+                      prefix={<LockKeyhole className="h-4 w-4 text-slate-400" />}
+                    />
+                  </Form.Item>
+                  <div className="mb-5">
+                    <Link
+                      href={route('password.request')}
+                      className="text-sm font-medium text-emerald-700 hover:text-emerald-900"
+                    >
+                      Forgot password?
+                    </Link>
                   </div>
-
-                  {/* <div className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-3">
-                    <label className="flex items-center gap-2 text-sm text-slate-700">
-                      <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-emerald-700" />
-                      Remember me
-                    </label>
-                    <span className="text-xs font-medium text-slate-500">Design only</span>
-                  </div> */}
 
                   <Button
                     loading={loading}
                     htmlType="submit"
                     type="primary"
-                    className="w-full bg-emerald-700 hover:bg-emerald-800 text-white">
+                    className="w-full bg-emerald-700 text-white hover:bg-emerald-800"
+                  >
                     Sign in
                   </Button>
-
                 </Form>
-
 
                 <div className="mt-6">
                   <p className="text-center text-sm text-slate-600">
@@ -179,7 +183,6 @@ export default function YouthLoginPage() {
                   </p>
                 </div>
               </div>
-
             </div>
           </section>
         </div>

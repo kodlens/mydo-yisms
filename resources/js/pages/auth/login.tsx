@@ -106,56 +106,58 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     <label htmlFor="username" className="text-sm font-medium text-stone-700">
                       Username
                     </label>
-                <Input
-                  id="username"
-                  type="text"
-                  required
-                  autoFocus
-                  tabIndex={1}
+                    <Input
+                      id="username"
+                      type="text"
+                      required
+                      autoFocus
+                      tabIndex={1}
                       autoComplete="username"
-                  value={data.username}
-                  onChange={(e) => setData('username', e.target.value)}
+                      value={data.username}
+                      onChange={(e) => setData('username', e.target.value)}
                       placeholder="Enter your username"
                       prefix={<UserOutlined className="text-stone-400" />}
                       size="large"
-                />
-                <InputError message={errors.username} />
-              </div>
+                    />
+                    <InputError message={errors.username} />
+                  </div>
 
                   <div className="grid gap-2">
                     <div className="flex items-center gap-3">
                       <label htmlFor="password" className="text-sm font-medium text-stone-700">
                         Password
                       </label>
+                    </div>
+
+                    <Input.Password
+                      id="password"
+                      required
+                      tabIndex={2}
+                      autoComplete="current-password"
+                      value={data.password}
+                      onChange={(e) => setData('password', e.target.value)}
+                      placeholder="Password"
+                      prefix={<LockOutlined className="text-stone-400" />}
+                      size="large"
+                    />
+                    <InputError message={errors.password} />
+                  </div>
+
                   {canResetPassword && (
-                        <TextLink href={route('password.request')} className="ml-auto text-sm text-green-700" tabIndex={5}>
+                    <TextLink href={route('password.request')} className="ml-auto text-sm text-green-700" tabIndex={5}>
                       Forgot password?
                     </TextLink>
                   )}
-                </div>
-                <Input.Password
-                  id="password"
-                  required
-                  tabIndex={2}
-                  autoComplete="current-password"
-                  value={data.password}
-                  onChange={(e) => setData('password', e.target.value)}
-                  placeholder="Password"
-                      prefix={<LockOutlined className="text-stone-400" />}
-                      size="large"
-                />
-                <InputError message={errors.password} />
-              </div>
 
-              <Button
-                htmlType="submit"
-                type="primary"
-                loading={processing}
+                  <Button
+                    htmlType="submit"
+                    type="primary"
+                    loading={processing}
                     className="mt-2 h-11 w-full font-medium"
-                tabIndex={4}
-                disabled={processing}>
+                    tabIndex={4}
+                    disabled={processing}>
                     Sign in
-              </Button>
+                  </Button>
                 </form>
               </div>
 

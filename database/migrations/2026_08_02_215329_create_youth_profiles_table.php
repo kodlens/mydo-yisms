@@ -51,6 +51,7 @@ return new class extends Migration
             $table->string('role', 30)->default('youth');
 
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_graduated')->default(false);
 
             $table->rememberToken();
             $table->timestamps();

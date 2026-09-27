@@ -19,7 +19,7 @@ class YouthProfileSeeder extends Seeder
                 'lname' => 'Santos',
                 'fname' => 'Maria Angela',
                 'mname' => 'Reyes',
-                'email' => 'maria.santos@example.com',
+                'email' => 'grace@mail.com',
                 'password' => Hash::make('a'),
                 'birth_date' => '2005-04-12',
                 'sex' => 'Female',
@@ -35,13 +35,14 @@ class YouthProfileSeeder extends Seeder
                 'monthly_family_income' => 15000,
                 'role' => 'youth',
                 'is_active' => true,
+                'is_graduated' => false
             ],
             [
                 'student_id' => '2026-2235',
                 'lname' => 'Garcia',
                 'fname' => 'John Michael',
                 'mname' => 'Lopez',
-                'email' => 'john.garcia@example.com',
+                'email' => 'jan@mail.com',
                 'password' => Hash::make('a'),
                 'birth_date' => '2004-09-25',
                 'sex' => 'Male',
@@ -57,13 +58,14 @@ class YouthProfileSeeder extends Seeder
                 'monthly_family_income' => 18000,
                 'role' => 'youth',
                 'is_active' => true,
+                'is_graduated' => false
             ],
             [
                 'student_id' => '2026-1164',
                 'lname' => 'Mendoza',
                 'fname' => 'Christine Joy',
                 'mname' => 'Villanueva',
-                'email' => 'christine.mendoza@example.com',
+                'email' => 'tin@mail.com',
                 'password' => Hash::make('a'),
                 'birth_date' => '2006-01-18',
                 'sex' => 'Female',
@@ -79,6 +81,7 @@ class YouthProfileSeeder extends Seeder
                 'monthly_family_income' => 12000,
                 'role' => 'youth',
                 'is_active' => true,
+                'is_graduated' => false
             ],
         ];
 

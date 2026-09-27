@@ -35,6 +35,10 @@ Route::middleware('auth:youth')->group(function () {
         ->whereNumber('activity')
         ->name('youth.youth-services.events-activities.join');
 
+    Route::post('/youth/services/events-activities/{activity}/cancel', [YouthEventActivitiyController::class, 'cancel'])
+        ->whereNumber('activity')
+        ->name('youth.youth-services.events-activities.cancel');
+
     Route::post('youth-logout', [YouthAuthController::class, 'destroy'])->name('youth-logout');
     Route::post('student-logout', [YouthAuthController::class, 'destroy'])->name('student-logout');
 
