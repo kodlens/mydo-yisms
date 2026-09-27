@@ -1,6 +1,6 @@
 import YouthAuthLayout from '@/layouts/youth-auth-layout';
 import { SharedData } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Modal } from 'antd';
 import {
     ArrowDown,
@@ -34,6 +34,7 @@ type Activity = {
     is_featured: boolean;
     capacity: number | null;
     participants_count: number;
+    has_joined: boolean;
     requires_registration: boolean;
     registration_opens_at: string | null;
     registration_closes_at: string | null;
@@ -53,7 +54,7 @@ function Availability({ activity }: { activity: Activity }) {
     const slotsLeft = activity.capacity === null ? null : Math.max(0, activity.capacity - activity.participants_count);
     return (
         <div className="mt-4 space-y-1 text-xs text-slate-600">
-            <p className="font-semibold text-teal-800">{registrationStatus(activity)}</p>
+            <p className="font-semibold text-teal-800">{activity.has_joined ? 'You are registered' : registrationStatus(activity)}</p>
             {activity.requires_registration && (
                 <>
                     <p>
@@ -64,6 +65,20 @@ function Availability({ activity }: { activity: Activity }) {
                 </>
             )}
         </div>
+    );
+}
+function JoinButton({ activity, processing, onJoin }: { activity: Activity; processing: boolean; onJoin: (activity: Activity) => void }) {
+    if (!activity.requires_registration) return null;
+    const label = activity.has_joined ? 'Registered' : registrationStatus(activity);
+    return (
+        <button
+            type="button"
+            disabled={processing || activity.has_joined || label !== 'Registration open'}
+            onClick={() => onJoin(activity)}
+            className="mt-3 w-full rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-900 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600"
+        >
+            {activity.has_joined ? 'Registered' : processing ? 'Please wait...' : label === 'Registration open' ? 'Join activity' : label}
+        </button>
     );
 }
 const themes = {
@@ -104,7 +119,45 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
     const [category, setCategory] = useState<string>('All activities');
     const [query, setQuery] = useState('');
     const [sort, setSort] = useState('soonest');
-    const [selected, setSelected] = useState<Activity | null>(null);
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const selected = activities.find((activity) => activity.id === selectedId) ?? null;
+    const { post, processing, errors, clearErrors } = useForm<{ activity?: string }>({});
+    const [joinedTitle, setJoinedTitle] = useState('');
+    const [modal, contextHolder] = Modal.useModal();
+    function joinActivity(activity: Activity) {
+        modal.confirm({
+            centered: true,
+            title: 'Join this activity?',
+            content: `You will be registered for "${activity.title}" using your youth profile.`,
+            okText: 'Yes, join activity',
+            cancelText: 'Cancel',
+            onOk: () => {
+                clearErrors();
+                setJoinedTitle('');
+                return new Promise<void>((resolve) => {
+                    post(route('youth.youth-services.events-activities.join', activity.id), {
+                        preserveScroll: true,
+                        onSuccess: () => setJoinedTitle(activity.title),
+                        onFinish: () => resolve(),
+                    });
+                });
+            },
+        });
+    }
+    const feedback = (
+        <>
+            {errors.activity && (
+                <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                    {errors.activity}
+                </p>
+            )}
+            {joinedTitle && (
+                <p role="status" className="rounded-lg bg-teal-50 p-3 text-sm text-teal-800">
+                    You are registered for {joinedTitle}.
+                </p>
+            )}
+        </>
+    );
     const categories = ['All activities', ...new Set(activities.map((activity) => activity.category.name))];
     const ordered = [...activities].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
     const featured = ordered.find((activity) => activity.is_featured) ?? ordered[0];
@@ -117,6 +170,7 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
     return (
         <>
             <Head title="Events & Activities" />
+            {contextHolder}
             <div className="mx-auto max-w-7xl space-y-8 text-slate-800">
                 <header className="flex flex-wrap items-end justify-between gap-5">
                     <div>
@@ -135,6 +189,7 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
                         Explore activities <ArrowDown size={16} />
                     </a>
                 </header>
+                {feedback}
                 {featured && (
                     <section
                         aria-labelledby="featured-title"
@@ -160,8 +215,9 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
                                 </span>
                             </div>
                             <Availability activity={featured} />
+                            <JoinButton activity={featured} processing={processing} onJoin={joinActivity} />
                             <button
-                                onClick={() => setSelected(featured)}
+                                onClick={() => setSelectedId(featured.id)}
                                 className="mt-6 inline-flex items-center gap-3 rounded-lg bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-900"
                             >
                                 View activity <ArrowRight size={16} />
@@ -249,10 +305,11 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
                                         </p>
                                     </div>
                                     <Availability activity={activity} />
+                                    <JoinButton activity={activity} processing={processing} onJoin={joinActivity} />
                                     <div className="mt-auto pt-5">
                                         <button
                                             aria-label={`View details for ${activity.title}`}
-                                            onClick={() => setSelected(activity)}
+                                            onClick={() => setSelectedId(activity.id)}
                                             className="flex w-full items-center justify-between border-t border-slate-100 pt-4 text-sm font-semibold text-teal-800 hover:text-teal-600"
                                         >
                                             View details <ArrowRight size={16} />
@@ -305,7 +362,7 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
                     </Link>
                 </aside>
             </div>
-            <Modal open={selected !== null} onCancel={() => setSelected(null)} footer={null} title="Activity details" width={620}>
+            <Modal centered open={selected !== null} onCancel={() => setSelectedId(null)} footer={null} title="Activity details" width={620}>
                 {selected && (
                     <div className="space-y-5 py-3">
                         <Artwork activity={selected} />
@@ -342,11 +399,9 @@ const YouthEventActivitiesPage = ({ activities = [] }: { activities?: Activity[]
                                 <p className="whitespace-pre-line text-slate-600">{selected.requirements}</p>
                             </div>
                         )}
-                        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-                            {selected.requires_registration
-                                ? 'Please contact the youth office for registration. Online sign-up is not yet available.'
-                                : 'No registration is required. Contact the youth office for participation details.'}
-                        </p>
+                        {feedback}
+                        <JoinButton activity={selected} processing={processing} onJoin={joinActivity} />
+                        {!selected.requires_registration && <p className="text-sm text-slate-600">No registration is required for this activity.</p>}
                     </div>
                 )}
             </Modal>

@@ -13,6 +13,7 @@ class Activity extends Model
         return [
             'starts_at' => 'immutable_datetime',
             'ends_at' => 'immutable_datetime',
+            'published_at' => 'immutable_datetime',
             'registration_opens_at' => 'immutable_datetime',
             'registration_closes_at' => 'immutable_datetime',
             'capacity' => 'integer',

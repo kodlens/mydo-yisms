@@ -31,6 +31,10 @@ Route::middleware('auth:youth')->group(function () {
     Route::get('/youth/services/events-activities', [YouthEventActivitiyController::class, 'index'])
         ->name('youth.youth-services.events-activities.index');
 
+    Route::post('/youth/services/events-activities/{activity}/join', [YouthEventActivitiyController::class, 'join'])
+        ->whereNumber('activity')
+        ->name('youth.youth-services.events-activities.join');
+
     Route::post('youth-logout', [YouthAuthController::class, 'destroy'])->name('youth-logout');
     Route::post('student-logout', [YouthAuthController::class, 'destroy'])->name('student-logout');
 
