@@ -49,7 +49,7 @@ const AdminActivityCategoriesPage = () => {
     const nextPerPage = overrides?.perPage ?? perPage;
 
     try {
-      const res = await axios.get<PaginatedResponse<ScholarshipType>>('/admin/get-scholarship-types', {
+      const res = await axios.get<PaginatedResponse<ScholarshipType>>('/admin/get-activity-categories', {
         params: {
           search: nextSearch,
           perpage: nextPerPage,
@@ -111,7 +111,7 @@ const AdminActivityCategoriesPage = () => {
   const handleSetActiveClick = async (row:ScholarshipType) => {
 
     try {
-      const res = await axios.post(`/admin/scholarship-types/${row.id}/active`, {
+      const res = await axios.post(`/admin/activity-categories/${row.id}/active`, {
         is_active: row.is_active
       })
       if (res.data.success) {
@@ -179,21 +179,21 @@ const AdminActivityCategoriesPage = () => {
                 type='primary'
                 icon={<Plus size={15} />}
               >
-                  New Scholarship/Program
+                  Create / New
               </Button>
             </div>
 
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h2 className="text-base font-semibold text-stone-900">Scholarship directory</h2>
+                <h2 className="text-base font-semibold text-stone-900">Activity Category directory</h2>
                 <p className="mt-1 text-sm text-stone-500">Compare benefits and funding at a glance.</p>
               </div>
               <div className="w-full lg:max-w-md">
                 <label htmlFor="search" className="mb-2 block text-xs font-medium text-stone-600">
-                  Find a scholarship
+                  Find a category
                 </label>
                 <Search
-                  placeholder="Search by scholarship name"
+                  placeholder="Search by activity name"
                   size="large"
                   autoComplete="off"
                   allowClear
@@ -224,7 +224,7 @@ const AdminActivityCategoriesPage = () => {
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                     description={
                       <div className="py-2">
-                        <p className="font-medium text-stone-700">No scholarship types found</p>
+                        <p className="font-medium text-stone-700">No activity categories found</p>
                         <p className="mt-1 text-sm text-stone-500">If you searched, try another name or clear your search.</p>
                       </div>
                     }
