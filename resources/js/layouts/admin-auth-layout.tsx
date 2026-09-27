@@ -1,227 +1,202 @@
-import PanelSidebarLogo from '@/components/mydo-components/panel-sidebar-logo';
 import { User } from '@/types';
+import { Link, useForm } from '@inertiajs/react';
+import { Avatar, Button, ConfigProvider, Drawer, Dropdown, Grid, Layout, Menu, MenuProps, Tooltip } from 'antd';
 import {
-  AppstoreOutlined,
-  DownOutlined,
-  FileSearchOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-} from '@ant-design/icons';
-import { router, useForm } from '@inertiajs/react';
-import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, MenuProps } from 'antd';
-import { LogOut, NotebookPen, UserRound } from 'lucide-react';
-import { CSSProperties, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from 'react';
+  ChartBarStacked,
+  ChevronDown,
+  ClipboardList,
+  GraduationCap,
+  House,
+  LogOut,
+  Menu as MenuIcon,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ShieldCheck,
+  UserRound,
+  Users,
+} from 'lucide-react';
+import { PropsWithChildren, ReactNode, useState } from 'react';
 
 const { Header, Sider, Content } = Layout;
+const sidebarBackground = 'linear-gradient(180deg, #1f2933 0%, #263238 52%, #17212b 100%)';
+const destinations = [
+  { key: 'admin.dashboard.index', prefix: 'admin.dashboard.', label: 'Dashboard', icon: House },
+  { key: 'admin.activity-categories.index', prefix: 'admin.activity-categories.', label: 'Activity Categories', icon: ChartBarStacked },
+  { key: 'admin.scholarship-types.index', prefix: 'admin.scholarship-types.', label: 'Scholarship Types', icon: GraduationCap },
+  { key: 'admin.applicants.index', prefix: 'admin.applicants.', label: 'Scholarship Applicants', icon: ClipboardList },
+  { key: 'admin.youth-profiles.index', prefix: 'admin.youth-profiles.', label: 'Youth Profiles', icon: Users },
+  { key: 'admin.users.index', prefix: 'admin.users.', label: 'Users', icon: UserRound },
+];
 
-const siderStyle: CSSProperties = {
-  background: `
-    radial-gradient(circle at top right, rgba(245, 158, 11, 0.22), transparent 36%),
-    radial-gradient(circle at bottom left, rgba(20, 83, 45, 0.24), transparent 40%),
-    linear-gradient(180deg, #1f2933 0%, #263238 52%, #17212b 100%)
-  `,
-  borderRight: '1px solid rgba(251, 191, 36, 0.22)',
-};
-
-export default function AdminAuthLayout({
-  user,
-  children,
-  header,
-}: PropsWithChildren<{ user: User; header?: ReactNode }>) {
-  const { post } = useForm();
+export default function AdminAuthLayout({ user, children, header }: PropsWithChildren<{ user: User; header?: ReactNode }>) {
+  const { post, processing } = useForm();
   const [collapsed, setCollapsed] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const screens = Grid.useBreakpoint();
+  const isMobile = screens.md === false;
+  const currentRoute = String(route().current() ?? '');
+  const currentItem = destinations.find((item) => currentRoute.startsWith(item.prefix));
+  const initials = `${user?.fname?.[0] ?? ''}${user?.lname?.[0] ?? ''}`.toUpperCase();
+  const fullName = [user?.fname, user?.lname].filter(Boolean).join(' ') || 'Administrator';
+  const logout = () => post(route('logout'));
 
-  const handleLogout = useCallback(() => {
-    post(route('logout'));
-  }, [post]);
+  const navigationItems: MenuProps['items'] = destinations.map(({ key, label, icon: Icon }) => {
+    const available = route().has(key);
+    return {
+      key,
+      disabled: !available,
+      icon: <Icon size={18} />,
+      label: available ? (
+        <Link href={route(key)} aria-current={currentItem?.key === key ? 'page' : undefined} onClick={() => setDrawerOpen(false)}>
+          {label}
+        </Link>
+      ) : (
+        <Tooltip title="Not available yet">
+          <span>{label}</span>
+        </Tooltip>
+      ),
+    };
+  });
+  const accountItems: MenuProps['items'] = [{ key: 'logout', icon: <LogOut size={18} />, label: 'Logout', disabled: processing, onClick: logout }];
 
-  type MenuItem = Required<MenuProps>['items'][number];
-  const navigationItems = useMemo<MenuItem[]>(
-    () => [
-      {
-        key: 'admin.dashboard.index',
-        icon: <AppstoreOutlined />,
-        label: 'Dashboard',
-        onClick: () => router.visit('/admin/dashboard'),
-      },
-      {
-        key: 'admin.scholarship-types.index',
-        icon: <NotebookPen size={15}/>,
-        label: 'Scholarship Types',
-        onClick: () => router.visit('/admin/scholarship-types'),
-      },
-      {
-        key: 'admin.scholarship-applicants.index',
-        icon: <FileSearchOutlined />,
-        label: 'Scholarship Applicants',
-        onClick: () => router.visit('/admin/applicants'),
-      },
-      {
-        type: 'divider',
-      },
-      {
-        key: 'admin.youth-profiles.index',
-        icon: <UserRound size={15} />,
-        label: 'Youth Profiles',
-        onClick: () => router.visit('/admin/youth-profiles'),
-      },
-      {
-        key: 'admin.users.index',
-        icon: <UserRound size={15} />,
-        label: 'Users',
-        onClick: () => router.visit('/admin/users'),
-      },
-      {
-        key: 'logout',
-        danger: true,
-        icon: <LogOut size={15} />,
-        label: 'Logout',
-        onClick: handleLogout,
-      },
-    ],
-    [handleLogout],
-  );
-
-  const currentRoute = `${route().current() ?? ''}`;
-  const userInitials = `${user?.fname?.[0] ?? ''}${user?.lname?.[0] ?? ''}`.toUpperCase();
-  const fullName = `${user?.lname ?? ''}, ${user?.fname ?? ''}`.trim();
-  const compactName = `${user?.lname ?? ''}, ${user?.fname?.[0] ?? ''}.`.trim();
-  const selectedMenuKey = currentRoute.startsWith('admin.applicants.') ? 'admin.applicants.index' : currentRoute;
-  const pageTitle =
-    currentRoute === 'admin.dashboard.index'
-      ? 'Dashboard'
-      : currentRoute.startsWith('admin.applicants.')
-        ? 'Applicants'
-        : 'Admin Panel';
-
-
-  console.log(currentRoute);
-
-  return (
-    <Layout>
-      <Sider
-        trigger={null}
-        collapsible
-        style={siderStyle}
-        breakpoint="md"
-        onBreakpoint={(broken) => setCollapsed(broken)}
-        collapsed={collapsed}
-        width={260}
+  function sidebar(compact: boolean) {
+    return (
+      <ConfigProvider
+        theme={{
+          components: {
+            Menu: {
+              itemBg: 'transparent',
+              itemColor: '#e2e8e5',
+              itemHoverColor: '#ffffff',
+              itemHoverBg: 'rgba(255,255,255,0.07)',
+              itemSelectedColor: '#ffffff',
+              itemSelectedBg: '#166534',
+              itemBorderRadius: 10,
+              itemHeight: 46,
+              itemMarginInline: 0,
+              iconSize: 18,
+              collapsedWidth: 80,
+            },
+          },
+          token: { colorTextDisabled: '#84908c' },
+        }}
       >
-        <div className="border-b border-amber-100/20 pb-3">
-          <PanelSidebarLogo />
-          {!collapsed && (
-            <div className="mx-4 mt-1 rounded-lg border border-amber-100/20 bg-white/10 px-3 py-2 text-amber-50 backdrop-blur-[1px]">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-100/90">Admin Panel</p>
-              <div className="mt-1 flex items-center gap-2">
-                <div className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-amber-100/35 bg-amber-200/20 text-[11px] font-semibold">
-                  {userInitials || 'ST'}
-                </div>
-                <p className="truncate text-xs text-amber-50/90">
-                  {user.lname}, {user.fname}
+        <div className="flex h-full min-h-0 flex-col">
+          <div className={`flex h-20 shrink-0 items-center gap-3 border-b border-white/10 ${compact ? 'justify-center' : 'px-5'}`}>
+            <img src="/images/e-kabataan.png" alt="E-Kabataan logo" className="h-10 w-10 shrink-0 object-contain" />
+            {!compact && (
+              <div>
+                <p className="text-sm font-bold tracking-wide text-white">E-KABATAAN</p>
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-amber-200">
+                  <ShieldCheck size={13} /> Administration
                 </p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+          <nav aria-label="Admin navigation" className="min-h-0 flex-1 overflow-y-auto px-3 py-5">
+            {!compact && <p className="mb-3 px-3 text-[10px] font-semibold tracking-widest text-slate-400 uppercase">Workspace</p>}
+            <Menu
+              mode="inline"
+              inlineCollapsed={compact}
+              selectedKeys={currentItem ? [currentItem.key] : []}
+              items={navigationItems}
+              style={{ background: 'transparent', borderInlineEnd: 0 }}
+            />
+          </nav>
+          <nav aria-label="Account actions" className="shrink-0 border-t border-white/10 px-3 py-3">
+            <Menu
+              mode="inline"
+              inlineCollapsed={compact}
+              selectedKeys={[]}
+              items={accountItems}
+              style={{ background: 'transparent', borderInlineEnd: 0 }}
+            />
+          </nav>
         </div>
+      </ConfigProvider>
+    );
+  }
 
-        <ConfigProvider
-          theme={{
-            token: {
-              colorText: '#fff7ed',
-              colorBgBase: '#263238',
-              colorBgContainer: '#263238',
-            },
-            components: {
-              Menu: {
-                itemBg: 'transparent',
-                itemColor: 'rgba(255,247,237,0.86)',
-                itemHoverColor: '#ffffff',
-                itemHoverBg: 'rgba(245, 158, 11, 0.16)',
-                itemSelectedColor: '#ffffff',
-                itemSelectedBg: 'rgba(22, 101, 52, 0.46)',
-                subMenuItemBg: 'transparent',
-                itemBorderRadius: 8,
-                iconSize: 15,
-              },
-            },
+  return (
+    <Layout style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+      {!isMobile && (
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          width={264}
+          collapsedWidth={80}
+          style={{
+            background: sidebarBackground,
+            borderRight: '1px solid rgba(251,191,36,0.15)',
+            height: '100%',
+            minHeight: 0,
+            overflow: 'hidden',
           }}
         >
-          <Menu
-            mode="inline"
-            style={{
-              background: 'transparent',
-              color: '#fff7ed',
-              borderInlineEnd: 0,
-              paddingInline: 8,
-              paddingTop: 8,
-            }}
-            selectedKeys={[selectedMenuKey]}
-            items={navigationItems}
-          />
-        </ConfigProvider>
-      </Sider>
-
-      <Layout>
+          {sidebar(collapsed)}
+        </Sider>
+      )}
+      <Drawer
+        title="Admin navigation"
+        placement="left"
+        open={isMobile && drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        styles={{
+          wrapper: { width: 'min(310px, 90vw)' },
+          header: { background: '#ffffff' },
+          body: { padding: 0, background: sidebarBackground, overflow: 'hidden' },
+        }}
+      >
+        {sidebar(false)}
+      </Drawer>
+      <Layout style={{ minHeight: 0, minWidth: 0 }}>
         <Header className="border-b border-stone-200" style={{ padding: 0, background: 'white' }}>
-          <div className="flex h-16 items-center justify-between px-3">
+          <div className="flex h-16 items-center justify-between gap-2 px-3 sm:px-5">
             <div className="flex min-w-0 items-center gap-3">
               <Button
                 type="text"
-                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={() => setCollapsed(!collapsed)}
-                style={{
-                  fontSize: '16px',
-                  width: 42,
-                  height: 42,
-                }}
+                aria-label={isMobile ? 'Open navigation' : collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                aria-expanded={isMobile ? drawerOpen : !collapsed}
+                icon={isMobile ? <MenuIcon size={20} /> : collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+                onClick={() => (isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed))}
+                style={{ width: 42, height: 42, flexShrink: 0 }}
               />
-              <div className="h-7 w-px bg-stone-200" />
               <div className="min-w-0 leading-tight">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-500">Admin Workspace</p>
-                <p className="truncate text-sm font-semibold text-stone-800">{header ?? pageTitle}</p>
+                <p className="hidden text-[10px] font-semibold tracking-widest text-stone-500 uppercase sm:block">Admin Workspace</p>
+                <p className="truncate text-sm font-semibold text-stone-800">{header ?? currentItem?.label ?? 'Admin Panel'}</p>
               </div>
             </div>
-
             <Dropdown
               trigger={['click']}
               menu={{
                 items: [
                   {
                     key: 'logout',
-                    danger: true,
-                    icon: <LogOut size={14} />,
+                    icon: <LogOut size={16} />,
                     label: 'Logout',
-                    onClick: handleLogout,
+                    danger: true,
+                    disabled: processing,
+                    onClick: logout,
                   },
                 ],
               }}
             >
               <button
                 type="button"
-                className="inline-flex h-10 max-w-[210px] items-center gap-2 rounded-lg border border-stone-200 px-3 text-sm text-stone-700 hover:bg-stone-50"
-                title={fullName}
+                aria-label={`Account menu for ${fullName}`}
+                className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-stone-200 px-2 text-sm text-stone-700 hover:bg-stone-50 sm:px-3"
               >
                 <Avatar size="small" style={{ backgroundColor: '#166534' }}>
-                  {userInitials || 'ST'}
+                  {initials || 'A'}
                 </Avatar>
-                <span className="max-w-[110px] truncate font-medium lg:max-w-[160px]">{compactName}</span>
-                <DownOutlined className="text-xs text-stone-500" />
+                <span className="hidden max-w-40 truncate font-medium sm:block">{fullName}</span>
+                <ChevronDown size={14} />
               </button>
             </Dropdown>
           </div>
         </Header>
-
-        <Content
-          style={{
-            margin: 0,
-            padding: 0,
-            height: 'calc(100vh - 64px)',
-            background: '#eef1ee',
-            overflow: 'auto',
-            borderRadius: 0,
-          }}
-        >
+        <Content style={{ margin: 0, padding: 0, flex: 1, minHeight: 0, background: '#eef1ee', overflow: 'auto' }}>
           <main className="px-4 py-8">{children}</main>
         </Content>
       </Layout>

@@ -5,6 +5,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/dashboard', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard.index');
 
+    Route::resource('/activity-categories', App\Http\Controllers\Admin\AdminActivityCategoryController::class)->names('activity-categories');
+    Route::get('/get-activity-categories', [App\Http\Controllers\Admin\AdminActivityCategoryController::class, 'getData'])->name('activity-categories.get-data');
 
     Route::resource('/scholarship-types', App\Http\Controllers\Admin\AdminScholarshipTypeController::class)->names('scholarship-types');
     Route::get('/get-scholarship-types', [App\Http\Controllers\Admin\AdminScholarshipTypeController::class, 'getData'])->name('scholarship-types.get-data');
