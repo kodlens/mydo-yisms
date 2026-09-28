@@ -7,6 +7,7 @@ use App\Models\ScholarshipType;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+#ETIENNE WAYNE
 
 class AdminScholarshipTypeController extends Controller
 {
