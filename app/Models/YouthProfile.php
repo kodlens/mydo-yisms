@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -75,6 +76,11 @@ class YouthProfile extends Authenticatable
     public function scholarshipApplications(): HasMany
     {
         return $this->hasMany(ScholarshipApplication::class);
+    }
+
+    public function volunteerRecord(): HasOne
+    {
+        return $this->hasOne(Volunteer::class);
     }
 
 }

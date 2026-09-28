@@ -8,6 +8,30 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Activity extends Model
 {
+    protected $fillable = [
+        'activity_category_id',
+        'created_by',
+        'title',
+        'slug',
+        'summary',
+        'description',
+        'cover_image_path',
+        'venue_name',
+        'venue_address',
+        'starts_at',
+        'ends_at',
+        'registration_opens_at',
+        'registration_closes_at',
+        'capacity',
+        'requires_registration',
+        'requires_approval',
+        'eligibility_notes',
+        'requirements',
+        'status',
+        'published_at',
+        'is_featured',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -30,5 +54,10 @@ class Activity extends Model
     public function registrations(): HasMany
     {
         return $this->hasMany(ActivityRegistration::class);
+    }
+
+    public function volunteerAssignments(): HasMany
+    {
+        return $this->hasMany(VolunteerActivity::class);
     }
 }

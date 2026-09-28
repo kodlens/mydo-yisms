@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import { router, useForm } from '@inertiajs/react';
 import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, MenuProps } from 'antd';
-import { LogOut, UserRound } from 'lucide-react';
+import { HandHeart, LogOut, UserRound } from 'lucide-react';
 import { CSSProperties, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from 'react';
 
 const { Header, Sider, Content } = Layout;
@@ -54,6 +54,12 @@ export default function StaffAuthLayout({
         type: 'divider',
       },
       {
+        key: 'staff.volunteers.index',
+        icon: <HandHeart size={15} />,
+        label: 'Volunteers',
+        onClick: () => router.visit('/staff/volunteers'),
+      },
+      {
         key: 'staff.youth-profiles.index',
         icon: <UserRound size={15} />,
         label: 'Youth Profiles',
@@ -74,16 +80,23 @@ export default function StaffAuthLayout({
   const userInitials = `${user?.fname?.[0] ?? ''}${user?.lname?.[0] ?? ''}`.toUpperCase();
   const fullName = `${user?.lname ?? ''}, ${user?.fname ?? ''}`.trim();
   const compactName = `${user?.lname ?? ''}, ${user?.fname?.[0] ?? ''}.`.trim();
-  const selectedMenuKey = currentRoute.startsWith('staff.applicants.') ? 'staff.applicants.index' : currentRoute;
+  const selectedMenuKey = currentRoute.startsWith('staff.applicants.')
+    ? 'staff.applicants.index'
+    : currentRoute.startsWith('staff.volunteers.')
+      ? 'staff.volunteers.index'
+      : currentRoute.startsWith('staff.youth-profiles.')
+        ? 'staff.youth-profiles.index'
+        : currentRoute;
   const pageTitle =
     currentRoute === 'staff.dashboard.index'
       ? 'Dashboard'
       : currentRoute.startsWith('staff.applicants.')
         ? 'Applicants'
-        : 'Staff Panel';
-
-
-  console.log(currentRoute);
+        : currentRoute.startsWith('staff.volunteers.')
+          ? 'Volunteers'
+          : currentRoute.startsWith('staff.youth-profiles.')
+            ? 'Youth Profiles'
+            : 'Staff Panel';
 
   return (
     <Layout>

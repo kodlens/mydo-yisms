@@ -15,6 +15,21 @@ pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
+/**
+ * Creates a user without the factory, which still references a removed `name` column.
+ */
+function makeUser(string $role = 'admin'): App\Models\User
+{
+    return App\Models\User::create([
+        'username' => 'test'.Illuminate\Support\Str::lower(Illuminate\Support\Str::random(8)),
+        'fname' => 'Test',
+        'lname' => Illuminate\Support\Str::ucfirst($role),
+        'email' => Illuminate\Support\Str::lower(Illuminate\Support\Str::random(10)).'@example.test',
+        'password' => 'password',
+        'role' => $role,
+    ]);
+}
+
 /*
 |--------------------------------------------------------------------------
 | Expectations

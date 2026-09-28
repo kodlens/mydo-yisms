@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ClipboardList,
   GraduationCap,
+  HandHeart,
   House,
   LogOut,
   Menu as MenuIcon,
@@ -22,6 +23,7 @@ const sidebarBackground = 'linear-gradient(180deg, #1f2933 0%, #263238 52%, #172
 const destinations = [
   { key: 'admin.dashboard.index', prefix: 'admin.dashboard.', label: 'Dashboard', icon: House },
   { key: 'admin.activity-categories.index', prefix: 'admin.activity-categories.', label: 'Activity Categories', icon: ChartBarStacked },
+  { key: 'admin.volunteers.index', prefix: 'admin.volunteers.', label: 'Volunteers', icon: HandHeart },
   { key: 'admin.scholarship-types.index', prefix: 'admin.scholarship-types.', label: 'Scholarship Types', icon: GraduationCap },
   { key: 'admin.applicants.index', prefix: 'admin.applicants.', label: 'Scholarship Applicants', icon: ClipboardList },
   { key: 'admin.youth-profiles.index', prefix: 'admin.youth-profiles.', label: 'Youth Profiles', icon: Users },
