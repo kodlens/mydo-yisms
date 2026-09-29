@@ -23,8 +23,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/volunteers/{id}/attendance', [App\Http\Controllers\Admin\AdminVolunteerController::class, 'storeAttendance'])->name('volunteers.attendance.store');
 
 
-
-
     Route::resource('/users', App\Http\Controllers\Admin\AdminUserController::class)->names('users');
     Route::get('/get-users', [App\Http\Controllers\Admin\AdminUserController::class, 'getData'])->name('users.getdata');
     //Route::post('/users-change-password/{id}', [App\Http\Controllers\Admin\AdminUserController::class, 'changePassword'])->name('admin.users.change-password');
