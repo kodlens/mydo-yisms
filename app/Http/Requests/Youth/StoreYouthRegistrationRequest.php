@@ -62,7 +62,7 @@ class StoreYouthRegistrationRequest extends FormRequest
             'school_name' => ['nullable', 'string', 'max:255'],
             'program' => ['nullable', 'string', 'max:255'],
             'year' => ['nullable', 'integer', 'between:1,4'],
-            'previous_semester_gwa' => ['nullable', 'numeric', 'between:1,5'],
+            //'previous_semester_gwa' => ['nullable', 'numeric', 'between:1,5'],
 
             'guardian_name' => ['required', 'string', 'max:255'],
             'guardian_contact_number' => ['required', 'string', 'max:30', 'regex:/^09[0-9]{9}$/'],

@@ -59,34 +59,34 @@ export default function YouthRegisterPage() {
   const provCode = Form.useWatch('provCode', form) ?? '';
   const citymunCode = Form.useWatch('citymunCode', form) ?? '';
 
-  // const initialData = {
-  //   email: null,
-  //   password: null,
-  //   password_confirmation: null,
-  //   lname: '',
-  //   fname: '',
-  //   mname: '',
-  //   sex:'',
-  //   birth_date: null,
-  //   civil_status: '',
-  //   mobile_number: null,
-  //   provCode: null,
-  //   citymunCode: null,
-  //   brgyCode: null,
-  //   street_address: '',
-  //   zip_code: '',
-  //   guardian_name: '',
-  //   guardian_contact_number: null,
-  //   monthly_family_income: 0,
-  //    school_name: '',
-  //   program: '',
-  //   year: 1,
-  //   previous_semester_gwa: 0,
-  //   coe: null,
-  //   cog: null,
-  //   sedula: null,
-  //   school_id: null
-  // }
+  const initialData = {
+    email: null,
+    password: null,
+    password_confirmation: null,
+    lname: '',
+    fname: '',
+    mname: '',
+    sex:'',
+    birth_date: null,
+    civil_status: '',
+    mobile_number: null,
+    provCode: null,
+    citymunCode: null,
+    brgyCode: null,
+    street_address: '',
+    zip_code: '',
+    guardian_name: '',
+    guardian_contact_number: null,
+    monthly_family_income: 0,
+    school_name: '',
+    program: '',
+    year: 1,
+    previous_semester_gwa: 0,
+    coe: null,
+    cog: null,
+    sedula: null,
+    school_id: null
+  }
 
 
   const testData = {
@@ -240,7 +240,7 @@ export default function YouthRegisterPage() {
                     console.log('Youth registration validation failed:', errorInfo);
                   }}
                   preserve
-                  initialValues={testData}
+                  initialValues={initialData}
                   className="space-y-6">
                       <FormSection icon={LockKeyhole} title="Account Information">
                         <div className="flex md:gap-4 flex-col md:flex-row">
