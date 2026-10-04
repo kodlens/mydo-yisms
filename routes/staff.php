@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Staff\StaffApplicantController;
+use App\Http\Controllers\Staff\StaffEventActivityController;
 use App\Http\Controllers\Staff\StaffVolunteerController;
 use App\Http\Controllers\Staff\StaffYouthProfileController;
 use App\Http\Controllers\Staff\StaffDashboardController;
@@ -17,6 +18,23 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::patch('/applicants/{applicant}/status', [StaffApplicantController::class, 'updateStatus'])->name('applicants.status.update');
     Route::resource('/applicants', StaffApplicantController::class)->names('scholarship-applicants');
     Route::get('/get-applicants', [StaffApplicantController::class, 'getData'])->name('scholarship-applicants.get-data');
+
+
+    // Events & activities. Spelled out instead of Route::resource because this module has no
+    // show/create/edit pages; the form is a modal driven by the JSON endpoints below.
+    // Literal paths are declared before the {id} routes so they are not read as an id.
+    Route::get('/events-activities', [StaffEventActivityController::class, 'index'])->name('events-activities.index');
+    Route::get('/events-activities/categories', [StaffEventActivityController::class, 'categories'])->name('events-activities.categories');
+    Route::get('/events-activities/data', [StaffEventActivityController::class, 'data'])->name('events-activities.data');
+    Route::get('/events-activities/create', [StaffEventActivityController::class, 'create'])->name('events-activities.create');
+    Route::get('/events-activities/{id}/edit', [StaffEventActivityController::class, 'edit'])->name('events-activities.edit');
+    Route::get('/events-activities/{id}/participants', [StaffEventActivityController::class, 'participantsPage'])->name('events-activities.participants-page');
+    Route::get('/events-activities/{id}/participants/list', [StaffEventActivityController::class, 'participants'])->name('events-activities.participants');
+    Route::patch('/events-activities/{id}/participants/{registration}', [StaffEventActivityController::class, 'updateParticipant'])->name('events-activities.participants.update');
+    Route::post('/events-activities', [StaffEventActivityController::class, 'store'])->name('events-activities.store');
+    Route::put('/events-activities/{id}', [StaffEventActivityController::class, 'update'])->name('events-activities.update');
+    Route::delete('/events-activities/{id}', [StaffEventActivityController::class, 'destroy'])->name('events-activities.destroy');
+
 
     // Volunteer programme. No resource route here: staff cannot register or delete a
     // volunteer, so only the review, assignment, and attendance actions are exposed.

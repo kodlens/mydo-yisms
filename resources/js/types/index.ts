@@ -81,3 +81,11 @@ export interface Youth extends User {
         brgyDesc: string;
     } | null;
 }
+
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  current_page: number;
+  per_page: number;
+  total: number;
+};

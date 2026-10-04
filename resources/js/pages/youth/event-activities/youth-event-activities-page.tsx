@@ -23,7 +23,7 @@ type Activity = {
     id: number;
     title: string;
     status: string;
-    registrations?: { id: number; status: string; registered_at: string; cancelled_at: string | null }[];
+    registrations?: { id: number; status: string; registered_at: string; cancelled_at: string | null; rejection_reason: string | null }[];
     category: { id: number; name: string };
     starts_at: string;
     ends_at: string;
@@ -37,10 +37,22 @@ type Activity = {
     capacity: number | null;
     participants_count: number;
     has_joined: boolean;
+    is_approved: boolean;
     requires_registration: boolean;
     registration_opens_at: string | null;
     registration_closes_at: string | null;
 };
+
+// A sign-up awaiting review shows as "Awaiting review" rather than "Registered",
+// so the youth knows the slot is held but not yet confirmed.
+function participantLabel(activity: Activity) {
+    if (!activity.has_joined) return registrationStatus(activity);
+    if (activity.is_approved) return 'You are confirmed';
+
+    const reason = activity.registrations?.[0]?.rejection_reason;
+
+    return reason ? `Not accepted: ${reason}` : 'Awaiting review';
+}
 
 function registrationStatus(activity: Activity) {
     const now = Date.now();
@@ -58,7 +70,7 @@ function Availability({ activity }: { activity: Activity }) {
     const slotsLeft = activity.capacity === null ? null : Math.max(0, activity.capacity - activity.participants_count);
     return (
         <div className="mt-4 space-y-1 text-xs text-slate-600">
-            <p className="font-semibold text-teal-800">{activity.has_joined ? 'You are registered' : registrationStatus(activity)}</p>
+            <p className="font-semibold text-teal-800">{participantLabel(activity)}</p>
             {activity.requires_registration && (
                 <>
                     <p>
@@ -73,7 +85,9 @@ function Availability({ activity }: { activity: Activity }) {
 }
 function JoinButton({ activity, processing, onJoin }: { activity: Activity; processing: boolean; onJoin: (activity: Activity) => void }) {
     if (!activity.requires_registration) return null;
-    const label = activity.has_joined ? 'Registered' : registrationStatus(activity);
+    // A pending sign-up still holds a slot, so the button stays disabled and reads
+    // "Awaiting review" until staff make a decision.
+    const label = activity.has_joined ? (activity.is_approved ? 'Registered' : 'Awaiting review') : registrationStatus(activity);
     return (
         <button
             type="button"
@@ -81,7 +95,7 @@ function JoinButton({ activity, processing, onJoin }: { activity: Activity; proc
             onClick={() => onJoin(activity)}
             className="mt-3 w-full rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-900 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600"
         >
-            {activity.has_joined ? 'Registered' : processing ? 'Please wait...' : label === 'Registration open' ? 'Join activity' : label}
+            {activity.has_joined ? label : processing ? 'Please wait...' : label === 'Registration open' ? 'Join activity' : label}
         </button>
     );
 }
@@ -284,7 +298,10 @@ const YouthEventActivitiesPage = ({ activities = [], myActivities = [] }: { acti
                         {myList.length > 0 ? (
                             <ul className="space-y-3">
                                 {myList.map((activity) => {
-                                    const cancelled = activity.registrations?.[0]?.status === 'cancelled';
+                                    const mine = activity.registrations?.[0];
+                                    const cancelled = mine?.status === 'cancelled';
+                                    const rejected = mine?.status === 'rejected';
+                                    const awaiting = mine?.status === 'pending';
                                     return (
                                         <li
                                             key={activity.id}
@@ -295,13 +312,24 @@ const YouthEventActivitiesPage = ({ activities = [], myActivities = [] }: { acti
                                                 <h3 className="mt-1 font-bold text-slate-900">{activity.title}</h3>
                                                 <span
                                                     className={
-                                                        cancelled
+                                                        cancelled || rejected
                                                             ? 'mt-2 inline-block rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600'
-                                                            : 'mt-2 inline-block rounded-full bg-teal-50 px-2.5 py-1 text-xs text-teal-800'
+                                                            : awaiting
+                                                              ? 'mt-2 inline-block rounded-full bg-amber-50 px-2.5 py-1 text-xs text-amber-800'
+                                                              : 'mt-2 inline-block rounded-full bg-teal-50 px-2.5 py-1 text-xs text-teal-800'
                                                     }
                                                 >
-                                                    {cancelled ? 'Cancelled' : 'Registered'}
+                                                    {cancelled
+                                                        ? 'Cancelled'
+                                                        : rejected
+                                                          ? 'Not accepted'
+                                                          : awaiting
+                                                            ? 'Awaiting review'
+                                                            : 'Registered'}
                                                 </span>
+                                                {rejected && mine?.rejection_reason && (
+                                                    <p className="mt-2 text-xs text-stone-500">{mine.rejection_reason}</p>
+                                                )}
                                                 {activity.status === 'cancelled' && (
                                                     <p className="mt-2 text-xs text-red-700">This activity was cancelled by the organizer.</p>
                                                 )}

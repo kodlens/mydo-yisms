@@ -15,13 +15,19 @@ class YouthEventActivitiyController extends Controller
 {
     public function index(): Response
     {
-        $query = Activity::with('category:id,name')
+        // has_joined covers pending too, because a sign-up awaiting review still holds a
+            // slot. A separate flag tells the youth whether they are confirmed yet.
+            $query = Activity::with('category:id,name')
             ->withExists(['registrations as has_joined' => function ($query) {
                 $query->where('youth_profile_id', auth('youth')->id())
-                    ->whereIn('status', ['pending', 'approved']);
+                    ->reservingSlot();
+            }])
+            ->withExists(['registrations as is_approved' => function ($query) {
+                $query->where('youth_profile_id', auth('youth')->id())
+                    ->where('status', 'approved');
             }])
             ->withCount(['registrations as participants_count' => function ($query) {
-                $query->whereIn('status', ['pending', 'approved']);
+                $query->reservingSlot();
             }]);
 
         $activities = (clone $query)->where('status', 'published')
@@ -37,11 +43,11 @@ class YouthEventActivitiyController extends Controller
             ->where('published_at', '<=', now('UTC'))
             ->whereHas('registrations', function ($query) {
                 $query->where('youth_profile_id', auth('youth')->id())
-                    ->whereIn('status', ['pending', 'approved', 'cancelled']);
+                    ->whereIn('status', ['pending', 'approved', 'rejected', 'cancelled']);
             })
             ->with(['registrations' => function ($query) {
                 $query->where('youth_profile_id', auth('youth')->id())
-                    ->select('id', 'activity_id', 'status', 'registered_at', 'cancelled_at');
+                    ->select('id', 'activity_id', 'status', 'registered_at', 'cancelled_at', 'rejection_reason');
             }])
             ->orderBy('starts_at')
             ->get();
@@ -89,10 +95,14 @@ class YouthEventActivitiyController extends Controller
 
             $registration ??= $activity->registrations()->make();
             $registration->youth_profile_id = $request->user('youth')->id;
-            // Joining is immediate for now; staff approval will be added separately.
-            $registration->status = 'approved';
+            // Honour the activity's approval setting: sign-ups that need review wait
+            // in the staff queue instead of being confirmed on the spot.
+            $registration->status = $activity->requires_approval ? 'pending' : 'approved';
             $registration->registered_at = $now;
             $registration->cancelled_at = null;
+            $registration->reviewed_by = null;
+            $registration->reviewed_at = null;
+            $registration->rejection_reason = null;
             $registration->save();
         });
 
