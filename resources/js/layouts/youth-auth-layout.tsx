@@ -6,6 +6,7 @@ import {
   CalendarDays,
   ChevronDown,
   GraduationCap,
+  HandHeart,
   House,
   LockKeyhole,
   LogOut,
@@ -22,6 +23,7 @@ const destinations = [
   { key: 'youth.youth-dashboard.index', label: 'Dashboard', icon: House },
   { key: 'youth.youth-services.events-activities.index', label: 'Events & Activities', icon: CalendarDays },
   { key: 'youth.services.youth-scholarships.index', label: 'Scholarships', icon: GraduationCap },
+  { key: 'youth.services.volunteer.index', label: 'Volunteer', icon: HandHeart },
   { key: 'youth.youth-my-profile.index', label: 'My Profile', icon: UserRound },
 ];
 

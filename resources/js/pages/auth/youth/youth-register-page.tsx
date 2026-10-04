@@ -8,8 +8,6 @@ import { App, Button, DatePicker, Form, Input, InputNumber, Select, Typography }
 import axios, { isAxiosError } from 'axios';
 import { ArrowLeft, ArrowRight, ClipboardList, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
 import { useState } from 'react';
-import dayjs from 'dayjs';
-
 
 type YouthRegistrationForm = {
   email: string;
@@ -89,26 +87,28 @@ export default function YouthRegisterPage() {
   }
 
 
-  const testData = {
-    email: 'juan@mail.com',
-    password: 'a',
-    password_confirmation: 'a',
-    lname: 'Dela Cruz',
-    fname: 'Juan',
-    mname: 'N',
-    sex:'Male',
-    birth_date: dayjs('2005-08-08'),
-    civil_status: 'Single',
-    mobile_number: '09706102876',
-    provCode: null,
-    citymunCode: null,
-    brgyCode: null,
-    street_address: 'Mabini St.',
-    zip_code: '9210',
-    guardian_name: 'Maria Clara Dela Cruz',
-    guardian_contact_number: '09712223654',
-    monthly_family_income: 10000,
-  }
+  // const testData = {
+  //   email: 'juan@mail.com',
+  //   password: 'a',
+  //   password_confirmation: 'a',
+  //   lname: 'Dela Cruz',
+  //   fname: 'Juan',
+  //   mname: 'N',
+  //   sex:'Male',
+  //   birth_date: dayjs('2005-08-08'),
+  //   civil_status: 'Single',
+  //   mobile_number: '09706102876',
+  //   provCode: null,
+  //   citymunCode: null,
+  //   brgyCode: null,
+  //   street_address: 'Mabini St.',
+  //   zip_code: '9210',
+  //   guardian_name: 'Maria Clara Dela Cruz',
+  //   guardian_contact_number: '09712223654',
+  //   monthly_family_income: 10000,
+  // }
+
+
   const submit = () => {
     setProcessing(true);
     setErrors({});
