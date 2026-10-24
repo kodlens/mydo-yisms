@@ -270,3 +270,34 @@ RAM | 2 GB minimum, 4 GB recommended
 Browser | Latest Chrome, Edge, or Firefox
 Camera | Required for QR attendance scanning
 Internet | Required for online access
+
+
+
+Maghatag ug cash assistance ang MYDO sa every eligible students
+
+
+## Revisiions/Updates Oct 24, 2026
+
+USER
+
+header sa website, make red, looks like dumingag
+
+improve UI and workflow (nagdouble daw and balik2)
+
+change modal message after submmitting applications, 
+something wait for approval or check your notification
+
+
+For ADMIN
+
+clickable dashboard cards (redirect to table rows)
+
+Reports
+
+financial reports, weekly monthly yearly, 
+
+pila ka brgy ang natagaan ug cash incentives
+pila ka students ang nahatagan
+
+nov 03,  2026 Tentative
+
