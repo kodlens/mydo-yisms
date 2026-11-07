@@ -1,4 +1,5 @@
 import BrandLogo from '@/components/brand-logo';
+import MydoLogo from '@/components/mydo-logo';
 import FormSection from '@/components/form-section';
 import SelectBarangay from '@/components/select-barangay';
 import SelectCity from '@/components/select-city';
@@ -194,11 +195,15 @@ export default function YouthRegisterPage() {
           <section className="overflow-hidden rounded-lg border border-emerald-900/10 bg-white shadow-xl shadow-emerald-900/10">
             <div className="grid lg:grid-cols-[360px_1fr]">
               <aside className="bg-emerald-800 px-6 py-8 text-white sm:px-8">
-                <Link href={route('home')} className="inline-flex w-fit items-center gap-3">
-                  <BrandLogo className="h-12 w-12 rounded-md bg-white p-1" />
+                <Link href={route('home')} className="inline-flex w-fit items-center gap-3 group">
+                  <div className="flex items-center gap-2">
+                    <MydoLogo className="h-11 w-11 rounded-full bg-white p-0.5 shadow-sm" />
+                    <div className="h-6 w-px bg-white/20" />
+                    <BrandLogo className="h-10 w-10 rounded-md bg-white p-1" />
+                  </div>
                   <span>
-                    <span className="block text-sm font-bold tracking-wid text-white">eKabataan</span>
-                    <span className="block text-xs text-emerald-100">Youth Registration</span>
+                    <span className="block text-sm font-bold tracking-wide text-white">eKabataan</span>
+                    <span className="block text-xs text-emerald-100">Municipal Youth Office</span>
                   </span>
                 </Link>
 

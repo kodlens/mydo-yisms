@@ -1,29 +1,33 @@
 import BrandLogo from '@/components/brand-logo';
 import MydoLogo from '@/components/mydo-logo';
 import { Head, Link, router } from '@inertiajs/react';
-import { Button, Form, Input } from 'antd';
+import { Button, Checkbox, Form, Input } from 'antd';
 import axios from 'axios';
 import {
   ArrowLeft,
   ArrowRight,
+  CheckCircle2,
+  ChevronDown,
   CircleAlert,
   GraduationCap,
   HeartHandshake,
+  HelpCircle,
   LockKeyhole,
   Mail,
   ShieldCheck,
-  Sparkles,
 } from 'lucide-react';
 import { useState } from 'react';
 
 type LoginProps = {
   email: string;
   password: string;
+  remember?: boolean;
 };
 
 export default function YouthLoginPage() {
   const [errors, setErrors] = useState<Record<string, string | string[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
+  const [showHelp, setShowHelp] = useState<boolean>(false);
 
   const errorMessages = [...new Set(Object.values(errors).flat().filter(Boolean))];
 
@@ -55,42 +59,47 @@ export default function YouthLoginPage() {
       <Head title="Youth Portal Sign In - eKabataan MYDO" />
 
       <main className="min-h-screen bg-[#f8faf8] text-slate-900 antialiased selection:bg-emerald-600 selection:text-white">
-        <div className="mx-auto grid min-h-screen w-full max-w-7xl lg:grid-cols-[1.1fr_490px]">
-          {/* Left Institutional Branding & Features Section */}
-          <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#063b2c] via-[#094735] to-[#04281e] p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <div className="mx-auto grid min-h-screen w-full max-w-7xl lg:grid-cols-[1.1fr_510px]">
+          {/* Left Institutional Branding & Features Section (Desktop) */}
+          <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#063b2c] via-[#094735] to-[#03231a] p-12 text-white lg:flex lg:flex-col lg:justify-between">
             {/* Ambient Background Glows */}
-            <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl" />
+            <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-emerald-400/15 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-teal-400/10 blur-3xl" />
 
             {/* Top Brand Lockup */}
             <div className="relative z-10">
-              <Link href={route('home')} className="inline-flex items-center gap-3 group">
+              <Link href={route('home')} className="group inline-flex items-center gap-3.5">
                 <div className="flex items-center gap-2.5">
-                  <div className="rounded-full bg-white p-1 shadow-sm ring-1 ring-white/30 transition group-hover:ring-emerald-400">
-                    <MydoLogo className="h-11 w-11 rounded-full" label="Municipal Youth Development Office Seal" />
+                  <div className="rounded-full bg-white p-1 shadow-md ring-2 ring-emerald-400/30 transition group-hover:ring-emerald-400">
+                    <MydoLogo className="h-12 w-12 rounded-full" label="Municipal Youth Development Office Seal" />
                   </div>
                   <div className="h-7 w-px bg-white/20" />
-                  <div className="rounded-lg bg-white/10 p-1.5 backdrop-blur-sm transition group-hover:bg-white/20">
+                  <div className="rounded-xl bg-white/10 p-2 backdrop-blur-sm transition group-hover:bg-white/20">
                     <BrandLogo className="h-8 w-8" label="eKabataan Portal" />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-lg font-extrabold tracking-tight text-white">eKabataan</span>
+                    <span className="text-xl font-black tracking-tight text-white">eKabataan</span>
                     <span className="rounded-sm bg-emerald-400 px-1.5 py-0.2 text-[10px] font-bold text-emerald-950 uppercase">
                       YIMS
                     </span>
                   </div>
-                  <p className="text-xs text-emerald-200">Municipal Youth Development Office</p>
+                  <p className="text-xs font-medium text-emerald-200">
+                    Municipal Youth Development Office
+                  </p>
                 </div>
               </Link>
             </div>
 
             {/* Core Message & Value Props */}
             <div className="relative z-10 my-auto max-w-xl py-10">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-950/60 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-emerald-200 backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-950/70 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-emerald-200 backdrop-blur-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
+                </span>
                 <span>OFFICIAL YOUTH PORTAL ACCESS</span>
               </div>
 
@@ -103,19 +112,19 @@ export default function YouthLoginPage() {
               </p>
 
               {/* Feature Cards */}
-              <div className="mt-8 space-y-3">
-                <div className="flex items-center gap-3.5 rounded-xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-sm">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-400/20 text-emerald-300">
+              <div className="mt-8 space-y-3.5">
+                <div className="flex items-center gap-3.5 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition hover:bg-white/10">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-400/20 text-emerald-300">
                     <GraduationCap className="h-5 w-5" />
                   </span>
                   <div>
                     <h2 className="text-sm font-bold text-white">Scholarships & Educational Aid</h2>
-                    <p className="text-xs text-emerald-200">Track review stages, evaluator remarks, and approved grants</p>
+                    <p className="text-xs text-emerald-200">Track application stages, evaluator remarks, and approved grants</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3.5 rounded-xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-sm">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-400/20 text-teal-300">
+                <div className="flex items-center gap-3.5 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition hover:bg-white/10">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-teal-400/20 text-teal-300">
                     <HeartHandshake className="h-5 w-5" />
                   </span>
                   <div>
@@ -124,8 +133,8 @@ export default function YouthLoginPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3.5 rounded-xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-sm">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-400/20 text-sky-300">
+                <div className="flex items-center gap-3.5 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition hover:bg-white/10">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-sky-400/20 text-sky-300">
                     <ShieldCheck className="h-5 w-5" />
                   </span>
                   <div>
@@ -138,7 +147,10 @@ export default function YouthLoginPage() {
 
             {/* Bottom Institutional Info */}
             <div className="relative z-10 flex items-center justify-between border-t border-white/15 pt-6 text-xs text-emerald-200/80">
-              <span>Republic of the Philippines • MYDO</span>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <span>Republic of the Philippines • MYDO</span>
+              </div>
               <Link href={route('login')} className="font-semibold text-emerald-200 transition hover:text-white">
                 Staff / Admin Login &rarr;
               </Link>
@@ -148,38 +160,57 @@ export default function YouthLoginPage() {
           {/* Right Login Form Section */}
           <section className="flex min-h-screen flex-col justify-between bg-white px-6 py-8 sm:px-10 lg:px-12">
             {/* Top Navigation */}
-            <div className="flex items-center justify-between">
-              <Link
-                href={route('home')}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 transition hover:text-emerald-700"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Back to portal</span>
-              </Link>
+            <div>
+              <div className="flex items-center justify-between">
+                <Link
+                  href={route('home')}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 transition hover:text-emerald-700"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Back to portal</span>
+                </Link>
 
-              <Link
-                href={route('youth-register.index')}
-                className="rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-50 hover:border-emerald-300"
-              >
-                Create Account
-              </Link>
+                <Link
+                  href={route('youth-register.index')}
+                  className="rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100"
+                >
+                  Register Profile
+                </Link>
+              </div>
+
+              {/* Mobile Branding Bar (Visible only on smaller screens) */}
+              <div className="mt-6 flex items-center gap-3 rounded-xl border border-emerald-900/10 bg-[#f7faf6] p-3 lg:hidden">
+                <div className="flex items-center gap-2">
+                  <MydoLogo className="h-10 w-10 rounded-full bg-white p-0.5 shadow-xs" />
+                  <div className="h-6 w-px bg-slate-300" />
+                  <BrandLogo className="h-8 w-8 rounded-md bg-white p-1" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-900">eKabataan YIMS</p>
+                  <p className="text-[11px] text-slate-500">Municipal Youth Development Office</p>
+                </div>
+              </div>
             </div>
 
             {/* Login Box */}
-            <div className="mx-auto w-full max-w-sm py-8 sm:py-12">
+            <div className="mx-auto w-full max-w-sm py-8">
               {/* Form Header with Dual Logo */}
               <div className="text-center">
-                <div className="inline-flex items-center justify-center gap-2.5 rounded-2xl border border-slate-200 bg-[#fbfdfa] p-2.5 shadow-2xs">
-                  <MydoLogo className="h-10 w-10 rounded-full" label="MYDO Seal" />
-                  <div className="h-6 w-px bg-slate-200" />
-                  <BrandLogo className="h-8 w-8" label="eKabataan" />
+                <div className="inline-flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-[#fbfdfa] p-3 shadow-2xs">
+                  <div className="rounded-full bg-white p-0.5 shadow-2xs">
+                    <MydoLogo className="h-10 w-10 rounded-full" label="MYDO Seal" />
+                  </div>
+                  <div className="h-7 w-px bg-slate-200" />
+                  <div className="rounded-lg bg-emerald-50 p-1">
+                    <BrandLogo className="h-8 w-8" label="eKabataan" />
+                  </div>
                 </div>
 
-                <h2 className="mt-5 text-2xl font-extrabold tracking-tight text-slate-900">
-                  Youth Portal Sign In
+                <h2 className="mt-5 text-2xl font-black tracking-tight text-slate-900">
+                  Youth Sign In
                 </h2>
                 <p className="mt-1.5 text-xs leading-relaxed text-slate-600">
-                  Enter your registered youth email and password to access your dashboard.
+                  Access your youth profile, scholarship applications, and services.
                 </p>
               </div>
 
@@ -203,7 +234,7 @@ export default function YouthLoginPage() {
                 </div>
               )}
 
-              {/* Ant Design Form with Refined UI */}
+              {/* Form */}
               <Form
                 onFinish={submit}
                 layout="vertical"
@@ -211,22 +242,24 @@ export default function YouthLoginPage() {
                 initialValues={{
                   email: '',
                   password: '',
+                  remember: true,
                 }}
               >
                 <Form.Item
                   name="email"
-                  label={<span className="text-xs font-bold text-slate-700">Email Address</span>}
+                  label={<span className="text-xs font-bold text-slate-700">Registered Email Address</span>}
                   rules={[
                     { required: true, message: 'Please enter your registered email' },
                     { type: 'email', message: 'Please enter a valid email address' },
                   ]}
+                  className="mb-4"
                 >
                   <Input
                     size="large"
                     autoComplete="email"
                     placeholder="student@example.com"
-                    prefix={<Mail className="h-4 w-4 text-slate-400 mr-1" />}
-                    className="rounded-lg border-slate-300 hover:border-emerald-600 focus:border-emerald-600"
+                    prefix={<Mail className="mr-2 h-4 w-4 text-slate-400" />}
+                    className="!h-11 rounded-lg border-slate-300 text-sm hover:border-emerald-600 focus:border-emerald-600"
                   />
                 </Form.Item>
 
@@ -237,39 +270,74 @@ export default function YouthLoginPage() {
                       <span className="text-xs font-bold text-slate-700">Password</span>
                       <Link
                         href={route('password.request')}
-                        className="text-xs font-medium text-emerald-700 hover:text-emerald-900"
+                        className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline"
                       >
                         Forgot password?
                       </Link>
                     </div>
                   }
                   rules={[{ required: true, message: 'Please enter your password' }]}
+                  className="mb-3"
                 >
                   <Input.Password
                     size="large"
                     autoComplete="current-password"
                     placeholder="Enter your password"
-                    prefix={<LockKeyhole className="h-4 w-4 text-slate-400 mr-1" />}
-                    className="rounded-lg border-slate-300 hover:border-emerald-600 focus:border-emerald-600"
+                    prefix={<LockKeyhole className="mr-2 h-4 w-4 text-slate-400" />}
+                    className="!h-11 rounded-lg border-slate-300 text-sm hover:border-emerald-600 focus:border-emerald-600"
                   />
                 </Form.Item>
 
-                <div className="mt-6">
-                  <Button
-                    loading={loading}
-                    htmlType="submit"
-                    type="primary"
-                    size="large"
-                    className="flex w-full items-center justify-center gap-2 rounded-lg !bg-emerald-700 font-bold !text-white shadow-sm transition hover:!bg-emerald-800 focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
-                  >
-                    <span>Sign In to Portal</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                <div className="mb-5 flex items-center justify-between">
+                  <Form.Item name="remember" valuePropName="checked" noStyle>
+                    <Checkbox className="text-xs text-slate-600">
+                      Keep me signed in on this device
+                    </Checkbox>
+                  </Form.Item>
                 </div>
+
+                <Button
+                  loading={loading}
+                  htmlType="submit"
+                  type="primary"
+                  size="large"
+                  className="group flex !h-11 w-full items-center justify-center gap-2 rounded-lg !bg-emerald-700 font-bold !text-white shadow-sm transition hover:!bg-emerald-800 focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+                >
+                  <span>Sign In to Portal</span>
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </Button>
               </Form>
 
+              {/* Help & Account Verification Accordion */}
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowHelp(!showHelp)}
+                  className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-left text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                  <span className="flex items-center gap-2">
+                    <HelpCircle className="h-4 w-4 text-emerald-700" />
+                    <span>Need help with your account?</span>
+                  </span>
+                  <ChevronDown
+                    className={`h-4 w-4 text-slate-400 transition-transform ${showHelp ? 'rotate-180 text-emerald-700' : ''}`}
+                  />
+                </button>
+
+                {showHelp && (
+                  <div className="mt-2 rounded-lg border border-slate-200 bg-white p-3.5 text-xs leading-relaxed text-slate-600 space-y-2">
+                    <p>
+                      <strong className="text-slate-900">Forgot your email?</strong> Please visit the MYDO office counter at the Municipal Hall with your School ID or Barangay Certificate.
+                    </p>
+                    <p>
+                      <strong className="text-slate-900">Newly registered?</strong> You can sign in immediately after completing the registration form.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {/* Register Prompt */}
-              <div className="mt-8 rounded-xl border border-slate-200 bg-[#fbfdfa] p-4 text-center">
+              <div className="mt-6 rounded-xl border border-slate-200 bg-[#fbfdfa] p-4 text-center">
                 <p className="text-xs text-slate-600">
                   Don't have a registered youth profile yet?
                 </p>
@@ -286,7 +354,7 @@ export default function YouthLoginPage() {
             {/* Bottom Security Disclaimer */}
             <div className="border-t border-slate-100 pt-4 text-center">
               <p className="text-[11px] text-slate-500">
-                Official System of the Municipal Youth Development Office (MYDO).
+                Official System of the Municipal Youth Development Office (MYDO) • Republic Act No. 10173 Protected
               </p>
             </div>
           </section>

@@ -1,4 +1,5 @@
 import BrandLogo from '@/components/brand-logo';
+import MydoLogo from '@/components/mydo-logo';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { LockOutlined, SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons';
@@ -48,10 +49,14 @@ export default function Login({ status, canResetPassword }: LoginProps) {
           <section className="relative hidden overflow-hidden bg-[#1f2933] px-10 py-10 text-white lg:flex lg:flex-col lg:justify-between">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(245,158,11,0.22),transparent_28%),radial-gradient(circle_at_84%_78%,rgba(22,101,52,0.34),transparent_34%),linear-gradient(135deg,#1f2933_0%,#263238_48%,#17212b_100%)]" />
             <div className="relative flex items-center gap-3">
-              <BrandLogo className="h-12 w-12 rounded bg-white p-1" />
+              <div className="flex items-center gap-2">
+                <MydoLogo className="h-12 w-12 rounded-full bg-white p-0.5 shadow-sm" />
+                <div className="h-7 w-px bg-white/20" />
+                <BrandLogo className="h-10 w-10 rounded bg-white p-1" />
+              </div>
               <div>
-                <p className="text-lg font-semibold">E-Kabataan</p>
-                <p className="text-sm text-amber-100/80">MYDO management portal</p>
+                <p className="text-lg font-semibold text-white">eKabataan</p>
+                <p className="text-sm text-amber-100/80">Municipal Youth Development Office</p>
               </div>
             </div>
 
