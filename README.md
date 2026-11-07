@@ -276,7 +276,7 @@ Internet | Required for online access
 Maghatag ug cash assistance ang MYDO sa every eligible students
 
 
-## Revisiions/Updates Oct 24, 2026
+## Revisions/Updates Oct 24, 2026
 
 USER
 
