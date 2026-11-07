@@ -63,7 +63,6 @@ class YouthApplyScholarshipController extends Controller
 
         $movedFiles = $fileMover->moveFromTemp($files);
 
-
         ScholarshipApplication::create([
             'academic_year_id' => $acadYear->id,
             'youth_profile_id' => $user->id,
