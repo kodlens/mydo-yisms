@@ -8,6 +8,8 @@ export type ActivityParticipant = {
     barangay: string | null;
     /** pending, approved, rejected, or cancelled. */
     status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+    has_attended?: boolean;
+    attended_at?: string | null;
     registered_at: string | null;
     reviewed_at: string | null;
     rejection_reason: string | null;

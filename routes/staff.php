@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Staff\StaffActivityAttendanceController;
 use App\Http\Controllers\Staff\StaffApplicantController;
 use App\Http\Controllers\Staff\StaffEventActivityController;
 use App\Http\Controllers\Staff\StaffVolunteerController;
@@ -28,9 +29,16 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::get('/events-activities/data', [StaffEventActivityController::class, 'data'])->name('events-activities.data');
     Route::get('/events-activities/create', [StaffEventActivityController::class, 'create'])->name('events-activities.create');
     Route::get('/events-activities/{id}/edit', [StaffEventActivityController::class, 'edit'])->name('events-activities.edit');
+
     Route::get('/events-activities/{id}/participants', [StaffEventActivityController::class, 'participantsPage'])->name('events-activities.participants-page');
     Route::get('/events-activities/{id}/participants/list', [StaffEventActivityController::class, 'participants'])->name('events-activities.participants');
     Route::patch('/events-activities/{id}/participants/{registration}', [StaffEventActivityController::class, 'updateParticipant'])->name('events-activities.participants.update');
+
+    Route::get('/events-activities/{id}/attendance', [StaffActivityAttendanceController::class, 'index'])->name('events-activities.attendance.index');
+    Route::get('/events-activities/{id}/attendance/data', [StaffActivityAttendanceController::class, 'data'])->name('events-activities.attendance.data');
+    Route::post('/events-activities/{id}/attendance', [StaffActivityAttendanceController::class, 'record'])->name('events-activities.attendance.record');
+    Route::delete('/events-activities/{id}/attendance/{attendanceId}', [StaffActivityAttendanceController::class, 'destroy'])->name('events-activities.attendance.destroy');
+
     Route::post('/events-activities', [StaffEventActivityController::class, 'store'])->name('events-activities.store');
     Route::put('/events-activities/{id}', [StaffEventActivityController::class, 'update'])->name('events-activities.update');
     Route::delete('/events-activities/{id}', [StaffEventActivityController::class, 'destroy'])->name('events-activities.destroy');

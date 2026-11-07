@@ -7,7 +7,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, App, Button, Empty, Input, Modal, Segmented, Table, Tag, Tooltip } from 'antd';
 import axios from 'axios';
-import { CalendarDays, MapPin, RefreshCw, SearchX, TriangleAlert, UserCheck, UserX } from 'lucide-react';
+import { CalendarDays, MapPin, QrCode, RefreshCw, SearchX, TriangleAlert, UserCheck, UserX } from 'lucide-react';
 import { ReactElement, ReactNode, useState } from 'react';
 
 const { Column } = Table;
@@ -187,10 +187,18 @@ const StaffActivityParticipantsPage = ({ activity }: Props) => {
             <Head title={`Sign-ups · ${activity.title}`} />
 
             <div className="mx-auto flex max-w-6xl flex-col gap-5">
-                <div>
+                <div className="flex items-center justify-between">
                     <Link href={LIST_PATH} className="inline-flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-stone-950">
                         <ArrowLeftOutlined />
                         Back to events &amp; activities
+                    </Link>
+
+                    <Link
+                        href={`/staff/events-activities/${activity.id}/attendance`}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-800"
+                    >
+                        <QrCode size={14} />
+                        <span>Open Attendance Check-in</span>
                     </Link>
                 </div>
 
@@ -387,6 +395,9 @@ const StaffActivityParticipantsPage = ({ activity }: Props) => {
                                 render={(rowStatus: ActivityParticipant['status'], row) => (
                                     <div className="flex flex-col items-start gap-1">
                                         <Tag color={PARTICIPANT_TAG[rowStatus]}>{rowStatus}</Tag>
+                                        {row.has_attended && (
+                                            <Tag color="cyan" className="font-semibold text-[10px] uppercase">Attended</Tag>
+                                        )}
                                         {row.rejection_reason && (
                                             <Tooltip title={row.rejection_reason}>
                                                 <span className="max-w-28 truncate text-xs text-stone-400">{row.rejection_reason}</span>

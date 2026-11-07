@@ -6,7 +6,7 @@ import { Head, router } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, App, Button, Dropdown, Empty, Input, MenuProps, Pagination, Segmented, Space, Table, Tag, Tooltip } from 'antd';
 import axios from 'axios';
-import { CalendarDays, Copy, MapPin, MoreHorizontal, Pencil, Plus, RefreshCw, SearchX, Trash2, TriangleAlert, Users } from 'lucide-react';
+import { CalendarDays, Copy, MapPin, MoreHorizontal, Pencil, Plus, QrCode, RefreshCw, SearchX, Trash2, TriangleAlert, Users } from 'lucide-react';
 import { ReactElement, ReactNode, useEffect, useMemo, useState } from 'react';
 
 const { Column } = Table;
@@ -480,6 +480,12 @@ const StaffEventsActivitiesPage = () => {
                                             menu={
                                                 {
                                                     items: [
+                                                        {
+                                                            label: 'Attendance & Check-in',
+                                                            key: `staff.events-activities.attendance.${row.id}`,
+                                                            icon: <QrCode size={15} />,
+                                                            onClick: () => router.visit(`/staff/events-activities/${row.id}/attendance`),
+                                                        },
                                                         {
                                                             label: row.pending_registrations_count
                                                                 ? `Manage sign-ups (${row.pending_registrations_count} to review)`

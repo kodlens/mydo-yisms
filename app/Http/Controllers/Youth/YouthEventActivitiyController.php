@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Youth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
+use App\Models\YouthProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +16,17 @@ class YouthEventActivitiyController extends Controller
 {
     public function index(): Response
     {
+        $user = auth('youth')->user();
+
+        // Ensure current user has a reference code
+        if ($user && empty($user->reference_code)) {
+            $user->reference_code = YouthProfile::generateUniqueReferenceCode();
+            $user->save();
+        }
+
         // has_joined covers pending too, because a sign-up awaiting review still holds a
-            // slot. A separate flag tells the youth whether they are confirmed yet.
-            $query = Activity::with('category:id,name')
+        // slot. A separate flag tells the youth whether they are confirmed yet.
+        $query = Activity::with('category:id,name')
             ->withExists(['registrations as has_joined' => function ($query) {
                 $query->where('youth_profile_id', auth('youth')->id())
                     ->reservingSlot();
@@ -25,6 +34,9 @@ class YouthEventActivitiyController extends Controller
             ->withExists(['registrations as is_approved' => function ($query) {
                 $query->where('youth_profile_id', auth('youth')->id())
                     ->where('status', 'approved');
+            }])
+            ->withExists(['attendances as has_attended' => function ($query) {
+                $query->where('youth_profile_id', auth('youth')->id());
             }])
             ->withCount(['registrations as participants_count' => function ($query) {
                 $query->reservingSlot();
@@ -49,12 +61,24 @@ class YouthEventActivitiyController extends Controller
                 $query->where('youth_profile_id', auth('youth')->id())
                     ->select('id', 'activity_id', 'status', 'registered_at', 'cancelled_at', 'rejection_reason');
             }])
+            ->with(['attendances' => function ($query) {
+                $query->where('youth_profile_id', auth('youth')->id())
+                    ->select('id', 'activity_id', 'method', 'attended_at');
+            }])
             ->orderBy('starts_at')
             ->get();
 
         return Inertia::render('youth/event-activities/youth-event-activities-page', [
             'activities' => $activities,
             'myActivities' => $myActivities,
+            'youthPass' => $user ? [
+                'id' => $user->id,
+                'reference_code' => $user->reference_code,
+                'full_name' => trim("{$user->fname} {$user->mname} {$user->lname} {$user->suffix}") ?: 'Youth Member',
+                'student_id' => $user->student_id,
+                'email' => $user->email,
+                'barangay' => $user->brgyCode,
+            ] : null,
         ]);
     }
 
@@ -113,18 +137,34 @@ class YouthEventActivitiyController extends Controller
     {
         DB::transaction(function () use ($request, $activity) {
             $activity = Activity::whereKey($activity)->lockForUpdate()->firstOrFail();
+            $youthId = $request->user('youth')->id;
+
             $registration = $activity->registrations()
-                ->where('youth_profile_id', $request->user('youth')->id)->firstOrFail();
+                ->where('youth_profile_id', $youthId)->firstOrFail();
 
             if ($registration->status === 'cancelled') {
                 return;
             }
 
+            // Lock 1: Permanent disable if attendance has already been recorded
+            $hasAttended = $activity->attendances()
+                ->where('youth_profile_id', $youthId)
+                ->exists();
+
+            if ($hasAttended) {
+                throw ValidationException::withMessages([
+                    'activity' => 'Participation cannot be cancelled because your attendance has already been recorded for this activity.',
+                ]);
+            }
+
+            // Lock 2: Once activity officially starts or closes, cancellation is disabled
             $now = now('UTC');
             if (! in_array($registration->status, ['pending', 'approved'])
                 || $activity->starts_at <= $now || $activity->ends_at <= $now
                 || ($activity->registration_closes_at && $activity->registration_closes_at <= $now)) {
-                throw ValidationException::withMessages(['activity' => 'Participation can only be cancelled before registration closes and the activity starts.']);
+                throw ValidationException::withMessages([
+                    'activity' => 'Participation can only be cancelled before registration closes and before the activity officially starts.',
+                ]);
             }
 
             $registration->status = 'cancelled';

@@ -6,20 +6,26 @@ import {
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-    server: {
-        host: '127.0.0.1',
-        hmr: {
-            host: '127.0.0.1',
-        },
-    },
+    // server: {
+    //     host: '127.0.0.1',
+    //     hmr: {
+    //         host: '127.0.0.1',
+    //     },
+    //     watch: {
+    //         ignored: ['**/app/**'],
+    //     },
+    // },
+
     plugins: [
+
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             ssr: 'resources/js/ssr.jsx',
-            refresh: true,
+            refresh: false,
         }),
-        react(),
         tailwindcss(),
+        react(),
+
     ],
     esbuild: {
         jsx: 'automatic',

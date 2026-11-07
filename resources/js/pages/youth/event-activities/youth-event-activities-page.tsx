@@ -1,3 +1,4 @@
+import YouthEventPassModal, { YouthPassData } from '@/components/events-activities/youth/partials/youth-event-pass-modal';
 import YouthAuthLayout from '@/layouts/youth-auth-layout';
 import { SharedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -6,11 +7,13 @@ import {
     ArrowDown,
     ArrowRight,
     CalendarDays,
+    CheckCircle2,
     Clock3,
     Compass,
     GraduationCap,
     HeartHandshake,
     MapPin,
+    QrCode,
     Search,
     Sparkles,
     Sprout,
@@ -38,6 +41,8 @@ type Activity = {
     participants_count: number;
     has_joined: boolean;
     is_approved: boolean;
+    has_attended?: boolean;
+    attendances?: { id: number; activity_id: number; method: string; attended_at: string }[];
     requires_registration: boolean;
     registration_opens_at: string | null;
     registration_closes_at: string | null;
@@ -46,6 +51,7 @@ type Activity = {
 // A sign-up awaiting review shows as "Awaiting review" rather than "Registered",
 // so the youth knows the slot is held but not yet confirmed.
 function participantLabel(activity: Activity) {
+    if (activity.has_attended) return 'Attendance Verified';
     if (!activity.has_joined) return registrationStatus(activity);
     if (activity.is_approved) return 'You are confirmed';
 
@@ -133,9 +139,18 @@ function Artwork({ activity, featured = false }: { activity: Activity; featured?
         </div>
     );
 }
-const YouthEventActivitiesPage = ({ activities = [], myActivities = [] }: { activities?: Activity[]; myActivities?: Activity[] }) => {
+const YouthEventActivitiesPage = ({
+    activities = [],
+    myActivities = [],
+    youthPass = null,
+}: {
+    activities?: Activity[];
+    myActivities?: Activity[];
+    youthPass?: YouthPassData | null;
+}) => {
     const [tab, setTab] = useState('explore');
     const [period, setPeriod] = useState('upcoming');
+    const [passModalOpen, setPassModalOpen] = useState(false);
     const now = Date.now();
     const upcomingCount = myActivities.filter(
         (activity) => activity.has_joined && activity.status === 'published' && new Date(activity.ends_at).getTime() > now,
@@ -198,6 +213,7 @@ const YouthEventActivitiesPage = ({ activities = [], myActivities = [] }: { acti
     }
     const canCancel =
         selected?.has_joined &&
+        !selected?.has_attended &&
         new Date(selected.starts_at).getTime() > now &&
         new Date(selected.ends_at).getTime() > now &&
         (!selected.registration_closes_at || new Date(selected.registration_closes_at).getTime() > now);
@@ -239,13 +255,25 @@ const YouthEventActivitiesPage = ({ activities = [], myActivities = [] }: { acti
                             Discover activities, learn something new, and make a difference with your fellow youth.
                         </p>
                     </div>
-                    <a
-                        href="#activities"
-                        onClick={() => setTab('explore')}
-                        className="inline-flex items-center gap-2 rounded-xl bg-teal-800 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-900"
-                    >
-                        Explore activities <ArrowDown size={16} />
-                    </a>
+                    <div className="flex flex-wrap items-center gap-3">
+                        {youthPass?.reference_code && (
+                            <button
+                                type="button"
+                                onClick={() => setPassModalOpen(true)}
+                                className="inline-flex items-center gap-2 rounded-xl border border-teal-700/40 bg-white px-4 py-3 text-sm font-semibold text-teal-800 shadow-2xs hover:bg-teal-50"
+                            >
+                                <QrCode size={16} className="text-teal-700" />
+                                <span>My Event Pass (QR)</span>
+                            </button>
+                        )}
+                        <a
+                            href="#activities"
+                            onClick={() => setTab('explore')}
+                            className="inline-flex items-center gap-2 rounded-xl bg-teal-800 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-900"
+                        >
+                            Explore activities <ArrowDown size={16} />
+                        </a>
+                    </div>
                 </header>
                 {feedback}
                 <nav aria-label="Activity views" className="flex gap-2 border-b border-slate-300 pb-3">
@@ -595,6 +623,25 @@ const YouthEventActivitiesPage = ({ activities = [], myActivities = [] }: { acti
                             </div>
                         )}
                         {feedback}
+                        {selected.has_attended && (
+                            <div className="flex items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-emerald-950">
+                                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                                <div>
+                                    <p className="text-sm font-bold">Attendance Verified</p>
+                                    <p className="text-xs text-emerald-800">Your presence was verified at the venue. Participation is completed and locked.</p>
+                                </div>
+                            </div>
+                        )}
+                        {selected.is_approved && !selected.has_attended && youthPass?.reference_code && (
+                            <button
+                                type="button"
+                                onClick={() => setPassModalOpen(true)}
+                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-emerald-800"
+                            >
+                                <QrCode size={16} />
+                                <span>Show My Event QR Pass</span>
+                            </button>
+                        )}
                         {selected.registrations?.[0]?.status === 'cancelled' && (
                             <p className="rounded-lg bg-slate-100 p-3 text-sm text-slate-600">You cancelled your participation in this activity.</p>
                         )}
@@ -609,7 +656,7 @@ const YouthEventActivitiesPage = ({ activities = [], myActivities = [] }: { acti
                                 Cancel participation
                             </button>
                         )}
-                        {selected.has_joined && !canCancel && (
+                        {selected.has_joined && !canCancel && !selected.has_attended && (
                             <p className="text-xs text-slate-500">
                                 Cancellation closes at the registration deadline or when the activity starts, whichever comes first.
                             </p>
@@ -618,6 +665,12 @@ const YouthEventActivitiesPage = ({ activities = [], myActivities = [] }: { acti
                     </div>
                 )}
             </Modal>
+            <YouthEventPassModal
+                open={passModalOpen}
+                onClose={() => setPassModalOpen(false)}
+                youth={youthPass}
+                activityTitle={selected?.title}
+            />
         </>
     );
 };

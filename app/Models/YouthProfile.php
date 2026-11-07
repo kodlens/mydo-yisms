@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 
 class YouthProfile extends Authenticatable
@@ -19,6 +20,7 @@ class YouthProfile extends Authenticatable
 
     protected $fillable = [
         'student_id',
+        'reference_code',
         'email',
         'lname',
         'fname',
@@ -83,4 +85,36 @@ class YouthProfile extends Authenticatable
         return $this->hasOne(Volunteer::class);
     }
 
+    public function activityRegistrations(): HasMany
+    {
+        return $this->hasMany(ActivityRegistration::class);
+    }
+
+    public function activityAttendances(): HasMany
+    {
+        return $this->hasMany(ActivityAttendance::class);
+    }
+
+    public function dashboardRoute(): string
+    {
+        return 'youth.youth-dashboard.index';
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (YouthProfile $profile) {
+            if (empty($profile->reference_code)) {
+                $profile->reference_code = static::generateUniqueReferenceCode();
+            }
+        });
+    }
+
+    public static function generateUniqueReferenceCode(): string
+    {
+        do {
+            $code = 'YD-' . strtoupper(Str::random(4)) . '-' . strtoupper(Str::random(4));
+        } while (static::where('reference_code', $code)->exists());
+
+        return $code;
+    }
 }

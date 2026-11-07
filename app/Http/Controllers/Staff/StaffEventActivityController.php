@@ -106,15 +106,7 @@ class StaffEventActivityController extends Controller
         ]);
     }
 
-    public function edit(int $id): Response
-    {
-        $activity = Activity::with('category:id,name,slug,is_active')->findOrFail($id);
 
-        return Inertia::render('staff/events-activities/staff-create-edit-events-activities', [
-            'activity' => $activity,
-            'categories' => $this->categoryOptions(),
-        ]);
-    }
 
     public function store(Request $request): JsonResponse
     {
@@ -132,8 +124,18 @@ class StaffEventActivityController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function edit(int $id): Response
     {
+        $activity = Activity::with('category:id,name,slug,is_active')->findOrFail($id);
+        return Inertia::render('staff/events-activities/staff-create-edit-events-activities', [
+            'activity' => $activity,
+            'categories' => $this->categoryOptions(),
+        ]);
+    }
+
+    public function update(Request $request, int $id)
+    {
+
         $activity = Activity::findOrFail($id);
 
         $validated = $request->validate($this->rules(), $this->messages());
@@ -163,7 +165,7 @@ class StaffEventActivityController extends Controller
         $activity = Activity::findOrFail($id);
         $status = trim((string) $request->input('status', ''));
 
-        $query = $activity->registrations()->with('youthProfile');
+        $query = $activity->registrations()->with(['youthProfile', 'attendance']);
 
         // '' means every status; anything else must be one of the four known values.
         if (in_array($status, ['pending', 'approved', 'rejected', 'cancelled'], true)) {
@@ -378,6 +380,8 @@ class StaffEventActivityController extends Controller
             'mobile_number' => $profile?->mobile_number,
             'barangay' => $profile?->brgyCode,
             'status' => $registration->status,
+            'has_attended' => $registration->attendance !== null,
+            'attended_at' => optional($registration->attendance?->attended_at)->toIso8601String(),
             'registered_at' => optional($registration->registered_at)?->toIso8601String(),
             'reviewed_at' => optional($registration->reviewed_at)?->toIso8601String(),
             'rejection_reason' => $registration->rejection_reason,

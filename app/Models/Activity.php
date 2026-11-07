@@ -60,4 +60,9 @@ class Activity extends Model
     {
         return $this->hasMany(VolunteerActivity::class);
     }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(ActivityAttendance::class);
+    }
 }
