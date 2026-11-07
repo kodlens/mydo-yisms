@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveProgramController;
+use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveBeneficiaryController;
+use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveReleaseController;
+use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveReportController;
 use App\Http\Controllers\Staff\StaffActivityAttendanceController;
 use App\Http\Controllers\Staff\StaffApplicantController;
 use App\Http\Controllers\Staff\StaffEventActivityController;
@@ -54,4 +58,28 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::post('/volunteers/{id}/assignments', [StaffVolunteerController::class, 'storeAssignment'])->name('volunteers.assignments.store');
     Route::delete('/volunteers/{id}/assignments/{assignment}', [StaffVolunteerController::class, 'destroyAssignment'])->name('volunteers.assignments.destroy');
     Route::post('/volunteers/{id}/attendance', [StaffVolunteerController::class, 'storeAttendance'])->name('volunteers.attendance.store');
+
+    // Cash Incentives Management
+    Route::prefix('cash-incentives')->name('cash-incentives.')->group(function () {
+        Route::get('/', [StaffCashIncentiveProgramController::class, 'index'])->name('index');
+        Route::post('/', [StaffCashIncentiveProgramController::class, 'store'])->name('store');
+        Route::get('/{program}', [StaffCashIncentiveProgramController::class, 'show'])->name('show');
+        Route::put('/{program}', [StaffCashIncentiveProgramController::class, 'update'])->name('update');
+        Route::delete('/{program}', [StaffCashIncentiveProgramController::class, 'destroy'])->name('destroy');
+
+        // Beneficiary Selection & Review
+        Route::get('/{program}/eligible-youth', [StaffCashIncentiveBeneficiaryController::class, 'eligibleYouth'])->name('eligible-youth');
+        Route::post('/{program}/beneficiaries/select', [StaffCashIncentiveBeneficiaryController::class, 'select'])->name('beneficiaries.select');
+        Route::post('/{program}/beneficiaries/{beneficiary}/review', [StaffCashIncentiveBeneficiaryController::class, 'review'])->name('beneficiaries.review');
+        Route::delete('/{program}/beneficiaries/{beneficiary}', [StaffCashIncentiveBeneficiaryController::class, 'destroy'])->name('beneficiaries.destroy');
+
+        // Cash Release Management
+        Route::post('/{program}/releases/{beneficiary}/record', [StaffCashIncentiveReleaseController::class, 'record'])->name('releases.record');
+        Route::post('/{program}/releases/{release}/status', [StaffCashIncentiveReleaseController::class, 'updateStatus'])->name('releases.status');
+
+        // Reports & Export
+        Route::get('/{program}/reports/summary', [StaffCashIncentiveReportController::class, 'summary'])->name('reports.summary');
+        Route::get('/{program}/reports/export-csv', [StaffCashIncentiveReportController::class, 'exportCsv'])->name('reports.export-csv');
+        Route::get('/{program}/beneficiaries/{beneficiary}/report', [StaffCashIncentiveReportController::class, 'individual'])->name('reports.individual');
+    });
 });

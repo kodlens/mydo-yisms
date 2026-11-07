@@ -61,4 +61,14 @@ class User extends Authenticatable
             default => 'staff.dashboard.index',
         };
     }
+
+    public function cashIncentivePrograms(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CashIncentiveProgram::class, 'created_by_user_id');
+    }
+
+    public function cashIncentiveReleases(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CashIncentiveRelease::class, 'released_by_user_id');
+    }
 }

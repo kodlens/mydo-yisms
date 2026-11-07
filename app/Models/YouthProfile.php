@@ -95,6 +95,11 @@ class YouthProfile extends Authenticatable
         return $this->hasMany(ActivityAttendance::class);
     }
 
+    public function cashIncentiveBeneficiaries(): HasMany
+    {
+        return $this->hasMany(CashIncentiveBeneficiary::class, 'youth_profile_id');
+    }
+
     public function dashboardRoute(): string
     {
         return 'youth.youth-dashboard.index';
