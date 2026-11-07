@@ -45,6 +45,7 @@ export interface User {
 
 export interface Youth extends User {
     id: number;
+    reference_code?: string | null;
     birth_date?: string | null;
     civil_status?: string | null;
     mobile_number?: string | null;
