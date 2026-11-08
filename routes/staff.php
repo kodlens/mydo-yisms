@@ -75,6 +75,8 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
 
         // Cash Release Management
         Route::post('/{program}/releases/{beneficiary}/record', [StaffCashIncentiveReleaseController::class, 'record'])->name('releases.record');
+        Route::post('/{program}/releases/{beneficiary}/revert', [StaffCashIncentiveReleaseController::class, 'revert'])->name('releases.revert');
+        Route::post('/{program}/releases/batch', [StaffCashIncentiveReleaseController::class, 'batch'])->name('releases.batch');
         Route::post('/{program}/releases/{release}/status', [StaffCashIncentiveReleaseController::class, 'updateStatus'])->name('releases.status');
 
         // Reports & Export

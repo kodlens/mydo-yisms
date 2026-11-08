@@ -1,16 +1,7 @@
 import { CashIncentiveBeneficiary, CashIncentiveProgram } from '@/types/cash-incentive';
-import { useForm } from '@inertiajs/react';
-import {
-  Alert,
-  Button,
-  DatePicker,
-  Input,
-  InputNumber,
-  Modal,
-  Upload,
-} from 'antd';
-import dayjs from 'dayjs';
-import { Banknote, FileCheck, Upload as UploadIcon } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { Button, Input, Modal, message } from 'antd';
+import { Banknote, CheckCircle2, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 type Props = {
@@ -26,50 +17,47 @@ export default function CashReleaseModal({
   beneficiary,
   program,
 }: Props) {
-  const [fileList, setFileList] = useState<any[]>([]);
-
-  const { data, setData, post, processing, errors, reset } = useForm<{
-    amount: number;
-    acknowledgment_reference: string;
-    actual_release_date: string;
-    supporting_document: File | null;
-    remarks: string;
-  }>({
-    amount: program.amount_per_beneficiary,
-    acknowledgment_reference: '',
-    actual_release_date: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    supporting_document: null,
-    remarks: '',
-  });
+  const [submitting, setSubmitting] = useState(false);
+  const [ackRef, setAckRef] = useState('');
+  const [remarks, setRemarks] = useState('');
 
   useEffect(() => {
     if (open && beneficiary) {
-      setFileList([]);
-      setData({
-        amount: program.amount_per_beneficiary,
-        acknowledgment_reference: '',
-        actual_release_date: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-        supporting_document: null,
-        remarks: '',
-      });
+      setAckRef('');
+      setRemarks('');
     }
   }, [open, beneficiary]);
 
   if (!beneficiary) return null;
 
   const handleSubmit = () => {
-    post(
+    setSubmitting(true);
+    router.post(
       route('staff.cash-incentives.releases.record', [program.id, beneficiary.id]),
       {
-        forceFormData: true,
+        acknowledgment_reference: ackRef,
+        remarks: remarks,
+      },
+      {
         preserveScroll: true,
         onSuccess: () => {
-          reset();
+          setSubmitting(false);
+          message.success(`Cash incentive released to ${beneficiary.full_name}!`);
           onClose();
+        },
+        onError: (errs) => {
+          setSubmitting(false);
+          const first = Object.values(errs)[0];
+          message.error(first ? String(first) : 'Failed to record release.');
         },
       }
     );
   };
+
+  const formattedAmount = '₱' + Number(program.amount_per_beneficiary).toLocaleString('en-PH', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   return (
     <Modal
@@ -80,131 +68,81 @@ export default function CashReleaseModal({
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-xs">
             <Banknote size={18} />
           </div>
-          <span className="font-bold text-base">Record Cash Release Disbursement</span>
+          <span className="font-bold text-base">Release Cash Incentive</span>
         </div>
       }
       footer={[
-        <Button key="cancel" onClick={onClose} disabled={processing}>
+        <Button key="cancel" onClick={onClose} disabled={submitting}>
           Cancel
         </Button>,
         <Button
           key="submit"
           type="primary"
           onClick={handleSubmit}
-          loading={processing}
-          className="!bg-emerald-600 hover:!bg-emerald-700 font-semibold"
+          loading={submitting}
+          className="!bg-emerald-600 hover:!bg-emerald-700 font-bold"
         >
-          Confirm Cash Disbursement
+          Confirm & Release Cash ({formattedAmount})
         </Button>,
       ]}
-      width={640}
+      width={520}
     >
       <div className="mt-3 space-y-4">
         {/* Recipient Details Pill */}
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3.5">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-semibold uppercase text-emerald-800 tracking-wider block">
-                Beneficiary Recipient
+            <div className="min-w-0">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
+                Recipient Student
               </span>
-              <p className="text-base font-black text-slate-900">{beneficiary.full_name}</p>
-              <div className="flex items-center gap-2 text-xs text-slate-600 mt-0.5">
-                <span className="font-mono text-emerald-950 font-bold">{beneficiary.reference_code}</span>
+              <p className="text-base font-black text-slate-900 truncate">{beneficiary.full_name}</p>
+              <div className="flex items-center gap-2 text-xs text-slate-600 mt-0.5 flex-wrap">
+                {beneficiary.reference_code && (
+                  <span className="font-mono font-bold text-emerald-950 bg-white px-1.5 py-0.2 rounded border border-emerald-300">
+                    {beneficiary.reference_code}
+                  </span>
+                )}
                 <span>•</span>
                 <span>{beneficiary.barangay}</span>
-                <span>•</span>
-                <span>{beneficiary.educational_status}</span>
               </div>
             </div>
-            <div className="text-right">
-              <span className="text-[10px] text-slate-500 uppercase font-bold block">Disbursement Amount</span>
-              <span className="text-2xl font-black text-emerald-700">
-                ₱{program.amount_per_beneficiary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-              </span>
+
+            <div className="text-right shrink-0">
+              <span className="text-[10px] text-slate-500 uppercase font-bold block">Cash Amount</span>
+              <span className="text-2xl font-black text-emerald-700">{formattedAmount}</span>
             </div>
           </div>
         </div>
 
-        {/* Form Inputs */}
+        {/* Optional Reference & Notes */}
         <div className="space-y-3">
-          {/* Acknowledgment Reference */}
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              Acknowledgment Reference / Voucher # <span className="text-rose-500">*</span>
+              Payroll Line / Voucher # (Optional)
             </label>
             <Input
-              value={data.acknowledgment_reference}
-              onChange={(e) => setData('acknowledgment_reference', e.target.value)}
-              placeholder="e.g., PR-2026-081, VOUCHER-492, or AR-1029"
+              value={ackRef}
+              onChange={(e) => setAckRef(e.target.value)}
+              placeholder="e.g. PR-001, Line #12 (leave blank to auto-generate)"
               size="large"
             />
-            <p className="text-[11px] text-slate-500 mt-1">
-              Official payroll sheet line reference, disbursement voucher number, or signed acknowledgment serial.
-            </p>
-            {errors.acknowledgment_reference && (
-              <p className="text-xs text-rose-500 mt-1">{errors.acknowledgment_reference}</p>
-            )}
           </div>
 
-          {/* Release Date */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Actual Release Date</label>
-            <DatePicker
-              showTime
-              value={dayjs(data.actual_release_date)}
-              onChange={(d) => setData('actual_release_date', d ? d.format('YYYY-MM-DD HH:mm:ss') : '')}
-              className="w-full !h-10"
-            />
-            {errors.actual_release_date && (
-              <p className="text-xs text-rose-500 mt-1">{errors.actual_release_date}</p>
-            )}
-          </div>
-
-          {/* Supporting Document Upload */}
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              Supporting Document / Signed Receipt (Optional)
+              Remarks (Optional)
             </label>
-            <Upload
-              beforeUpload={(file) => {
-                setData('supporting_document', file);
-                setFileList([file]);
-                return false;
-              }}
-              fileList={fileList}
-              onRemove={() => {
-                setData('supporting_document', null);
-                setFileList([]);
-              }}
-              maxCount={1}
-              accept=".pdf,.jpg,.jpeg,.png"
-            >
-              <Button icon={<UploadIcon size={14} />}>Select Scanned Payroll / Receipt File</Button>
-            </Upload>
-            <p className="text-[11px] text-slate-500 mt-1">Accepts PDF, JPG, or PNG (up to 10MB).</p>
-            {errors.supporting_document && (
-              <p className="text-xs text-rose-500 mt-1">{errors.supporting_document}</p>
-            )}
-          </div>
-
-          {/* Remarks */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Disbursement Remarks (Optional)</label>
-            <Input.TextArea
-              rows={2}
-              value={data.remarks}
-              onChange={(e) => setData('remarks', e.target.value)}
-              placeholder="e.g., Claimed in person at Municipal Hall with valid government ID..."
+            <Input
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="e.g. Claimed in person at Municipal Hall"
             />
           </div>
         </div>
 
-        <Alert
-          type="info"
-          showIcon
-          message="Financial Transaction Safeguard"
-          description="Recording this release will mark the financial transaction as complete and deduct the amount from remaining program funds. Standard users cannot modify or delete confirmed releases."
-        />
+        <p className="text-[11px] text-slate-400 italic">
+          Clicking confirm will instantly record the payout, log your staff account, and deduct {formattedAmount} from the program balance.
+        </p>
       </div>
     </Modal>
   );

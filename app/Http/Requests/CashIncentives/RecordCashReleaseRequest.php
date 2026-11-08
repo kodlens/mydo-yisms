@@ -15,9 +15,8 @@ class RecordCashReleaseRequest extends FormRequest
     {
         return [
             'amount' => ['nullable', 'numeric', 'min:0.01'],
-            'acknowledgment_reference' => ['required', 'string', 'max:100'],
+            'acknowledgment_reference' => ['nullable', 'string', 'max:100'],
             'actual_release_date' => ['nullable', 'date'],
-            'supporting_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'], // 10MB max
             'remarks' => ['nullable', 'string', 'max:1000'],
         ];
     }

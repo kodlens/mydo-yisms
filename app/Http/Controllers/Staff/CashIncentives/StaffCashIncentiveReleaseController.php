@@ -18,7 +18,7 @@ class StaffCashIncentiveReleaseController extends Controller
     ) {}
 
     /**
-     * Record actual financial release to an approved beneficiary.
+     * Record actual financial release to a beneficiary.
      */
     public function record(
         RecordCashReleaseRequest $request,
@@ -29,16 +29,51 @@ class StaffCashIncentiveReleaseController extends Controller
             abort(404);
         }
 
-        $documentFile = $request->file('supporting_document');
-
         $release = $this->releaseService->recordCashRelease(
             $beneficiary,
             $request->validated(),
-            $request->user(),
-            $documentFile
+            $request->user()
         );
 
-        return back()->with('success', "Cash release of ₱" . number_format($release->amount, 2) . " recorded successfully (Ref: {$release->acknowledgment_reference}).");
+        return back()->with('success', "Cash incentive of ₱" . number_format($release->amount, 2) . " released successfully.");
+    }
+
+    /**
+     * Batch record cash releases for multiple checked beneficiaries.
+     */
+    public function batch(Request $request, CashIncentiveProgram $program)
+    {
+        $validated = $request->validate([
+            'beneficiary_ids' => ['required', 'array', 'min:1'],
+            'beneficiary_ids.*' => ['integer', 'exists:cash_incentive_beneficiaries,id'],
+            'acknowledgment_reference' => ['nullable', 'string', 'max:100'],
+            'remarks' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $disbursed = $this->releaseService->batchRecordRelease(
+            $program,
+            $validated['beneficiary_ids'],
+            $request->user(),
+            $validated['acknowledgment_reference'] ?? null,
+            $validated['remarks'] ?? null
+        );
+
+        return back()->with('success', "{$disbursed} cash incentives marked as released successfully.");
+    }
+
+    /**
+     * Revert / undo a release back to pending.
+     */
+    public function revert(Request $request, CashIncentiveProgram $program, CashIncentiveBeneficiary $beneficiary)
+    {
+        if ($beneficiary->program_id !== $program->id) {
+            abort(404);
+        }
+
+        $reason = $request->input('reason', 'Reverted by staff');
+        $this->releaseService->revertCashRelease($beneficiary, $request->user(), $reason);
+
+        return back()->with('success', 'Disbursement reverted back to pending.');
     }
 
     /**

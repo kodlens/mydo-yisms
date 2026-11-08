@@ -124,9 +124,11 @@ class BeneficiarySelectionService
             $beneficiary = CashIncentiveBeneficiary::create([
                 'program_id' => $lockedProgram->id,
                 'youth_profile_id' => $youth->id,
-                'status' => 'pending',
+                'status' => 'approved',
                 'selected_by_user_id' => $actor->id,
                 'selected_at' => now(),
+                'reviewed_by_user_id' => $actor->id,
+                'reviewed_at' => now(),
                 'remarks' => $remarks,
                 'historical_brgy_code' => $youth->brgyCode,
                 'historical_brgy_name' => $youth->barangay?->brgyDesc ?? 'N/A',
@@ -136,6 +138,18 @@ class BeneficiarySelectionService
                 'historical_is_graduated' => (bool) $youth->is_graduated,
                 'historical_educational_status' => $historicalEduStatus,
             ]);
+
+            // Immediately initialize the cash release record as pending
+            \App\Models\CashIncentiveRelease::firstOrCreate(
+                [
+                    'program_id' => $lockedProgram->id,
+                    'beneficiary_id' => $beneficiary->id,
+                ],
+                [
+                    'amount' => $lockedProgram->amount_per_beneficiary,
+                    'status' => 'pending',
+                ]
+            );
 
             $actorName = trim(implode(' ', array_filter([$actor->fname, $actor->mname, $actor->lname, $actor->suffix])));
             $youthName = trim(implode(' ', array_filter([$youth->fname, $youth->mname, $youth->lname, $youth->suffix])));

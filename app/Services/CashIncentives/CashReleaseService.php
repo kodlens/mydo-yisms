@@ -8,23 +8,20 @@ use App\Models\CashIncentiveProgram;
 use App\Models\CashIncentiveRelease;
 use App\Models\CashIncentiveStatusHistory;
 use App\Models\User;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class CashReleaseService
 {
     /**
-     * Record the actual financial disbursement of a cash incentive.
+     * Record actual financial disbursement of a cash incentive to a beneficiary.
      */
     public function recordCashRelease(
         CashIncentiveBeneficiary $beneficiary,
         array $data,
-        User $actor,
-        ?UploadedFile $documentFile = null
+        User $actor
     ): CashIncentiveRelease {
-        return DB::transaction(function () use ($beneficiary, $data, $actor, $documentFile) {
+        return DB::transaction(function () use ($beneficiary, $data, $actor) {
             $beneficiary = CashIncentiveBeneficiary::where('id', $beneficiary->id)
                 ->with(['program', 'youthProfile', 'release'])
                 ->lockForUpdate()
@@ -32,43 +29,33 @@ class CashReleaseService
 
             $program = $beneficiary->program;
 
-            // 1. Verify eligibility: only approved beneficiaries may receive cash release
+            // Ensure beneficiary is marked as approved/eligible
             if ($beneficiary->status !== 'approved') {
-                throw ValidationException::withMessages([
-                    'beneficiary' => "Cannot disburse cash incentive to a beneficiary whose status is '{$beneficiary->status}'. Beneficiary must be approved first.",
+                $beneficiary->update([
+                    'status' => 'approved',
+                    'reviewed_by_user_id' => $actor->id,
+                    'reviewed_at' => now(),
                 ]);
             }
 
-            // 2. Prevent duplicate release
+            // Check if already released
             $existingRelease = $beneficiary->release;
             if ($existingRelease && $existingRelease->status === 'released') {
                 throw ValidationException::withMessages([
-                    'release' => "A successful cash disbursement has already been recorded for this beneficiary on " .
-                        $existingRelease->actual_release_date?->format('M d, Y h:i A') . " (Ref: {$existingRelease->acknowledgment_reference}).",
+                    'release' => "Cash incentive has already been released to this beneficiary on " .
+                        $existingRelease->actual_release_date?->format('M d, Y h:i A') . ".",
                 ]);
             }
 
-            // 3. Backend-forced fixed amount validation
             $expectedAmount = (float) $program->amount_per_beneficiary;
-            if (isset($data['amount']) && abs((float) $data['amount'] - $expectedAmount) > 0.001) {
-                throw ValidationException::withMessages([
-                    'amount' => "Release amount must strictly match the program fixed amount of ₱" . number_format($expectedAmount, 2) . ".",
-                ]);
-            }
-
-            // 4. Handle supporting document upload if provided
-            $documentPath = null;
-            if ($documentFile instanceof UploadedFile) {
-                $documentPath = $documentFile->store('cash-incentives/receipts', 'public');
-            }
-
             $releaseDate = !empty($data['actual_release_date'])
                 ? \Carbon\Carbon::parse($data['actual_release_date'])
                 : now();
 
-            $ackRef = trim($data['acknowledgment_reference']);
+            $ackRef = !empty(trim((string) ($data['acknowledgment_reference'] ?? '')))
+                ? trim($data['acknowledgment_reference'])
+                : sprintf('PR-%s-%04d', $program->code, $beneficiary->id);
 
-            // 5. Update or create the release record
             $release = CashIncentiveRelease::updateOrCreate(
                 [
                     'program_id' => $program->id,
@@ -79,7 +66,6 @@ class CashReleaseService
                     'status' => 'released',
                     'actual_release_date' => $releaseDate,
                     'acknowledgment_reference' => $ackRef,
-                    'supporting_document_path' => $documentPath ?? ($existingRelease?->supporting_document_path),
                     'released_by_user_id' => $actor->id,
                     'remarks' => $data['remarks'] ?? $existingRelease?->remarks,
                     'cancellation_reason' => null,
@@ -96,7 +82,6 @@ class CashReleaseService
                 $beneficiary->youthProfile?->suffix,
             ])));
 
-            // 6. Record status history audit
             CashIncentiveStatusHistory::create([
                 'program_id' => $program->id,
                 'beneficiary_id' => $beneficiary->id,
@@ -104,27 +89,24 @@ class CashReleaseService
                 'from_status' => $existingRelease?->status ?? 'pending',
                 'to_status' => 'released',
                 'action_type' => 'cash_released',
-                'reason' => "Cash incentive of ₱" . number_format($expectedAmount, 2) . " released and acknowledged (Ref: {$ackRef})",
+                'reason' => "Cash incentive of ₱" . number_format($expectedAmount, 2) . " disbursed (Ref: {$ackRef})",
                 'metadata' => [
                     'amount' => $expectedAmount,
                     'acknowledgment_reference' => $ackRef,
                     'disbursed_to' => $youthName,
-                    'reference_code' => $beneficiary->youthProfile?->reference_code,
                     'released_by' => $actorName,
-                    'document_path' => $release->supporting_document_path,
                 ],
                 'actor_user_id' => $actor->id,
                 'actor_name' => $actorName,
                 'ip_address' => request()->ip(),
             ]);
 
-            // 7. Record financial audit in activity_logs
             ActivityLog::create([
                 'user_id' => $actor->id,
                 'actor_name' => $actorName,
                 'actor_role' => $actor->role ?? 'staff',
                 'action' => 'cash_incentive.cash_released',
-                'description' => "Disbursed ₱" . number_format($expectedAmount, 2) . " to {$youthName} (Ref: {$ackRef}) for Program '{$program->title}'",
+                'description' => "Disbursed ₱" . number_format($expectedAmount, 2) . " cash incentive to {$youthName} for Program '{$program->title}'",
                 'subject_type' => CashIncentiveRelease::class,
                 'subject_id' => $release->id,
                 'old_values' => ['status' => $existingRelease?->status ?? 'pending'],
@@ -143,7 +125,107 @@ class CashReleaseService
     }
 
     /**
-     * Schedule a release date or update release status (e.g. unclaimed, scheduled, cancelled).
+     * Batch record cash releases for multiple beneficiaries.
+     */
+    public function batchRecordRelease(
+        CashIncentiveProgram $program,
+        array $beneficiaryIds,
+        User $actor,
+        ?string $ackRef = null,
+        ?string $remarks = null
+    ): int {
+        $count = 0;
+        foreach ($beneficiaryIds as $bId) {
+            $beneficiary = CashIncentiveBeneficiary::where('program_id', $program->id)
+                ->where('id', $bId)
+                ->first();
+
+            if ($beneficiary) {
+                try {
+                    $this->recordCashRelease($beneficiary, [
+                        'acknowledgment_reference' => $ackRef,
+                        'remarks' => $remarks ?: 'Batch disbursement release',
+                    ], $actor);
+                    $count++;
+                } catch (\Exception $e) {
+                    // skip already released
+                }
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Revert / undo a released disbursement back to pending.
+     */
+    public function revertCashRelease(
+        CashIncentiveBeneficiary $beneficiary,
+        User $actor,
+        ?string $reason = null
+    ): CashIncentiveRelease {
+        return DB::transaction(function () use ($beneficiary, $actor, $reason) {
+            $beneficiary = CashIncentiveBeneficiary::where('id', $beneficiary->id)
+                ->with(['program', 'youthProfile', 'release'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $release = $beneficiary->release;
+            if (!$release || $release->status !== 'released') {
+                throw ValidationException::withMessages([
+                    'release' => 'Only released transactions can be reverted.',
+                ]);
+            }
+
+            $fromStatus = $release->status;
+
+            $release->update([
+                'status' => 'pending',
+                'actual_release_date' => null,
+                'released_by_user_id' => null,
+                'remarks' => $reason ? "Reverted: {$reason}" : $release->remarks,
+            ]);
+
+            $actorName = trim(implode(' ', array_filter([$actor->fname, $actor->mname, $actor->lname, $actor->suffix])));
+            $youthName = trim(implode(' ', array_filter([
+                $beneficiary->youthProfile?->fname,
+                $beneficiary->youthProfile?->mname,
+                $beneficiary->youthProfile?->lname,
+            ])));
+
+            CashIncentiveStatusHistory::create([
+                'program_id' => $beneficiary->program_id,
+                'beneficiary_id' => $beneficiary->id,
+                'release_id' => $release->id,
+                'from_status' => $fromStatus,
+                'to_status' => 'pending',
+                'action_type' => 'release_reverted',
+                'reason' => $reason ?: 'Disbursement reverted back to pending by staff',
+                'actor_user_id' => $actor->id,
+                'actor_name' => $actorName,
+                'ip_address' => request()->ip(),
+            ]);
+
+            ActivityLog::create([
+                'user_id' => $actor->id,
+                'actor_name' => $actorName,
+                'actor_role' => $actor->role ?? 'staff',
+                'action' => 'cash_incentive.release_reverted',
+                'description' => "Reverted cash release for {$youthName} back to pending",
+                'subject_type' => CashIncentiveRelease::class,
+                'subject_id' => $release->id,
+                'old_values' => ['status' => 'released'],
+                'new_values' => ['status' => 'pending'],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
+            return $release;
+        });
+    }
+
+    /**
+     * Update release status (e.g. unclaimed or cancelled).
      */
     public function updateReleaseStatus(
         CashIncentiveRelease $release,
@@ -159,18 +241,6 @@ class CashReleaseService
 
             $fromStatus = $release->status;
 
-            if ($fromStatus === 'released' && $status !== 'cancelled') {
-                throw ValidationException::withMessages([
-                    'status' => 'A successfully released transaction cannot be altered to another status without explicit administrative cancellation.',
-                ]);
-            }
-
-            if ($status === 'cancelled' && empty(trim((string) ($params['cancellation_reason'] ?? '')))) {
-                throw ValidationException::withMessages([
-                    'cancellation_reason' => 'A cancellation reason is required to void or cancel a cash release.',
-                ]);
-            }
-
             $updateData = ['status' => $status];
 
             if ($status === 'scheduled') {
@@ -178,7 +248,7 @@ class CashReleaseService
             }
 
             if ($status === 'cancelled') {
-                $updateData['cancellation_reason'] = trim($params['cancellation_reason']);
+                $updateData['cancellation_reason'] = trim($params['cancellation_reason'] ?? 'Cancelled by staff');
                 $updateData['cancelled_by_user_id'] = $actor->id;
                 $updateData['cancelled_at'] = now();
             }
@@ -200,27 +270,9 @@ class CashReleaseService
                 'to_status' => $status,
                 'action_type' => "release_{$status}",
                 'reason' => $params['cancellation_reason'] ?? ($params['remarks'] ?? "Status updated from {$fromStatus} to {$status}"),
-                'metadata' => [
-                    'actor' => $actorName,
-                    'youth_name' => $youthName,
-                ],
                 'actor_user_id' => $actor->id,
                 'actor_name' => $actorName,
                 'ip_address' => request()->ip(),
-            ]);
-
-            ActivityLog::create([
-                'user_id' => $actor->id,
-                'actor_name' => $actorName,
-                'actor_role' => $actor->role ?? 'staff',
-                'action' => "cash_incentive.release_{$status}",
-                'description' => "Changed release #{$release->id} status for {$youthName} from {$fromStatus} to {$status}",
-                'subject_type' => CashIncentiveRelease::class,
-                'subject_id' => $release->id,
-                'old_values' => ['status' => $fromStatus],
-                'new_values' => ['status' => $status],
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
             ]);
 
             return $release;

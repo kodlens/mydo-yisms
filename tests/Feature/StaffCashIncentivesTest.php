@@ -131,7 +131,7 @@ test('staff can query eligible youth pool and select a beneficiary with historic
     $this->assertDatabaseHas('cash_incentive_beneficiaries', [
         'program_id' => $program->id,
         'youth_profile_id' => $youth->id,
-        'status' => 'pending',
+        'status' => 'approved',
         'historical_school_name' => 'Polytechnic College',
         'historical_program' => 'BS Accountancy',
     ]);
@@ -308,7 +308,7 @@ test('staff can individually approve or reject selected beneficiaries with audit
     ]);
 });
 
-test('cash release requires approval and prevents duplicate disbursements', function () {
+test('cash release disburses funds directly and prevents duplicate payouts', function () {
     $staff = makeStaffUser();
     $youth = makeYouthProfile();
 
@@ -322,30 +322,19 @@ test('cash release requires approval and prevents duplicate disbursements', func
         'status' => 'active',
     ]);
 
-    // Pending beneficiary (not approved yet)
     $beneficiary = CashIncentiveBeneficiary::create([
         'program_id' => $program->id,
         'youth_profile_id' => $youth->id,
-        'status' => 'pending',
+        'status' => 'approved',
         'selected_by_user_id' => $staff->id,
         'selected_at' => now(),
     ]);
 
-    // Attempt release on non-approved beneficiary -> blocked
+    // Record valid release directly (no document upload required)
     $this->actingAs($staff, 'web')
         ->post("/staff/cash-incentives/{$program->id}/releases/{$beneficiary->id}/record", [
             'acknowledgment_reference' => 'PR-2026-001',
-        ])
-        ->assertSessionHasErrors('beneficiary');
-
-    // Approve beneficiary
-    $beneficiary->update(['status' => 'approved']);
-
-    // Record valid release
-    $this->actingAs($staff, 'web')
-        ->post("/staff/cash-incentives/{$program->id}/releases/{$beneficiary->id}/record", [
-            'acknowledgment_reference' => 'PR-2026-001',
-            'remarks' => 'Claimed in person with school ID',
+            'remarks' => 'Claimed in person',
         ])
         ->assertSessionHasNoErrors();
 
@@ -364,10 +353,62 @@ test('cash release requires approval and prevents duplicate disbursements', func
         ])
         ->assertSessionHasErrors('release');
 
-    // Verified financial audit recorded in activity_logs
-    $this->assertDatabaseHas('activity_logs', [
-        'action' => 'cash_incentive.cash_released',
-        'subject_type' => CashIncentiveRelease::class,
+    // Undo / revert release back to pending
+    $this->actingAs($staff, 'web')
+        ->post("/staff/cash-incentives/{$program->id}/releases/{$beneficiary->id}/revert", [
+            'reason' => 'Released to wrong line by mistake',
+        ])
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('cash_incentive_releases', [
+        'program_id' => $program->id,
+        'beneficiary_id' => $beneficiary->id,
+        'status' => 'pending',
+    ]);
+});
+
+test('staff can batch release cash to multiple selected students', function () {
+    $staff = makeStaffUser();
+    $youth1 = makeYouthProfile();
+    $youth2 = makeYouthProfile();
+
+    $program = CashIncentiveProgram::create([
+        'code' => 'CIP-2026-BATCH-REL',
+        'title' => 'Batch Release Program',
+        'funding_year' => 2026,
+        'amount_per_beneficiary' => 3000,
+        'allocated_budget' => 300000,
+        'max_beneficiaries' => 100,
+        'status' => 'active',
+    ]);
+
+    $b1 = CashIncentiveBeneficiary::create([
+        'program_id' => $program->id,
+        'youth_profile_id' => $youth1->id,
+        'status' => 'approved',
+    ]);
+
+    $b2 = CashIncentiveBeneficiary::create([
+        'program_id' => $program->id,
+        'youth_profile_id' => $youth2->id,
+        'status' => 'approved',
+    ]);
+
+    $this->actingAs($staff, 'web')
+        ->post("/staff/cash-incentives/{$program->id}/releases/batch", [
+            'beneficiary_ids' => [$b1->id, $b2->id],
+            'acknowledgment_reference' => 'BATCH-PR-01',
+        ])
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('cash_incentive_releases', [
+        'beneficiary_id' => $b1->id,
+        'status' => 'released',
+    ]);
+
+    $this->assertDatabaseHas('cash_incentive_releases', [
+        'beneficiary_id' => $b2->id,
+        'status' => 'released',
     ]);
 });
 
