@@ -37,7 +37,6 @@ export type Activity = {
     pending_registrations_count?: number;
     /** Sign-ups that still reserve a slot, i.e. pending + approved. */
     approved_registrations_count?: number;
-    volunteer_assignments_count?: number;
 };
 
 export type ActivityPayload = {

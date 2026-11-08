@@ -47,7 +47,6 @@ const destinations = [
   { key: 'staff.scholarship-applicants.index', prefix: 'staff.scholarship-applicants.', label: 'Scholarship Applicants', icon: FileSearch },
   { key: 'staff.cash-incentives.index', prefix: 'staff.cash-incentives.', label: 'Cash Incentives', icon: Coins },
   { key: 'staff.events-activities.index', prefix: 'staff.events-activities.', label: 'Events & Activities', icon: CalendarRange },
-  { key: 'staff.volunteers.index', prefix: 'staff.volunteers.', label: 'Volunteers', icon: HandHeart },
   { key: 'staff.youth-profiles.index', prefix: 'staff.youth-profiles.', label: 'Youth Profiles', icon: UserRound },
 ];
 
@@ -77,7 +76,7 @@ export default function StaffAuthLayout({ user, children, header }: PropsWithChi
           href={route(key)}
           aria-current={currentItem?.key === key ? 'page' : undefined}
           onClick={() => setDrawerOpen(false)}
-          className="inline-flex w-full items-center font-medium"
+          className="inline-flex w-full items-center font-medium !text-inherit hover:!text-inherit"
         >
           {label}
         </Link>
@@ -108,7 +107,7 @@ export default function StaffAuthLayout({ user, children, header }: PropsWithChi
               collapsedWidth: 80,
             },
           },
-          token: { colorTextDisabled: '#6ee7b7/40' },
+          token: { colorTextDisabled: 'rgba(110, 231, 183, 0.4)' },
         }}
       >
         <div className="flex h-full min-h-0 flex-col">
@@ -153,6 +152,7 @@ export default function StaffAuthLayout({ user, children, header }: PropsWithChi
               inlineCollapsed={compact}
               selectedKeys={currentItem ? [currentItem.key] : []}
               items={navigationItems}
+              className="staff-sidebar-menu"
               style={{ background: 'transparent', borderInlineEnd: 0 }}
             />
           </nav>
@@ -206,7 +206,14 @@ export default function StaffAuthLayout({ user, children, header }: PropsWithChi
   }
 
   return (
-    <Layout style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+    <Layout
+      style={{
+        position: 'fixed',
+        inset: 0,
+        overflow: 'hidden',
+        ['--sidebar-width' as string]: isMobile ? '0px' : collapsed ? '80px' : '264px',
+      }}
+    >
       {!isMobile && (
         <Sider
           trigger={null}
@@ -220,6 +227,8 @@ export default function StaffAuthLayout({ user, children, header }: PropsWithChi
             height: '100%',
             minHeight: 0,
             overflow: 'hidden',
+            position: 'relative',
+            zIndex: 1001,
           }}
         >
           {sidebar(collapsed)}

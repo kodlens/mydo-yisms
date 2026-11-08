@@ -56,11 +56,6 @@ class Activity extends Model
         return $this->hasMany(ActivityRegistration::class);
     }
 
-    public function volunteerAssignments(): HasMany
-    {
-        return $this->hasMany(VolunteerActivity::class);
-    }
-
     public function attendances(): HasMany
     {
         return $this->hasMany(ActivityAttendance::class);

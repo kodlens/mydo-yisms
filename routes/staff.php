@@ -8,7 +8,6 @@ use App\Http\Controllers\Staff\StaffActivityAttendanceController;
 use App\Http\Controllers\Staff\StaffApplicantController;
 use App\Http\Controllers\Staff\StaffEventActivityController;
 use App\Http\Controllers\Staff\StaffScholarshipController;
-use App\Http\Controllers\Staff\StaffVolunteerController;
 use App\Http\Controllers\Staff\StaffYouthProfileController;
 use App\Http\Controllers\Staff\StaffDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -54,19 +53,8 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
 
     Route::post('/events-activities', [StaffEventActivityController::class, 'store'])->name('events-activities.store');
     Route::put('/events-activities/{id}', [StaffEventActivityController::class, 'update'])->name('events-activities.update');
+    Route::post('/events-activities/{id}/toggle-featured', [StaffEventActivityController::class, 'toggleFeatured'])->name('events-activities.toggle-featured');
     Route::delete('/events-activities/{id}', [StaffEventActivityController::class, 'destroy'])->name('events-activities.destroy');
-
-
-    // Volunteer programme. No resource route here: staff cannot register or delete a
-    // volunteer, so only the review, assignment, and attendance actions are exposed.
-    Route::get('/volunteers', [StaffVolunteerController::class, 'index'])->name('volunteers.index');
-    Route::get('/get-volunteers', [StaffVolunteerController::class, 'getData'])->name('volunteers.get-data');
-    Route::post('/volunteers/{id}/status', [StaffVolunteerController::class, 'setStatus'])->name('volunteers.set-status');
-    Route::put('/volunteers/{id}', [StaffVolunteerController::class, 'update'])->name('volunteers.update');
-    Route::get('/volunteers/{id}/assignments', [StaffVolunteerController::class, 'assignments'])->name('volunteers.assignments');
-    Route::post('/volunteers/{id}/assignments', [StaffVolunteerController::class, 'storeAssignment'])->name('volunteers.assignments.store');
-    Route::delete('/volunteers/{id}/assignments/{assignment}', [StaffVolunteerController::class, 'destroyAssignment'])->name('volunteers.assignments.destroy');
-    Route::post('/volunteers/{id}/attendance', [StaffVolunteerController::class, 'storeAttendance'])->name('volunteers.attendance.store');
 
     // Cash Incentives Management
     Route::prefix('cash-incentives')->name('cash-incentives.')->group(function () {

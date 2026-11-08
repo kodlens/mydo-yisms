@@ -6,7 +6,7 @@ import { Head, router } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, App, Button, Dropdown, Empty, Input, MenuProps, Pagination, Segmented, Space, Table, Tag, Tooltip } from 'antd';
 import axios from 'axios';
-import { CalendarDays, Copy, MapPin, MoreHorizontal, Pencil, Plus, QrCode, RefreshCw, SearchX, Trash2, TriangleAlert, Users } from 'lucide-react';
+import { CalendarDays, Copy, MapPin, MoreHorizontal, Pencil, Plus, QrCode, RefreshCw, SearchX, Star, Trash2, TriangleAlert, Users } from 'lucide-react';
 import { ReactElement, ReactNode, useEffect, useMemo, useState } from 'react';
 
 const { Column } = Table;
@@ -65,6 +65,7 @@ const StaffEventsActivitiesPage = () => {
     // Only the delete confirmation lives on this page; the form and the participant
     // list each have their own route.
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [togglingFeaturedId, setTogglingFeaturedId] = useState<number | null>(null);
 
     // TanStack Query owns the request: fetching, caching, and error state.
     const { data, isFetching, isError, error, refetch } = useQuery({
@@ -126,6 +127,38 @@ const StaffEventsActivitiesPage = () => {
                 description: 'Your browser blocked clipboard access. Copy the slug manually instead.',
                 placement: 'topRight',
             });
+        }
+    };
+
+    const handleToggleFeatured = async (row: Activity) => {
+        setTogglingFeaturedId(row.id);
+
+        try {
+            const response = await axios.post(`/staff/events-activities/${row.id}/toggle-featured`);
+
+            if (!response.data?.success) {
+                throw new Error(response.data?.message ?? 'Failed to update featured status.');
+            }
+
+            notification.success({
+                message: 'Featured status updated',
+                description: response.data?.message,
+                placement: 'topRight',
+            });
+
+            refetch();
+        } catch (err) {
+            const description = axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? err.message)
+                : 'Could not update featured status.';
+
+            notification.error({
+                message: 'Could not update featured status',
+                description,
+                placement: 'topRight',
+            });
+        } finally {
+            setTogglingFeaturedId(null);
         }
     };
 
@@ -353,7 +386,11 @@ const StaffEventsActivitiesPage = () => {
                                         <p className="text-sm leading-6 font-semibold break-words text-stone-900">{title || 'Untitled activity'}</p>
                                         <div className="mt-1 flex flex-wrap items-center gap-2">
                                             <code className="rounded-md bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{row.slug}</code>
-                                            {row.is_featured && <Tag color="gold">Featured</Tag>}
+                                            {row.is_featured && (
+                                                <Tag color="gold" className="inline-flex items-center gap-1 font-semibold">
+                                                    <Star size={11} className="fill-amber-500 text-amber-500" /> Featured
+                                                </Tag>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -499,6 +536,13 @@ const StaffEventsActivitiesPage = () => {
                                                             key: `staff.events-activities.edit.${row.id}`,
                                                             icon: <Pencil size={15} />,
                                                             onClick: () => handleEdit(row),
+                                                        },
+                                                        {
+                                                            label: row.is_featured ? 'Remove from Featured' : 'Set as Featured Event',
+                                                            key: `staff.events-activities.feature.${row.id}`,
+                                                            icon: <Star size={15} className={row.is_featured ? 'fill-amber-500 text-amber-500' : ''} />,
+                                                            disabled: togglingFeaturedId === row.id,
+                                                            onClick: () => handleToggleFeatured(row),
                                                         },
                                                         {
                                                             label: 'Copy slug',

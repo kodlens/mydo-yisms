@@ -44,7 +44,7 @@ class YouthServiceController extends Controller
             'activities' => [
                 'key' => 'activities',
                 'title' => 'Youth Activities',
-                'description' => 'Join seminars, trainings, volunteer drives, and MYDO community programs.',
+                'description' => 'Join seminars, trainings, community drives, and MYDO programs.',
                 'status' => 'Open',
                 'requirements' => ['Updated youth profile', 'Guardian consent when required'],
             ],

@@ -54,7 +54,6 @@ const destinations: Destination[] = [
       route.startsWith('youth.services.youth-scholarships.') ||
       route.startsWith('youth.services.apply-scholarship.'),
   },
-  { key: 'youth.services.volunteer.index', prefix: 'youth.services.volunteer.', label: 'Volunteer', icon: HandHeart },
   { key: 'youth.youth-my-profile.index', prefix: 'youth.youth-my-profile.', label: 'My Profile', icon: UserRound },
 ];
 

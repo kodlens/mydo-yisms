@@ -128,8 +128,8 @@ export default function YouthLoginPage() {
                     <HeartHandshake className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-sm font-bold text-white">Youth Volunteer Corps</h2>
-                    <p className="text-xs text-emerald-200">Log verified community hours and download certificates</p>
+                    <h2 className="text-sm font-bold text-white">Youth Events & Seminars</h2>
+                    <p className="text-xs text-emerald-200">Register for leadership camps, workshops, and community events</p>
                   </div>
                 </div>
 

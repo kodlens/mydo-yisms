@@ -6,7 +6,6 @@ use App\Http\Controllers\Youth\PendingPageController;
 use App\Http\Controllers\Youth\YouthDashboardController;
 use App\Http\Controllers\Youth\YouthMyAccountController;
 use App\Http\Controllers\Youth\YouthScholarshipController;
-use App\Http\Controllers\Youth\YouthVolunteerController;
 use App\Http\Controllers\Youth\YouthRegistrationController;
 use App\Http\Controllers\Youth\YouthServiceController;
 use App\Http\Controllers\Youth\YouthMyProfileController;
@@ -59,11 +58,6 @@ Route::middleware('auth:youth')->group(function () {
 
     Route::get('/youth/my-profile', [YouthMyProfileController::class, 'index'])->name('youth.youth-my-profile.index');
     Route::put('/youth/my-profile', [YouthMyProfileController::class, 'update'])->name('youth.youth-my-profile.update');
-
-    // Volunteer programme: self-registration, assignments, and credited service hours.
-    Route::get('/youth/services/volunteer', [YouthVolunteerController::class, 'index'])->name('youth.services.volunteer.index');
-    Route::get('/youth/services/get-my-volunteering', [YouthVolunteerController::class, 'getData'])->name('youth.services.volunteer.get-data');
-    Route::post('/youth/services/volunteer', [YouthVolunteerController::class, 'store'])->name('youth.services.volunteer.store');
 
     Route::get('/youth/services', [YouthServiceController::class, 'index'])->name('youth.youth-services.index');
     // Route::get('/youth/services/{service}', [YouthServiceController::class, 'show'])->name('youth.youth-services.show');

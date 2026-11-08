@@ -5,6 +5,7 @@ import {
   ChartBarStacked,
   ChevronDown,
   ClipboardList,
+  Coins,
   GraduationCap,
   HandHeart,
   House,
@@ -23,9 +24,9 @@ const sidebarBackground = 'linear-gradient(180deg, #1f2933 0%, #263238 52%, #172
 const destinations = [
   { key: 'admin.dashboard.index', prefix: 'admin.dashboard.', label: 'Dashboard', icon: House },
   { key: 'admin.activity-categories.index', prefix: 'admin.activity-categories.', label: 'Activity Categories', icon: ChartBarStacked },
-  { key: 'admin.volunteers.index', prefix: 'admin.volunteers.', label: 'Volunteers', icon: HandHeart },
   { key: 'admin.scholarship-types.index', prefix: 'admin.scholarship-types.', label: 'Scholarship Types', icon: GraduationCap },
   { key: 'admin.applicants.index', prefix: 'admin.applicants.', label: 'Scholarship Applicants', icon: ClipboardList },
+  { key: 'admin.cash-incentives.index', prefix: 'admin.cash-incentives.', label: 'Cash Incentives', icon: Coins },
   { key: 'admin.youth-profiles.index', prefix: 'admin.youth-profiles.', label: 'Youth Profiles', icon: Users },
   { key: 'admin.users.index', prefix: 'admin.users.', label: 'Users', icon: UserRound },
 ];
@@ -120,7 +121,14 @@ export default function AdminAuthLayout({ user, children, header }: PropsWithChi
   }
 
   return (
-    <Layout style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+    <Layout
+      style={{
+        position: 'fixed',
+        inset: 0,
+        overflow: 'hidden',
+        ['--sidebar-width' as string]: isMobile ? '0px' : collapsed ? '80px' : '264px',
+      }}
+    >
       {!isMobile && (
         <Sider
           trigger={null}
@@ -134,6 +142,8 @@ export default function AdminAuthLayout({ user, children, header }: PropsWithChi
             height: '100%',
             minHeight: 0,
             overflow: 'hidden',
+            position: 'relative',
+            zIndex: 1001,
           }}
         >
           {sidebar(collapsed)}

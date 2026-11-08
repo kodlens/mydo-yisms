@@ -157,3 +157,31 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Ant Design right-docked drawer mask offset:
+   Ensure drawer backdrops do not cover or dim the fixed left sidebar on desktop */
+@media (min-width: 768px) {
+    .ant-drawer-right .ant-drawer-mask {
+        left: var(--sidebar-width, 264px) !important;
+    }
+}
+
+/* Sidebar Navigation Text Styling */
+.staff-sidebar-menu .ant-menu-item {
+    color: #d1fae5 !important;
+}
+
+.staff-sidebar-menu .ant-menu-item a {
+    color: #d1fae5 !important;
+}
+
+.staff-sidebar-menu .ant-menu-item:hover,
+.staff-sidebar-menu .ant-menu-item:hover a {
+    color: #ffffff !important;
+}
+
+.staff-sidebar-menu .ant-menu-item-selected,
+.staff-sidebar-menu .ant-menu-item-selected a {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}

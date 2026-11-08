@@ -460,7 +460,9 @@ const StaffCreateEditEventsActivitiesPage = ({ activity, categories }: Props) =>
                 <Form.Item name="is_featured" label="Featured" valuePropName="checked">
                   <Switch checkedChildren="Featured" unCheckedChildren="Normal" />
                 </Form.Item>
-                <p className="-mt-3 text-xs leading-5 text-stone-500">Featured activities are highlighted on the home page.</p>
+                <p className="-mt-3 text-xs leading-5 text-stone-500">
+                  Only one activity can be featured at a time. Enabling this will automatically un-feature any previous activity.
+                </p>
               </Col>
             </Row>
           </Card>

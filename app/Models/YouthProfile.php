@@ -82,11 +82,6 @@ class YouthProfile extends Authenticatable
         return $this->hasMany(ScholarshipApplication::class);
     }
 
-    public function volunteerRecord(): HasOne
-    {
-        return $this->hasOne(Volunteer::class);
-    }
-
     public function activityRegistrations(): HasMany
     {
         return $this->hasMany(ActivityRegistration::class);

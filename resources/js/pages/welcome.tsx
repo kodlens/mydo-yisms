@@ -53,14 +53,14 @@ const portalServices = [
     link: '#requirements',
   },
   {
-    category: 'Civic Engagement',
-    title: 'Youth Volunteer Corps',
+    category: 'Community Engagement',
+    title: 'Youth Programs & Activities',
     description:
-      'Mobilize in community programs, coastal and tree-planting drives, disaster relief, and youth advocacies while earning verified civic service hours and certificates.',
-    icon: HeartHandshake,
-    badge: 'Open Registry',
-    badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
-    iconBg: 'bg-rose-100 text-rose-800',
+      'Participate in community programs, tree-planting drives, leadership summits, disaster preparedness, and youth assemblies organized by MYDO.',
+    icon: Users,
+    badge: 'Open for Registration',
+    badgeColor: 'bg-teal-50 text-teal-700 border-teal-200',
+    iconBg: 'bg-teal-100 text-teal-800',
     link: '#how-it-works',
   },
   {
@@ -108,7 +108,7 @@ const workflowSteps = [
   {
     step: '02',
     title: 'Select Portal Service',
-    description: 'Explore active scholarship programs, honor incentives, volunteer registrations, or document endorsements.',
+    description: 'Explore active scholarship programs, honor incentives, community activities, or document endorsements.',
     icon: FileText,
   },
   {
@@ -148,15 +148,6 @@ const requirementsData = {
       { name: 'Valid Government-Issued ID', note: 'Showing birth date and permanent address' },
     ],
   },
-  volunteer: {
-    title: 'Youth Volunteer Corps & Civic Action',
-    subtitle: 'For community advocates and youth organizations',
-    items: [
-      { name: 'Completed eKabataan Youth Profile', note: 'Ages 15 to 30 years old' },
-      { name: 'Emergency Contact & Guardian Consent', note: 'Required for volunteers aged 15-17' },
-      { name: 'Barangay ID or School ID', note: 'Proof of identity and residency' },
-    ],
-  },
 };
 
 const faqs = [
@@ -190,7 +181,7 @@ const faqs = [
 export default function Welcome() {
   const { auth } = usePage<SharedData>().props;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeReqTab, setActiveReqTab] = useState<'scholarship' | 'incentive' | 'volunteer'>('scholarship');
+  const [activeReqTab, setActiveReqTab] = useState<'scholarship' | 'incentive'>('scholarship');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const isYouth = auth.user && auth.user.role === 'youth';
@@ -205,7 +196,7 @@ export default function Welcome() {
       <Head title="eKabataan - Municipal Youth Development Office (MYDO) Portal">
         <meta
           name="description"
-          content="Official Public Youth Information and Services Portal of the Municipal Youth Development Office. Access scholarships, cash incentives, and volunteer programs."
+          content="Official Public Youth Information and Services Portal of the Municipal Youth Development Office. Access scholarships, cash incentives, and youth development programs."
         />
       </Head>
 
@@ -419,7 +410,7 @@ export default function Welcome() {
 
                 <p className="mt-6 max-w-2xl text-base leading-relaxed text-emerald-100 sm:text-lg">
                   Welcome to <strong className="font-semibold text-white">eKabataan</strong>, the integrated Youth Information Management System managed by the{' '}
-                  <strong className="font-semibold text-white">Municipal Youth Development Office (MYDO)</strong>. Apply for scholarships, access academic incentives, verify volunteer hours, and connect with local youth programs online.
+                  <strong className="font-semibold text-white">Municipal Youth Development Office (MYDO)</strong>. Apply for scholarships, access academic incentives, and connect with local youth programs online.
                 </p>
 
                 {/* Primary Actions */}
@@ -526,8 +517,8 @@ export default function Welcome() {
                             <HeartHandshake className="h-4 w-4" />
                           </span>
                           <div>
-                            <p className="text-xs font-semibold text-white">Community Volunteer Registry</p>
-                            <p className="text-[11px] text-emerald-200">Civic hours & certifications</p>
+                            <p className="text-xs font-semibold text-white">Community Youth Programs</p>
+                            <p className="text-[11px] text-emerald-200">Events, camps & workshops</p>
                           </div>
                         </div>
                         <span className="rounded-md bg-teal-400/20 px-2 py-0.5 text-[10px] font-bold text-teal-200">
@@ -797,17 +788,6 @@ export default function Welcome() {
               >
                 Honor & Cash Grants
               </button>
-              <button
-                type="button"
-                onClick={() => setActiveReqTab('volunteer')}
-                className={`rounded-md px-4 py-2 text-xs font-bold transition sm:text-sm ${
-                  activeReqTab === 'volunteer'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Volunteer Corps
-              </button>
             </div>
           </div>
 
@@ -1006,7 +986,7 @@ export default function Welcome() {
                   </li>
                   <li>
                     <a href="#services" className="transition hover:text-emerald-400">
-                      Volunteer Corps
+                      Youth Programs & Events
                     </a>
                   </li>
                   <li>

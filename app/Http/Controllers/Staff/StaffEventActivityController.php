@@ -37,7 +37,6 @@ class StaffEventActivityController extends Controller
                 'registrations',
                 'registrations as approved_registrations_count' => fn ($q) => $q->reservingSlot(),
                 'registrations as pending_registrations_count' => fn ($q) => $q->where('status', 'pending'),
-                'volunteerAssignments',
             ]);
 
         // Search matches the title or the slug so staff can find a row either way.
@@ -112,6 +111,10 @@ class StaffEventActivityController extends Controller
     {
         $validated = $request->validate($this->rules(), $this->messages());
 
+        if (!empty($validated['is_featured'])) {
+            Activity::where('is_featured', true)->update(['is_featured' => false]);
+        }
+
         $activity = Activity::create([
             ...$this->attributesFrom($validated),
             'created_by' => $request->user()?->id,
@@ -140,6 +143,12 @@ class StaffEventActivityController extends Controller
 
         $validated = $request->validate($this->rules(), $this->messages());
 
+        if (!empty($validated['is_featured'])) {
+            Activity::where('id', '!=', $activity->id)
+                ->where('is_featured', true)
+                ->update(['is_featured' => false]);
+        }
+
         $attributes = $this->attributesFrom($validated, $activity->id);
 
         // Stamp the publish time the first time an activity goes live, and keep it afterwards.
@@ -152,6 +161,29 @@ class StaffEventActivityController extends Controller
         return response()->json([
             'message' => 'Event/activity updated successfully.',
             'success' => true,
+            'data' => $activity->fresh('category:id,name,slug,is_active'),
+        ]);
+    }
+
+    public function toggleFeatured(int $id): JsonResponse
+    {
+        $activity = Activity::findOrFail($id);
+        $newFeatured = !$activity->is_featured;
+
+        if ($newFeatured) {
+            Activity::where('id', '!=', $activity->id)
+                ->where('is_featured', true)
+                ->update(['is_featured' => false]);
+        }
+
+        $activity->update(['is_featured' => $newFeatured]);
+
+        return response()->json([
+            'message' => $newFeatured
+                ? '“' . $activity->title . '” is now set as the featured event.'
+                : '“' . $activity->title . '” is no longer featured.',
+            'success' => true,
+            'is_featured' => $newFeatured,
             'data' => $activity->fresh('category:id,name,slug,is_active'),
         ]);
     }
@@ -254,20 +286,12 @@ class StaffEventActivityController extends Controller
         $activity = Activity::withCount([
             'registrations',
             'registrations as reserved_registrations_count' => fn ($q) => $q->reservingSlot(),
-            'volunteerAssignments',
         ])->findOrFail($id);
 
-        // Youth sign-ups and volunteer records must outlive the activity row, so block the delete.
+        // Youth sign-ups must outlive the activity row, so block the delete.
         if ($activity->reserved_registrations_count > 0) {
             return response()->json([
                 'message' => "{$activity->reserved_registrations_count} youth registration(s) still point to this activity. Archive it instead of deleting it.",
-                'success' => false,
-            ], 422);
-        }
-
-        if ($activity->volunteer_assignments_count > 0) {
-            return response()->json([
-                'message' => "{$activity->volunteer_assignments_count} volunteer assignment(s) still point to this activity. Archive it instead of deleting it.",
                 'success' => false,
             ], 422);
         }
