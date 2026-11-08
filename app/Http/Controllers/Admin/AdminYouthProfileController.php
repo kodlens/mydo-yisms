@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\YouthProfile;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
@@ -65,6 +66,15 @@ class AdminYouthProfileController extends Controller
         $youth = YouthProfile::findOrFail($id);
         $youth->password = Hash::make($req->password);
         $youth->save();
+
+        ActivityLogger::log(
+            'password_change',
+            "Changed password for youth profile: {$youth->fname} {$youth->lname} (Ref: {$youth->reference_code})",
+            $youth,
+            null,
+            null,
+            ['youth_profile_id' => $youth->id, 'reference_code' => $youth->reference_code]
+        );
 
         return response()->json([
             'status' => 'changed',

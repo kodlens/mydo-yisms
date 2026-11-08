@@ -54,5 +54,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/{program}/beneficiaries/{beneficiary}/report', [\App\Http\Controllers\Admin\CashIncentives\AdminCashIncentiveReportController::class, 'individual'])->name('reports.individual');
     });
 
+    // Activity Logs
+    Route::get('/activity-logs', [\App\Http\Controllers\Admin\AdminActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/get-activity-logs', [\App\Http\Controllers\Admin\AdminActivityLogController::class, 'getData'])->name('activity-logs.get-data');
+    Route::get('/activity-logs/{id}', [\App\Http\Controllers\Admin\AdminActivityLogController::class, 'show'])->name('activity-logs.show');
 
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\ScholarshipApplication;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -67,6 +68,7 @@ class StaffApplicantController extends Controller
             'rejection_reason' => ['required_if:registration_status,rejected', 'nullable', 'string', 'max:2000'],
         ]);
 
+        $oldStatus = $applicant->status;
         $applicant->forceFill([
             'status' => $validated['registration_status'],
             'rejection_reason' => $validated['registration_status'] === 'rejected'
@@ -75,6 +77,15 @@ class StaffApplicantController extends Controller
             'reviewed_by' => $request->user()?->id,
             'reviewed_at' => now(),
         ])->save();
+
+        ActivityLogger::log(
+            'applicant_status_update',
+            "Staff updated scholarship application status to '{$validated['registration_status']}' for applicant #{$applicant->id}",
+            $applicant,
+            ['status' => $oldStatus],
+            ['status' => $validated['registration_status'], 'rejection_reason' => $applicant->rejection_reason],
+            ['scholarship_application_id' => $applicant->id]
+        );
 
         return back()->with('status', 'Applicant status updated.');
     }

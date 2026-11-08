@@ -16,6 +16,7 @@ class YouthProfileSeeder extends Seeder
         $data = [
             [
                 'student_id' => '2026-112233',
+                'reference_code' => 'YD-2026-0001',
                 'lname' => 'Santos',
                 'fname' => 'Maria Angela',
                 'mname' => 'Reyes',
@@ -25,7 +26,11 @@ class YouthProfileSeeder extends Seeder
                 'sex' => 'Female',
                 'civil_status' => 'Single',
                 'mobile_number' => '09171234567',
+                'provCode' => 973,
+                'citymunCode' => 97308,
+                'brgyCode' => 97308034,
                 'street_address' => 'Purok 1',
+                'zip_code' => '7028',
                 'school_name' => 'MYDO State College',
                 'program' => 'BS Information Technology',
                 'year' => 2,
@@ -35,10 +40,11 @@ class YouthProfileSeeder extends Seeder
                 'monthly_family_income' => 15000,
                 'role' => 'youth',
                 'is_active' => true,
-                'is_graduated' => false
+                'is_graduated' => false,
             ],
             [
                 'student_id' => '2026-2235',
+                'reference_code' => 'YD-2026-0002',
                 'lname' => 'Garcia',
                 'fname' => 'John Michael',
                 'mname' => 'Lopez',
@@ -48,7 +54,11 @@ class YouthProfileSeeder extends Seeder
                 'sex' => 'Male',
                 'civil_status' => 'Single',
                 'mobile_number' => '09201234567',
+                'provCode' => 973,
+                'citymunCode' => 97308,
+                'brgyCode' => 97308035,
                 'street_address' => 'Purok 2',
+                'zip_code' => '7028',
                 'school_name' => 'Dumingag National High School',
                 'program' => 'BS Criminology',
                 'year' => 3,
@@ -58,10 +68,11 @@ class YouthProfileSeeder extends Seeder
                 'monthly_family_income' => 18000,
                 'role' => 'youth',
                 'is_active' => true,
-                'is_graduated' => false
+                'is_graduated' => false,
             ],
             [
                 'student_id' => '2026-1164',
+                'reference_code' => 'YD-2026-0003',
                 'lname' => 'Mendoza',
                 'fname' => 'Christine Joy',
                 'mname' => 'Villanueva',
@@ -71,7 +82,11 @@ class YouthProfileSeeder extends Seeder
                 'sex' => 'Female',
                 'civil_status' => 'Single',
                 'mobile_number' => '09301234567',
+                'provCode' => 973,
+                'citymunCode' => 97308,
+                'brgyCode' => 97308003,
                 'street_address' => 'Purok 3',
+                'zip_code' => '7028',
                 'school_name' => 'Dumingag Technological Training School',
                 'program' => 'BS Education',
                 'year' => 1,
@@ -81,10 +96,23 @@ class YouthProfileSeeder extends Seeder
                 'monthly_family_income' => 12000,
                 'role' => 'youth',
                 'is_active' => true,
-                'is_graduated' => false
+                'is_graduated' => false,
             ],
         ];
 
-        YouthProfile::insertOrIgnore($data);
+        foreach ($data as $profileData) {
+            YouthProfile::updateOrCreate(
+                ['email' => $profileData['email']],
+                $profileData
+            );
+        }
+
+        // Ensure any other existing youth profiles without a reference code get one generated
+        YouthProfile::whereNull('reference_code')
+            ->orWhere('reference_code', '')
+            ->each(function (YouthProfile $profile) {
+                $profile->reference_code = YouthProfile::generateUniqueReferenceCode();
+                $profile->save();
+            });
     }
 }

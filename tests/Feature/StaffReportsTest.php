@@ -7,13 +7,13 @@ use App\Models\CashIncentiveProgram;
 use App\Models\CashIncentiveRelease;
 use App\Models\User;
 use App\Models\YouthProfile;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class StaffReportsTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected function createStaffUser(): User
     {

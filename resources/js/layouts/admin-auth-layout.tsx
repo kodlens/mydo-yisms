@@ -10,6 +10,7 @@ import {
   Coins,
   Gauge,
   GraduationCap,
+  History,
   LogOut,
   Menu as MenuIcon,
   PanelLeftClose,
@@ -30,6 +31,7 @@ const destinations = [
   { key: 'admin.cash-incentives.index', prefix: 'admin.cash-incentives.', label: 'Cash Incentives', icon: Coins },
   { key: 'admin.youth-profiles.index', prefix: 'admin.youth-profiles.', label: 'Youth Profiles', icon: Users },
   { key: 'admin.users.index', prefix: 'admin.users.', label: 'Users', icon: UserCog },
+  { key: 'admin.activity-logs.index', prefix: 'admin.activity-logs.', label: 'Activity Logs', icon: History },
 ];
 
 export default function AdminAuthLayout({ user, children, header }: PropsWithChildren<{ user: User; header?: ReactNode }>) {
