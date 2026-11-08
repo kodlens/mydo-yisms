@@ -1,15 +1,16 @@
 <?php
 
-use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveProgramController;
 use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveBeneficiaryController;
+use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveProgramController;
 use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveReleaseController;
 use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveReportController;
 use App\Http\Controllers\Staff\StaffActivityAttendanceController;
 use App\Http\Controllers\Staff\StaffApplicantController;
+use App\Http\Controllers\Staff\StaffDashboardController;
 use App\Http\Controllers\Staff\StaffEventActivityController;
+use App\Http\Controllers\Staff\StaffReportController;
 use App\Http\Controllers\Staff\StaffScholarshipController;
 use App\Http\Controllers\Staff\StaffYouthProfileController;
-use App\Http\Controllers\Staff\StaffDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->group(function () {
@@ -81,4 +82,9 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
         Route::get('/{program}/reports/export-csv', [StaffCashIncentiveReportController::class, 'exportCsv'])->name('reports.export-csv');
         Route::get('/{program}/beneficiaries/{beneficiary}/report', [StaffCashIncentiveReportController::class, 'individual'])->name('reports.individual');
     });
+
+    // Comprehensive MYDO Staff Reports
+    Route::get('/reports', [StaffReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/data', [StaffReportController::class, 'data'])->name('reports.data');
+    Route::get('/reports/export', [StaffReportController::class, 'export'])->name('reports.export');
 });

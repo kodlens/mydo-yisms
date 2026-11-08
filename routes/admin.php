@@ -15,8 +15,18 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('/users', App\Http\Controllers\Admin\AdminUserController::class)->names('users');
     Route::get('/get-users', [App\Http\Controllers\Admin\AdminUserController::class, 'getData'])->name('users.getdata');
-    //Route::post('/users-change-password/{id}', [App\Http\Controllers\Admin\AdminUserController::class, 'changePassword'])->name('admin.users.change-password');
     Route::post('/change-password/{id}', [App\Http\Controllers\Admin\AdminUserController::class, 'changePassword'])->name('users.change-password');
+    Route::post('/users/{id}/change-password', [App\Http\Controllers\Admin\AdminUserController::class, 'changePassword'])->name('users.change-password.alt');
+
+    // Scholarship Applicants
+    Route::patch('/applicants/{applicant}/status', [App\Http\Controllers\Admin\AdminApplicantController::class, 'updateStatus'])->name('applicants.status.update');
+    Route::resource('/applicants', App\Http\Controllers\Admin\AdminApplicantController::class)->names('applicants');
+    Route::get('/get-applicants', [App\Http\Controllers\Admin\AdminApplicantController::class, 'getData'])->name('applicants.get-data');
+
+    // Youth Profiles
+    Route::resource('/youth-profiles', App\Http\Controllers\Admin\AdminYouthProfileController::class)->names('youth-profiles');
+    Route::get('/get-youth-profiles', [App\Http\Controllers\Admin\AdminYouthProfileController::class, 'getData'])->name('youth-profiles.get-data');
+    Route::post('/youth-profiles/{id}/change-password', [App\Http\Controllers\Admin\AdminYouthProfileController::class, 'changePassword'])->name('youth-profiles.change-password');
 
     // Cash Incentives Management
     Route::prefix('cash-incentives')->name('cash-incentives.')->group(function () {

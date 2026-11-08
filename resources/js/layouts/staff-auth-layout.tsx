@@ -15,6 +15,7 @@ import {
   Tooltip,
 } from 'antd';
 import {
+  BarChart3,
   CalendarRange,
   ChevronDown,
   Coins,
@@ -48,6 +49,7 @@ const destinations = [
   { key: 'staff.cash-incentives.index', prefix: 'staff.cash-incentives.', label: 'Cash Incentives', icon: Coins },
   { key: 'staff.events-activities.index', prefix: 'staff.events-activities.', label: 'Events & Activities', icon: CalendarRange },
   { key: 'staff.youth-profiles.index', prefix: 'staff.youth-profiles.', label: 'Youth Profiles', icon: UserRound },
+  { key: 'staff.reports.index', prefix: 'staff.reports.', label: 'Reports', icon: BarChart3 },
 ];
 
 export default function StaffAuthLayout({ user, children, header }: PropsWithChildren<{ user: User; header?: ReactNode }>) {

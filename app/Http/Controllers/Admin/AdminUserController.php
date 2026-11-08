@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\ActivityLogger;
+use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Hash;
-use Auth;
-use App\Models\User;
 
 class AdminUserController extends Controller
 {
@@ -117,15 +118,25 @@ class AdminUserController extends Controller
         }
 
         $req->validate([
-            'password' => ['required', 'confirmed'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
-        $data = User::find($id);
+        $data = User::findOrFail($id);
         $data->password = Hash::make($req->password);
         $data->save();
 
+        ActivityLogger::log(
+            'password_change',
+            "Changed password for user: {$data->fname} {$data->lname} ({$data->email}, role: {$data->role})",
+            $data,
+            null,
+            null,
+            ['target_user_id' => $data->id, 'target_role' => $data->role]
+        );
+
         return response()->json([
-            'status' => 'changed'
+            'status' => 'changed',
+            'message' => 'Password changed successfully.',
         ], 200);
     }
 }

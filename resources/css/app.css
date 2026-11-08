@@ -185,3 +185,47 @@
     color: #ffffff !important;
     font-weight: 600 !important;
 }
+
+.admin-sidebar-menu .ant-menu-item {
+    color: #cbd5e1 !important;
+}
+
+.admin-sidebar-menu .ant-menu-item a {
+    color: #cbd5e1 !important;
+}
+
+.admin-sidebar-menu .ant-menu-item:hover,
+.admin-sidebar-menu .ant-menu-item:hover a {
+    color: #ffffff !important;
+}
+
+.admin-sidebar-menu .ant-menu-item-selected,
+.admin-sidebar-menu .ant-menu-item-selected a {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Print optimizations for reports and official records */
+@media print {
+    aside.ant-layout-sider,
+    header.ant-layout-header,
+    .ant-tabs-nav,
+    .no-print {
+        display: none !important;
+    }
+
+    .ant-layout {
+        position: static !important;
+        overflow: visible !important;
+    }
+
+    .ant-layout-content {
+        overflow: visible !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+    }
+
+    main {
+        padding: 0 !important;
+    }
+}

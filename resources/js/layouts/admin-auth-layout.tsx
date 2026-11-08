@@ -1,3 +1,5 @@
+import BrandLogo from '@/components/brand-logo';
+import MydoLogo from '@/components/mydo-logo';
 import { User } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { Avatar, Button, ConfigProvider, Drawer, Dropdown, Grid, Layout, Menu, MenuProps, Tooltip } from 'antd';
@@ -6,29 +8,28 @@ import {
   ChevronDown,
   ClipboardList,
   Coins,
+  Gauge,
   GraduationCap,
-  HandHeart,
-  House,
   LogOut,
   Menu as MenuIcon,
   PanelLeftClose,
   PanelLeftOpen,
   ShieldCheck,
-  UserRound,
+  UserCog,
   Users,
 } from 'lucide-react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 
 const { Header, Sider, Content } = Layout;
-const sidebarBackground = 'linear-gradient(180deg, #1f2933 0%, #263238 52%, #17212b 100%)';
+const sidebarBackground = 'linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0b1120 100%)';
 const destinations = [
-  { key: 'admin.dashboard.index', prefix: 'admin.dashboard.', label: 'Dashboard', icon: House },
+  { key: 'admin.dashboard.index', prefix: 'admin.dashboard.', label: 'Dashboard', icon: Gauge },
   { key: 'admin.activity-categories.index', prefix: 'admin.activity-categories.', label: 'Activity Categories', icon: ChartBarStacked },
-  { key: 'admin.scholarship-types.index', prefix: 'admin.scholarship-types.', label: 'Scholarship Types', icon: GraduationCap },
+  { key: 'admin.scholarship-types.index', prefix: 'admin.scholarship-types.', label: 'Scholarships', icon: GraduationCap },
   { key: 'admin.applicants.index', prefix: 'admin.applicants.', label: 'Scholarship Applicants', icon: ClipboardList },
   { key: 'admin.cash-incentives.index', prefix: 'admin.cash-incentives.', label: 'Cash Incentives', icon: Coins },
   { key: 'admin.youth-profiles.index', prefix: 'admin.youth-profiles.', label: 'Youth Profiles', icon: Users },
-  { key: 'admin.users.index', prefix: 'admin.users.', label: 'Users', icon: UserRound },
+  { key: 'admin.users.index', prefix: 'admin.users.', label: 'Users', icon: UserCog },
 ];
 
 export default function AdminAuthLayout({ user, children, header }: PropsWithChildren<{ user: User; header?: ReactNode }>) {
@@ -48,9 +49,14 @@ export default function AdminAuthLayout({ user, children, header }: PropsWithChi
     return {
       key,
       disabled: !available,
-      icon: <Icon size={18} />,
+      icon: <Icon size={18} className="shrink-0" />,
       label: available ? (
-        <Link href={route(key)} aria-current={currentItem?.key === key ? 'page' : undefined} onClick={() => setDrawerOpen(false)}>
+        <Link
+          href={route(key)}
+          aria-current={currentItem?.key === key ? 'page' : undefined}
+          onClick={() => setDrawerOpen(false)}
+          className="inline-flex w-full items-center font-medium !text-inherit hover:!text-inherit"
+        >
           {label}
         </Link>
       ) : (
@@ -60,7 +66,6 @@ export default function AdminAuthLayout({ user, children, header }: PropsWithChi
       ),
     };
   });
-  const accountItems: MenuProps['items'] = [{ key: 'logout', icon: <LogOut size={18} />, label: 'Logout', disabled: processing, onClick: logout }];
 
   function sidebar(compact: boolean) {
     return (
@@ -69,52 +74,116 @@ export default function AdminAuthLayout({ user, children, header }: PropsWithChi
           components: {
             Menu: {
               itemBg: 'transparent',
-              itemColor: '#e2e8e5',
+              itemColor: '#cbd5e1',
               itemHoverColor: '#ffffff',
-              itemHoverBg: 'rgba(255,255,255,0.07)',
+              itemHoverBg: 'rgba(255, 255, 255, 0.08)',
               itemSelectedColor: '#ffffff',
-              itemSelectedBg: '#166534',
+              itemSelectedBg: '#d97706',
               itemBorderRadius: 10,
               itemHeight: 46,
-              itemMarginInline: 0,
+              itemMarginInline: 8,
               iconSize: 18,
               collapsedWidth: 80,
             },
           },
-          token: { colorTextDisabled: '#84908c' },
+          token: { colorTextDisabled: 'rgba(148, 163, 184, 0.4)' },
         }}
       >
         <div className="flex h-full min-h-0 flex-col">
+          {/* Header Brand Lockup */}
           <div className={`flex h-20 shrink-0 items-center gap-3 border-b border-white/10 ${compact ? 'justify-center' : 'px-5'}`}>
-            <img src="/images/e-kabataan.png" alt="E-Kabataan logo" className="h-10 w-10 shrink-0 object-contain" />
+            <div className="flex items-center gap-2">
+              <div className="rounded-full bg-white p-0.5 shadow-sm ring-1 ring-white/20">
+                <MydoLogo className="h-9 w-9 rounded-full" label="MYDO Seal" />
+              </div>
+              {!compact && (
+                <>
+                  <div className="h-6 w-px bg-white/20" />
+                  <div className="rounded-lg bg-white/10 p-1">
+                    <BrandLogo className="h-7 w-7" label="eKabataan" />
+                  </div>
+                </>
+              )}
+            </div>
+
             {!compact && (
-              <div>
-                <p className="text-sm font-bold tracking-wide text-white">E-KABATAAN</p>
-                <p className="mt-1 flex items-center gap-1.5 text-xs text-amber-200">
-                  <ShieldCheck size={13} /> Administration
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-black tracking-tight text-white">eKabataan</span>
+                  <span className="rounded-xs bg-amber-400 px-1 py-0.2 text-[9px] font-bold text-amber-950 uppercase shadow-2xs">
+                    ADMIN
+                  </span>
+                </div>
+                <p className="flex items-center gap-1 truncate text-[11px] text-amber-200/90 font-medium">
+                  <ShieldCheck size={11} className="text-amber-400 shrink-0" />
+                  <span>Executive Console</span>
                 </p>
               </div>
             )}
           </div>
-          <nav aria-label="Admin navigation" className="min-h-0 flex-1 overflow-y-auto px-3 py-5">
-            {!compact && <p className="mb-3 px-3 text-[10px] font-semibold tracking-widest text-slate-400 uppercase">Workspace</p>}
+
+          {/* Navigation Items */}
+          <nav aria-label="Admin navigation" className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
+            {!compact && (
+              <p className="mb-2.5 px-3 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                Management Modules
+              </p>
+            )}
             <Menu
               mode="inline"
               inlineCollapsed={compact}
               selectedKeys={currentItem ? [currentItem.key] : []}
               items={navigationItems}
+              className="admin-sidebar-menu"
               style={{ background: 'transparent', borderInlineEnd: 0 }}
             />
           </nav>
-          <nav aria-label="Account actions" className="shrink-0 border-t border-white/10 px-3 py-3">
-            <Menu
-              mode="inline"
-              inlineCollapsed={compact}
-              selectedKeys={[]}
-              items={accountItems}
-              style={{ background: 'transparent', borderInlineEnd: 0 }}
-            />
-          </nav>
+
+          {/* Bottom Admin Profile Card */}
+          <div className="shrink-0 border-t border-white/10 p-3 bg-black/25">
+            {!compact ? (
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 p-2.5 backdrop-blur-sm">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Avatar
+                    size="default"
+                    className="!bg-amber-600 font-bold text-white shrink-0 shadow-2xs ring-2 ring-amber-400/30"
+                  >
+                    {initials || 'A'}
+                  </Avatar>
+                  <div className="min-w-0 leading-tight">
+                    <p className="truncate text-xs font-bold text-white">{fullName}</p>
+                    <p className="truncate text-[10px] text-amber-200/90">Administrator</p>
+                  </div>
+                </div>
+
+                <Tooltip title="Log Out">
+                  <button
+                    type="button"
+                    onClick={logout}
+                    disabled={processing}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-300 hover:bg-rose-500/20 hover:text-rose-300 transition"
+                    aria-label="Log Out"
+                  >
+                    <LogOut size={15} />
+                  </button>
+                </Tooltip>
+              </div>
+            ) : (
+              <div className="text-center">
+                <Tooltip title={`Log Out (${fullName})`}>
+                  <button
+                    type="button"
+                    onClick={logout}
+                    disabled={processing}
+                    className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl text-slate-300 hover:bg-rose-500/20 hover:text-rose-300 transition"
+                    aria-label="Log Out"
+                  >
+                    <LogOut size={17} />
+                  </button>
+                </Tooltip>
+              </div>
+            )}
+          </div>
         </div>
       </ConfigProvider>
     );
@@ -150,13 +219,20 @@ export default function AdminAuthLayout({ user, children, header }: PropsWithChi
         </Sider>
       )}
       <Drawer
-        title="Admin navigation"
+        title={
+          <div className="flex items-center gap-2">
+            <div className="rounded-full bg-white p-0.5 shadow-2xs ring-1 ring-stone-200">
+              <MydoLogo className="h-7 w-7 rounded-full" label="MYDO Seal" />
+            </div>
+            <span className="text-sm font-bold text-stone-800">Admin Navigation</span>
+          </div>
+        }
         placement="left"
         open={isMobile && drawerOpen}
         onClose={() => setDrawerOpen(false)}
         styles={{
           wrapper: { width: 'min(310px, 90vw)' },
-          header: { background: '#ffffff' },
+          header: { background: '#ffffff', borderBottom: '1px solid #e2e8f0' },
           body: { padding: 0, background: sidebarBackground, overflow: 'hidden' },
         }}
       >
@@ -199,7 +275,7 @@ export default function AdminAuthLayout({ user, children, header }: PropsWithChi
                 aria-label={`Account menu for ${fullName}`}
                 className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-stone-200 px-2 text-sm text-stone-700 hover:bg-stone-50 sm:px-3"
               >
-                <Avatar size="small" style={{ backgroundColor: '#166534' }}>
+                <Avatar size="small" className="!bg-amber-600 font-bold text-white">
                   {initials || 'A'}
                 </Avatar>
                 <span className="hidden max-w-40 truncate font-medium sm:block">{fullName}</span>

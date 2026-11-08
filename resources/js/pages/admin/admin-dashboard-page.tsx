@@ -44,7 +44,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
       tone: 'border-amber-200 bg-amber-50/70 text-amber-700 hover:border-amber-300 hover:bg-amber-50',
       badge: 'Action required',
       badgeClass: 'bg-amber-100 text-amber-800',
-      href: '/staff/applicants?status=pending',
+      href: '/admin/applicants?status=pending',
       actionText: 'View pending list',
     },
     {
@@ -54,7 +54,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
       tone: 'border-green-200 bg-green-50/70 text-green-700 hover:border-green-300 hover:bg-green-50',
       badge: null,
       badgeClass: '',
-      href: '/staff/applicants?status=approved',
+      href: '/admin/applicants?status=approved',
       actionText: 'View approved list',
     },
     {
@@ -64,7 +64,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
       tone: 'border-red-200 bg-red-50/70 text-red-700 hover:border-red-300 hover:bg-red-50',
       badge: null,
       badgeClass: '',
-      href: '/staff/applicants?status=rejected',
+      href: '/admin/applicants?status=rejected',
       actionText: 'View rejected list',
     },
     {
@@ -74,7 +74,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
       tone: 'border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50',
       badge: 'Recent',
       badgeClass: 'bg-stone-100 text-stone-700',
-      href: '/staff/applicants',
+      href: '/admin/applicants',
       actionText: 'View all applicants',
     },
   ];
@@ -90,7 +90,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
             <h1 className="text-2xl font-semibold text-stone-900">Admin Dashboard</h1>
           </div>
           <Link
-            href="/staff/applicants"
+            href="/admin/applicants"
             className="rounded-md border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 shadow-sm hover:bg-stone-50"
           >
             View applications
@@ -131,7 +131,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
           <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-base font-semibold text-stone-900">Pending Application Queue</h2>
-              <Link href="/staff/applicants?status=pending" className="text-sm font-medium text-green-700 hover:text-green-900">
+              <Link href="/admin/applicants?status=pending" className="text-sm font-medium text-green-700 hover:text-green-900">
                 View all pending
               </Link>
             </div>
@@ -154,7 +154,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
                   <button
                     type="button"
                     className="w-fit rounded-md bg-green-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-800"
-                    onClick={() => router.visit(`/staff/applicants/${item.id}`)}
+                    onClick={() => router.visit(`/admin/applicants/${item.id}`)}
                   >
                     Open
                   </button>
@@ -175,7 +175,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
 
             <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
               <Link
-                href="/staff/applicants"
+                href="/admin/applicants"
                 className="group rounded-lg border border-stone-200 bg-stone-50 p-3 transition-colors hover:border-stone-300 hover:bg-stone-100 block"
               >
                 <div className="flex items-center justify-between">
@@ -185,7 +185,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
                 <p className="mt-1 text-xl font-semibold text-stone-950">{stats.total}</p>
               </Link>
               <Link
-                href="/staff/applicants?status=draft"
+                href="/admin/applicants?status=draft"
                 className="group rounded-lg border border-stone-200 bg-stone-50 p-3 transition-colors hover:border-stone-300 hover:bg-stone-100 block"
               >
                 <div className="flex items-center justify-between">

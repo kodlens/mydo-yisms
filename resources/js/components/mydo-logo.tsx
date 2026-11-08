@@ -9,7 +9,7 @@ export default function MydoLogo({
 }: MydoLogoProps) {
     return (
         <img
-            src="/images/mydo.png"
+            src="/images/domingag-logo-340x.png"
             alt={label}
             className={`shrink-0 object-contain ${className}`}
         />
