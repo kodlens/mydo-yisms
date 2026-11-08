@@ -41,25 +41,41 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
       label: 'Pending Review',
       value: stats.pending,
       icon: <ClockCircleOutlined />,
-      tone: 'border-amber-200 bg-amber-50 text-amber-700',
+      tone: 'border-amber-200 bg-amber-50/70 text-amber-700 hover:border-amber-300 hover:bg-amber-50',
+      badge: 'Action required',
+      badgeClass: 'bg-amber-100 text-amber-800',
+      href: '/staff/applicants?status=pending',
+      actionText: 'View pending list',
     },
     {
       label: 'Approved',
       value: stats.approved,
       icon: <CheckCircleOutlined />,
-      tone: 'border-green-200 bg-green-50 text-green-700',
+      tone: 'border-green-200 bg-green-50/70 text-green-700 hover:border-green-300 hover:bg-green-50',
+      badge: null,
+      badgeClass: '',
+      href: '/staff/applicants?status=approved',
+      actionText: 'View approved list',
     },
     {
       label: 'Rejected',
       value: stats.rejected,
       icon: <CloseCircleOutlined />,
-      tone: 'border-red-200 bg-red-50 text-red-700',
+      tone: 'border-red-200 bg-red-50/70 text-red-700 hover:border-red-300 hover:bg-red-50',
+      badge: null,
+      badgeClass: '',
+      href: '/staff/applicants?status=rejected',
+      actionText: 'View rejected list',
     },
     {
       label: 'New This Week',
       value: stats.new_this_week,
       icon: <UserAddOutlined />,
-      tone: 'border-stone-200 bg-white text-stone-700',
+      tone: 'border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50',
+      badge: 'Recent',
+      badgeClass: 'bg-stone-100 text-stone-700',
+      href: '/staff/applicants',
+      actionText: 'View all applicants',
     },
   ];
 
@@ -71,7 +87,7 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
         <section className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-stone-500">Today</p>
-            <h1 className="text-2xl font-semibold text-stone-900">Staff Dashboard</h1>
+            <h1 className="text-2xl font-semibold text-stone-900">Admin Dashboard</h1>
           </div>
           <Link
             href="/staff/applicants"
@@ -83,13 +99,31 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {summaryCards.map((card) => (
-            <div key={card.label} className={`rounded-lg border p-4 shadow-sm ${card.tone}`}>
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-medium">{card.label}</p>
-                <span className="text-lg">{card.icon}</span>
+            <Link
+              key={card.label}
+              href={card.href}
+              className={`group flex flex-col justify-between rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${card.tone}`}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-stone-800">{card.label}</p>
+                    {card.badge && (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide ${card.badgeClass}`}>
+                        {card.badge}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xl transition-transform duration-200 group-hover:scale-110">{card.icon}</span>
+                </div>
+                <p className="mt-4 text-3xl font-bold tracking-tight text-stone-900">{card.value}</p>
               </div>
-              <p className="mt-4 text-3xl font-semibold text-stone-900">{card.value}</p>
-            </div>
+
+              <div className="mt-4 flex items-center justify-between border-t border-stone-200/50 pt-3 text-xs font-medium text-stone-600 group-hover:text-stone-950">
+                <span>{card.actionText}</span>
+                <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">→</span>
+              </div>
+            </Link>
           ))}
         </section>
 
@@ -97,8 +131,8 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
           <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-base font-semibold text-stone-900">Pending Application Queue</h2>
-              <Link href="/staff/applicants" className="text-sm font-medium text-green-700 hover:text-green-900">
-                View all
+              <Link href="/staff/applicants?status=pending" className="text-sm font-medium text-green-700 hover:text-green-900">
+                View all pending
               </Link>
             </div>
 
@@ -140,14 +174,26 @@ const AdminDashboardIndex = ({ stats, queue }: Props) => {
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
-                <p className="text-stone-500">Total applications</p>
+              <Link
+                href="/staff/applicants"
+                className="group rounded-lg border border-stone-200 bg-stone-50 p-3 transition-colors hover:border-stone-300 hover:bg-stone-100 block"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-stone-500 text-xs">Total applications</p>
+                  <span className="text-xs text-stone-400 group-hover:text-stone-700 group-hover:translate-x-0.5 transition-transform">→</span>
+                </div>
                 <p className="mt-1 text-xl font-semibold text-stone-950">{stats.total}</p>
-              </div>
-              <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
-                <p className="text-stone-500">Draft records</p>
+              </Link>
+              <Link
+                href="/staff/applicants?status=draft"
+                className="group rounded-lg border border-stone-200 bg-stone-50 p-3 transition-colors hover:border-stone-300 hover:bg-stone-100 block"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-stone-500 text-xs">Draft records</p>
+                  <span className="text-xs text-stone-400 group-hover:text-stone-700 group-hover:translate-x-0.5 transition-transform">→</span>
+                </div>
                 <p className="mt-1 text-xl font-semibold text-stone-950">{stats.draft}</p>
-              </div>
+              </Link>
             </div>
           </div>
         </section>

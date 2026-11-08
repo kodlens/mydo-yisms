@@ -75,15 +75,19 @@ const DocumentUploads = ({ errors, xToken }: Props) => {
       }
     },
     onRemove(info) {
-      axios
-        .post("/temp-remove/" + info.response.filename)
-        .then((res) => {
-          if (res.data.status === "temp_deleted") {
-            notification.success({
-              message: `File removed successfully`,
-            });
-          }
-        });
+      const filename = info.response?.filename;
+      if (filename) {
+        axios
+          .post("/temp-remove/" + filename)
+          .then((res) => {
+            if (res.data.status === "temp_deleted") {
+              notification.success({
+                message: `File removed successfully`,
+              });
+            }
+          })
+          .catch(() => {});
+      }
     },
   };
 

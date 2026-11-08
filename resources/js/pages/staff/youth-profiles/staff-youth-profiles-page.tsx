@@ -1,10 +1,11 @@
 import StaffAuthLayout from '@/layouts/staff-auth-layout';
-import { SharedData, Youth } from '@/types';
+import { SharedData } from '@/types';
 import { EyeOutlined, FileSearchOutlined, SearchOutlined } from '@ant-design/icons';
-import { Head, router } from '@inertiajs/react';
-import { App, Button, Input, Pagination, Segmented, Space, Table } from 'antd';
+import { Head } from '@inertiajs/react';
+import { App, Button, Input, Pagination, Segmented, Space, Table, Tag } from 'antd';
 import axios from 'axios';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
+import StaffYouthProfileDrawer, { ExtendedYouth } from './partials/staff-youth-profile-drawer';
 
 type PaginatedResponse<T> = {
   data: T[];
@@ -16,25 +17,26 @@ type PaginatedResponse<T> = {
 const { Column } = Table;
 const { Search } = Input;
 
-
-
 const statusOptions = [
   { label: 'All', value: 'all' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Approved', value: 'approved' },
-  { label: 'Rejected', value: 'rejected' },
-  { label: 'Draft', value: 'draft' },
+  { label: 'Enrolled', value: 'enrolled' },
+  { label: 'Out of School', value: 'out_of_school' },
+  { label: 'Graduated', value: 'graduated' },
+  { label: 'Active', value: 'active' },
+  { label: 'Inactive', value: 'inactive' },
 ];
 
 const StaffYouthProfilesPage = () => {
   const { notification } = App.useApp();
 
-  const [applicants, setApplicants] = useState<PaginatedResponse<Youth>>();
+  const [applicants, setApplicants] = useState<PaginatedResponse<ExtendedYouth>>();
   const [loading, setLoading] = useState(false);
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  const [selectedYouth, setSelectedYouth] = useState<ExtendedYouth | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const loadApplicants = async (
     overrides?: Partial<{
@@ -52,7 +54,7 @@ const StaffYouthProfilesPage = () => {
     const nextStatus = overrides?.status ?? status;
 
     try {
-      const res = await axios.get<PaginatedResponse<Youth>>('/staff/get-youth-profiles', {
+      const res = await axios.get<PaginatedResponse<ExtendedYouth>>('/staff/get-youth-profiles', {
         params: {
           search: nextSearch,
           status: nextStatus === 'all' ? undefined : nextStatus,
@@ -150,7 +152,7 @@ const StaffYouthProfilesPage = () => {
               />
             </div>
 
-            <Table<Youth>
+            <Table<ExtendedYouth>
               dataSource={applicants?.data ?? []}
               loading={loading}
               rowKey={(youth) => youth.id}
@@ -158,29 +160,87 @@ const StaffYouthProfilesPage = () => {
               scroll={{ x: 1080 }}
               className="[&_.ant-table-thead>tr>th]:bg-stone-50 [&_.ant-table-thead>tr>th]:text-stone-700"
             >
-              <Column<Youth> title="App ID" dataIndex="id" width={90} />
-              <Column<Youth> title="Youth" key="applicant" render={(_, youth) => (
-                <div>
-                  {youth.lname}, {youth.fname} {youth.mname}
-                </div>
-              )} />
-              <Column<Youth> title="Email" dataIndex="email" key="email" />
-              <Column<Youth> title="Mobile" dataIndex="mobile_number" key="mobile_number" />
-              <Column<Youth> title="School" dataIndex="school_name" key="school_name" />
-              <Column<Youth> title="Program" dataIndex="program" key="program" />
+              <Column<ExtendedYouth>
+                title="Reference Code"
+                dataIndex="reference_code"
+                width={150}
+                render={(code) =>
+                  code ? (
+                    <Tag color="cyan" className="font-mono text-xs font-medium">
+                      {code}
+                    </Tag>
+                  ) : (
+                    <span className="text-stone-400">—</span>
+                  )
+                }
+              />
+              <Column<ExtendedYouth>
+                title="Youth Name"
+                key="applicant"
+                render={(_, youth) => (
+                  <div>
+                    <div className="font-medium text-stone-900">
+                      {youth.lname}, {youth.fname} {youth.mname ?? ''} {youth.suffix ?? ''}
+                    </div>
+                    <div className="text-xs text-stone-500">{youth.email}</div>
+                  </div>
+                )}
+              />
+              <Column<ExtendedYouth>
+                title="Status"
+                key="status"
+                width={140}
+                render={(_, youth) => {
+                  const isGrad = youth.is_graduated;
+                  const isEnrolled = !isGrad && !!youth.school_name;
+                  return (
+                    <div className="flex flex-col gap-1 items-start">
+                      <Tag color={isGrad ? 'purple' : isEnrolled ? 'blue' : 'orange'} className="m-0 text-xs">
+                        {isGrad ? 'Graduated' : isEnrolled ? 'Enrolled' : 'OSY'}
+                      </Tag>
+                      <span className="text-[11px] text-stone-500">
+                        {youth.is_active ? '● Active' : '○ Inactive'}
+                      </span>
+                    </div>
+                  );
+                }}
+              />
+              <Column<ExtendedYouth> title="Mobile" dataIndex="mobile_number" key="mobile_number" width={130} />
+              <Column<ExtendedYouth>
+                title="School"
+                dataIndex="school_name"
+                key="school_name"
+                render={(school) => school || <span className="text-stone-400 italic">None / OSY</span>}
+              />
+              <Column<ExtendedYouth>
+                title="Program / Year"
+                key="program_year"
+                render={(_, youth) => (
+                  <div>
+                    <div className="text-sm">{youth.program || '—'}</div>
+                    {youth.year ? <div className="text-xs text-stone-500">Year {youth.year}</div> : null}
+                  </div>
+                )}
+              />
 
-              <Column<Youth>
+              <Column<ExtendedYouth>
                 title="Action"
                 key="action"
                 fixed="right"
-                width={100}
+                width={120}
                 render={(_, youth) => (
                   <Space size="small">
                     <Button
-                      title="View applicant"
+                      type="default"
+                      size="small"
                       icon={<EyeOutlined />}
-                      onClick={() => router.visit(`/staff/applicants/${youth.id}`)}
-                    />
+                      onClick={() => {
+                        setSelectedYouth(youth);
+                        setDrawerOpen(true);
+                      }}
+                    >
+                      View Profile
+                    </Button>
                   </Space>
                 )}
               />
@@ -193,11 +253,17 @@ const StaffYouthProfilesPage = () => {
                 pageSize={applicants?.per_page ?? perPage}
                 showSizeChanger
                 total={applicants?.total ?? 0}
-                showTotal={(value, range) => `${range[0]}-${range[1]} of ${value} applicants`}
+                showTotal={(value, range) => `${range[0]}-${range[1]} of ${value} youth profiles`}
               />
             </div>
           </div>
         </section>
+
+        <StaffYouthProfileDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          youth={selectedYouth}
+        />
       </div>
     </>
   );

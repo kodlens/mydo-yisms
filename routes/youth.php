@@ -58,6 +58,7 @@ Route::middleware('auth:youth')->group(function () {
 
 
     Route::get('/youth/my-profile', [YouthMyProfileController::class, 'index'])->name('youth.youth-my-profile.index');
+    Route::put('/youth/my-profile', [YouthMyProfileController::class, 'update'])->name('youth.youth-my-profile.update');
 
     // Volunteer programme: self-registration, assignments, and credited service hours.
     Route::get('/youth/services/volunteer', [YouthVolunteerController::class, 'index'])->name('youth.services.volunteer.index');

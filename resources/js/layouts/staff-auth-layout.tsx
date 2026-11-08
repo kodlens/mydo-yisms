@@ -20,6 +20,7 @@ import {
   Coins,
   FileSearch,
   Gauge,
+  GraduationCap,
   HandHeart,
   LogOut,
   Menu as MenuIcon,
@@ -42,6 +43,7 @@ const sidebarBackground = 'linear-gradient(180deg, #052c20 0%, #073829 45%, #031
  */
 const destinations = [
   { key: 'staff.dashboard.index', prefix: 'staff.dashboard.', label: 'Dashboard', icon: Gauge },
+  { key: 'staff.scholarships.index', prefix: 'staff.scholarships.', label: 'Scholarships', icon: GraduationCap },
   { key: 'staff.scholarship-applicants.index', prefix: 'staff.scholarship-applicants.', label: 'Scholarship Applicants', icon: FileSearch },
   { key: 'staff.cash-incentives.index', prefix: 'staff.cash-incentives.', label: 'Cash Incentives', icon: Coins },
   { key: 'staff.events-activities.index', prefix: 'staff.events-activities.', label: 'Events & Activities', icon: CalendarRange },

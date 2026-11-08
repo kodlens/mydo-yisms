@@ -22,10 +22,24 @@ class StoreYouthRegistrationRequest extends FormRequest
     {
         $email = strtolower((string) $this->email);
 
+        $normalizePhone = function ($phone) {
+            $digits = preg_replace('/\D+/', '', (string) $phone);
+            if (str_starts_with($digits, '639') && strlen($digits) === 12) {
+                return '0' . substr($digits, 2);
+            }
+            return $digits;
+        };
+
         $this->merge([
             'email' => $email,
-            'mobile_number' => preg_replace('/\D+/', '', (string) $this->mobile_number),
-            'guardian_contact_number' => preg_replace('/\D+/', '', (string) $this->guardian_contact_number),
+            'mobile_number' => $normalizePhone($this->mobile_number),
+            'guardian_contact_number' => $normalizePhone($this->guardian_contact_number),
+            'student_id' => $this->filled('student_id') ? trim((string) $this->student_id) : null,
+            'previous_semester_gwa' => $this->filled('previous_semester_gwa') ? (float) $this->previous_semester_gwa : null,
+            'school_name' => $this->filled('school_name') ? trim((string) $this->school_name) : null,
+            'school_address' => $this->filled('school_address') ? trim((string) $this->school_address) : null,
+            'program' => $this->filled('program') ? trim((string) $this->program) : null,
+            'is_graduated' => filter_var($this->is_graduated, FILTER_VALIDATE_BOOLEAN),
         ]);
     }
 
@@ -36,7 +50,7 @@ class StoreYouthRegistrationRequest extends FormRequest
      */
     public function rules(): array
     {
-        $youngestAllowedBirthDate = now()->subYears(18)->toDateString();
+        $youngestAllowedBirthDate = now()->subYears(15)->toDateString();
         $oldestAllowedBirthDate = now()->subYears(31)->addDay()->toDateString();
 
         return [
@@ -60,9 +74,12 @@ class StoreYouthRegistrationRequest extends FormRequest
             'zip_code' => ['nullable', 'string', 'max:10'],
 
             'school_name' => ['nullable', 'string', 'max:255'],
+            'school_address' => ['nullable', 'string', 'max:255'],
             'program' => ['nullable', 'string', 'max:255'],
-            'year' => ['nullable', 'integer', 'between:1,4'],
-            //'previous_semester_gwa' => ['nullable', 'numeric', 'between:1,5'],
+            'year' => ['nullable', 'integer', 'between:1,6'],
+            'student_id' => ['nullable', 'string', 'max:50'],
+            'previous_semester_gwa' => ['nullable', 'numeric', 'between:1,100'],
+            'is_graduated' => ['nullable', 'boolean'],
 
             'guardian_name' => ['required', 'string', 'max:255'],
             'guardian_contact_number' => ['required', 'string', 'max:30', 'regex:/^09[0-9]{9}$/'],

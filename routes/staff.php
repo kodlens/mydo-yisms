@@ -7,6 +7,7 @@ use App\Http\Controllers\Staff\CashIncentives\StaffCashIncentiveReportController
 use App\Http\Controllers\Staff\StaffActivityAttendanceController;
 use App\Http\Controllers\Staff\StaffApplicantController;
 use App\Http\Controllers\Staff\StaffEventActivityController;
+use App\Http\Controllers\Staff\StaffScholarshipController;
 use App\Http\Controllers\Staff\StaffVolunteerController;
 use App\Http\Controllers\Staff\StaffYouthProfileController;
 use App\Http\Controllers\Staff\StaffDashboardController;
@@ -19,6 +20,14 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::resource('/youth-profiles', StaffYouthProfileController::class)->names('youth-profiles');
     Route::get('/get-youth-profiles', [StaffYouthProfileController::class, 'getData'])->name('youth-profiles.get-data');
 
+
+    // Scholarships Management
+    Route::get('/scholarships', [StaffScholarshipController::class, 'index'])->name('scholarships.index');
+    Route::get('/get-scholarships', [StaffScholarshipController::class, 'getData'])->name('scholarships.get-data');
+    Route::post('/scholarships', [StaffScholarshipController::class, 'store'])->name('scholarships.store');
+    Route::put('/scholarships/{id}', [StaffScholarshipController::class, 'update'])->name('scholarships.update');
+    Route::post('/scholarships/{id}/toggle-status', [StaffScholarshipController::class, 'toggleStatus'])->name('scholarships.toggle-status');
+    Route::delete('/scholarships/{id}', [StaffScholarshipController::class, 'destroy'])->name('scholarships.destroy');
 
     Route::patch('/applicants/{applicant}/status', [StaffApplicantController::class, 'updateStatus'])->name('applicants.status.update');
     Route::resource('/applicants', StaffApplicantController::class)->names('scholarship-applicants');

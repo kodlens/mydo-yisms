@@ -12,6 +12,7 @@ class ScholarshipApplication extends Model
         'academic_year_id',
         'youth_profile_id',
         'scholarship_type_id',
+        'reference',
         'coe_path',
         'cog_path',
         'cedula_path',
@@ -37,6 +38,10 @@ class ScholarshipApplication extends Model
         return $this->belongsTo(AcademicYear::class);
     }
 
+    public function scholarshipType(): BelongsTo
+    {
+        return $this->belongsTo(ScholarshipType::class);
+    }
 
     public function youthProfile(): BelongsTo
     {
@@ -46,6 +51,18 @@ class ScholarshipApplication extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (ScholarshipApplication $app) {
+            if (empty($app->reference)) {
+                do {
+                    $code = 'SCH-' . date('Y') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
+                } while (static::where('reference', $code)->exists());
+                $app->reference = $code;
+            }
+        });
     }
 
 

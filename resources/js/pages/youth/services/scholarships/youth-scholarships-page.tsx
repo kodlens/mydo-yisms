@@ -11,6 +11,11 @@ type Scholarship = ScholarshipType & {
   target_beneficiary?: string | null;
   benefit?: string | null;
   amount?: string | number | null;
+  applications?: {
+    id: number;
+    status: string;
+    reference?: string | null;
+  }[];
 };
 
 type PaginatedResponse = {
@@ -165,67 +170,93 @@ const YouthScholarshipPage = () => {
               </div>
             ) : (
               <div className="grid gap-4">
-                {data.data.map((scholarship) => (
-                  <article
-                    key={scholarship.id}
-                    className="grid min-w-0 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition-colors focus-within:border-teal-500 hover:border-teal-300 md:grid-cols-[minmax(0,1fr)_220px]"
-                  >
-                    <div className="min-w-0 p-5 sm:p-6">
-                      <div className="mb-4 flex items-center gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
-                          <GraduationCap size={22} aria-hidden="true" />
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" aria-hidden="true" />
-                          Available scholarship
-                        </span>
-                      </div>
-                      <h3 className="text-xl leading-7 font-semibold break-words text-stone-900">{scholarship.scholarship}</h3>
-                      <dl className="mt-5 grid gap-4 sm:grid-cols-2">
-                        <div className="min-w-0">
-                          <dt className="flex items-center gap-2 text-xs font-semibold text-stone-800">
-                            <Users size={14} aria-hidden="true" />
-                            Who this is for
-                          </dt>
-                          <dd className="mt-2 line-clamp-3 text-sm leading-6 break-words text-stone-500">
-                            {scholarship.target_beneficiary || 'Beneficiary details not specified.'}
-                          </dd>
+                {data.data.map((scholarship) => {
+                  const existingApp = scholarship.applications?.[0];
+                  const hasApplied = Boolean(existingApp);
+
+                  return (
+                    <article
+                      key={scholarship.id}
+                      className="grid min-w-0 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition-colors focus-within:border-teal-500 hover:border-teal-300 md:grid-cols-[minmax(0,1fr)_220px]"
+                    >
+                      <div className="min-w-0 p-5 sm:p-6">
+                        <div className="mb-4 flex flex-wrap items-center gap-2.5">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+                            <GraduationCap size={22} aria-hidden="true" />
+                          </span>
+
+                          {hasApplied ? (
+                            existingApp?.status === 'approved' ? (
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900">
+                                <span className="h-2 w-2 rounded-full bg-emerald-600" aria-hidden="true" />
+                                Approved Beneficiary
+                              </span>
+                            ) : existingApp?.status === 'rejected' ? (
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-900">
+                                <span className="h-2 w-2 rounded-full bg-rose-600" aria-hidden="true" />
+                                Application Not Approved
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
+                                <span className="h-2 w-2 rounded-full bg-amber-600" aria-hidden="true" />
+                                Applied · Pending Review
+                              </span>
+                            )
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" aria-hidden="true" />
+                              Available scholarship
+                            </span>
+                          )}
                         </div>
-                        <div className="min-w-0">
-                          <dt className="flex items-center gap-2 text-xs font-semibold text-stone-800">
-                            <Gift size={14} aria-hidden="true" />
-                            What it covers
-                          </dt>
-                          <dd className="mt-2 line-clamp-3 text-sm leading-6 break-words text-stone-500">
-                            {scholarship.benefit || 'Benefit details not specified.'}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                    <div className="flex min-w-0 flex-col justify-between gap-6 border-t border-stone-100 bg-stone-50/80 p-5 sm:p-6 md:border-t-0 md:border-l">
-                      <div>
-                        <p className="flex items-center gap-2 text-xs font-medium text-stone-500">
-                          <Wallet size={14} aria-hidden="true" />
-                          Financial support
-                        </p>
-                        <p className="mt-2 text-2xl font-semibold break-words text-teal-950 tabular-nums">
-                          {formatAmount(scholarship.amount)}
-                        </p>
+                        <h3 className="text-xl leading-7 font-semibold break-words text-stone-900">{scholarship.scholarship}</h3>
+                        <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+                          <div className="min-w-0">
+                            <dt className="flex items-center gap-2 text-xs font-semibold text-stone-800">
+                              <Users size={14} aria-hidden="true" />
+                              Who this is for
+                            </dt>
+                            <dd className="mt-2 line-clamp-3 text-sm leading-6 break-words text-stone-500">
+                              {scholarship.target_beneficiary || 'Beneficiary details not specified.'}
+                            </dd>
+                          </div>
+                          <div className="min-w-0">
+                            <dt className="flex items-center gap-2 text-xs font-semibold text-stone-800">
+                              <Gift size={14} aria-hidden="true" />
+                              What it covers
+                            </dt>
+                            <dd className="mt-2 line-clamp-3 text-sm leading-6 break-words text-stone-500">
+                              {scholarship.benefit || 'Benefit details not specified.'}
+                            </dd>
+                          </div>
+                        </dl>
                       </div>
-                      <Button
-                        type="primary"
-                        size="large"
-                        block
-                        onClick={() => setSelected(scholarship)}
-                        aria-label={'View details and apply for ' + scholarship.scholarship}
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          View & apply <ArrowRight size={16} aria-hidden="true" />
-                        </span>
-                      </Button>
-                    </div>
-                  </article>
-                ))}
+                      <div className="flex min-w-0 flex-col justify-between gap-6 border-t border-stone-100 bg-stone-50/80 p-5 sm:p-6 md:border-t-0 md:border-l">
+                        <div>
+                          <p className="flex items-center gap-2 text-xs font-medium text-stone-500">
+                            <Wallet size={14} aria-hidden="true" />
+                            Financial support
+                          </p>
+                          <p className="mt-2 text-2xl font-semibold break-words text-teal-950 tabular-nums">
+                            {formatAmount(scholarship.amount)}
+                          </p>
+                        </div>
+                        <Button
+                          type="primary"
+                          size="large"
+                          block
+                          onClick={() => setSelected(scholarship)}
+                          aria-label={'View details and apply for ' + scholarship.scholarship}
+                          className={hasApplied ? '!bg-slate-700 hover:!bg-slate-800' : ''}
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            {hasApplied ? 'View application' : 'View & apply'} <ArrowRight size={16} aria-hidden="true" />
+                          </span>
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             )}
 
@@ -288,15 +319,14 @@ const YouthScholarshipPage = () => {
         onCancel={() => setSelected(null)}
         title="Scholarship details"
         footer={
-          <div className='flex w-full gap-2 md:justify-end flex-col md:flex-row items-center'>
+          <div className="flex w-full flex-col items-center gap-2 md:flex-row md:justify-end">
             <Button onClick={() => setSelected(null)}>Back to scholarships</Button>
-            <Link href={`/youth/services/apply-scholarship/${selected?.id}`}
-              className="inline-flex h-8 items-center justify-center
-                rounded-md bg-[#047857] px-4
-                text-sm font-medium text-white
-                transition-colors
-                hover:bg-[#065f46] hover:text-white
-              ">Apply Now</Link>
+            <Link
+              href={`/youth/services/apply-scholarship/${selected?.id}`}
+              className="inline-flex h-8 items-center justify-center rounded-md bg-[#047857] px-4 text-sm font-medium text-white transition-colors hover:bg-[#065f46] hover:text-white"
+            >
+              {selected?.applications && selected.applications.length > 0 ? 'View My Application' : 'Apply Now'}
+            </Link>
           </div>
         }
         width={600}
@@ -322,12 +352,39 @@ const YouthScholarshipPage = () => {
                 </dd>
               </div>
             </dl>
-            <Alert
-              type="info"
-              showIcon
-              title="Online applications are not available yet"
-              description="You can review this scholarship now. No application has been submitted."
-            />
+            {selected.applications && selected.applications.length > 0 ? (
+              <Alert
+                type={
+                  selected.applications[0].status === 'approved'
+                    ? 'success'
+                    : selected.applications[0].status === 'rejected'
+                    ? 'error'
+                    : 'warning'
+                }
+                showIcon
+                title={
+                  selected.applications[0].status === 'approved'
+                    ? 'Application Approved'
+                    : selected.applications[0].status === 'rejected'
+                    ? 'Application Evaluated'
+                    : 'Application Already Submitted'
+                }
+                description={
+                  selected.applications[0].status === 'approved'
+                    ? 'Congratulations! You are an approved beneficiary of this scholarship program.'
+                    : selected.applications[0].status === 'rejected'
+                    ? 'Your application was evaluated and could not be approved at this time.'
+                    : 'Your application is currently pending evaluation by MYDO staff.'
+                }
+              />
+            ) : (
+              <Alert
+                type="success"
+                showIcon
+                title="Applications are Open"
+                description="Click 'Apply Now' to fill out your application and upload your required documentary attachments (COE, COG, Cedula, and School ID)."
+              />
+            )}
           </div>
         )}
       </Modal>

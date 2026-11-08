@@ -1,13 +1,33 @@
 import BrandLogo from '@/components/brand-logo';
-import MydoLogo from '@/components/mydo-logo';
 import FormSection from '@/components/form-section';
+import MydoLogo from '@/components/mydo-logo';
 import SelectBarangay from '@/components/select-barangay';
 import SelectCity from '@/components/select-city';
 import SelectProvince from '@/components/select-province';
 import { Head, Link, router } from '@inertiajs/react';
-import { App, Button, DatePicker, Form, Input, InputNumber, Select, Typography } from 'antd';
+import { App, Button, DatePicker, Form, Input, InputNumber, Radio, Select, Typography } from 'antd';
 import axios, { isAxiosError } from 'axios';
-import { ArrowLeft, ArrowRight, ClipboardList, Home, LockKeyhole, Mail, Phone, UserRound, Users, type LucideIcon } from 'lucide-react';
+import dayjs, { type Dayjs } from 'dayjs';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Building2,
+  CheckCircle2,
+  ClipboardList,
+  GraduationCap,
+  Hash,
+  Home,
+  Info,
+  LockKeyhole,
+  Mail,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+  UserRound,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 
 type YouthRegistrationForm = {
@@ -18,7 +38,7 @@ type YouthRegistrationForm = {
   fname: string;
   mname?: string;
   suffix?: string;
-  birth_date?: { format: (format: string) => string };
+  birth_date?: Dayjs | null;
   sex: string;
   civil_status: string;
   mobile_number: string;
@@ -27,15 +47,18 @@ type YouthRegistrationForm = {
   brgyCode: string;
   street_address: string;
   zip_code?: string;
+  educational_status: 'enrolled' | 'out_of_school' | 'graduated';
+  student_id?: string;
   school_name?: string;
+  school_address?: string;
   program?: string;
-  year?: string | number;
+  year?: number;
   previous_semester_gwa?: number;
+  is_graduated?: boolean;
   guardian_name: string;
   guardian_contact_number: string;
   monthly_family_income: number;
 };
-
 
 const sexOptions = [
   { value: 'Female', label: 'Female' },
@@ -49,6 +72,20 @@ const civilStatusOptions = [
   { value: 'Separated', label: 'Separated' },
 ];
 
+const educationalStatusOptions = [
+  { value: 'enrolled', label: 'Currently Enrolled (Student)' },
+  { value: 'out_of_school', label: 'Out-of-School Youth (OSY)' },
+  { value: 'graduated', label: 'Graduated / Working' },
+];
+
+const yearLevelOptions = [
+  { value: 1, label: '1st Year College / Grade 11' },
+  { value: 2, label: '2nd Year College / Grade 12' },
+  { value: 3, label: '3rd Year College' },
+  { value: 4, label: '4th Year College' },
+  { value: 5, label: '5th Year College' },
+];
+
 export default function YouthRegisterPage() {
   const { modal } = App.useApp();
   const [form] = Form.useForm<YouthRegistrationForm>();
@@ -57,82 +94,68 @@ export default function YouthRegisterPage() {
 
   const provCode = Form.useWatch('provCode', form) ?? '';
   const citymunCode = Form.useWatch('citymunCode', form) ?? '';
+  const educationalStatus = Form.useWatch('educational_status', form) ?? 'enrolled';
 
   const initialData = {
-    email: null,
-    password: null,
-    password_confirmation: null,
+    email: '',
+    password: '',
+    password_confirmation: '',
     lname: '',
     fname: '',
     mname: '',
-    sex:'',
+    suffix: '',
+    sex: undefined,
     birth_date: null,
-    civil_status: '',
-    mobile_number: null,
-    provCode: null,
-    citymunCode: null,
-    brgyCode: null,
+    civil_status: undefined,
+    mobile_number: '',
+    provCode: undefined,
+    citymunCode: undefined,
+    brgyCode: undefined,
     street_address: '',
     zip_code: '',
-    guardian_name: '',
-    guardian_contact_number: null,
-    monthly_family_income: 0,
+    educational_status: 'enrolled' as const,
+    student_id: '',
     school_name: '',
+    school_address: '',
     program: '',
     year: 1,
-    previous_semester_gwa: 0,
-    coe: null,
-    cog: null,
-    sedula: null,
-    school_id: null
-  }
-
-
-  // const testData = {
-  //   email: 'juan@mail.com',
-  //   password: 'a',
-  //   password_confirmation: 'a',
-  //   lname: 'Dela Cruz',
-  //   fname: 'Juan',
-  //   mname: 'N',
-  //   sex:'Male',
-  //   birth_date: dayjs('2005-08-08'),
-  //   civil_status: 'Single',
-  //   mobile_number: '09706102876',
-  //   provCode: null,
-  //   citymunCode: null,
-  //   brgyCode: null,
-  //   street_address: 'Mabini St.',
-  //   zip_code: '9210',
-  //   guardian_name: 'Maria Clara Dela Cruz',
-  //   guardian_contact_number: '09712223654',
-  //   monthly_family_income: 10000,
-  // }
-
+    is_graduated: false,
+    guardian_name: '',
+    guardian_contact_number: '',
+    monthly_family_income: 0,
+  };
 
   const submit = () => {
     setProcessing(true);
     setErrors({});
 
-
     const allValues = form.getFieldsValue(true);
+    const isOsy = allValues.educational_status === 'out_of_school';
+    const isGraduated = allValues.educational_status === 'graduated';
+
+    const payload = {
+      ...allValues,
+      birth_date: allValues.birth_date ? dayjs(allValues.birth_date).format('YYYY-MM-DD') : null,
+      school_name: isOsy ? null : allValues.school_name?.trim() || null,
+      school_address: isOsy ? null : allValues.school_address?.trim() || null,
+      program: isOsy ? null : allValues.program?.trim() || null,
+      year: isOsy ? null : allValues.year || null,
+      student_id: isOsy ? null : allValues.student_id?.trim() || null,
+      is_graduated: isGraduated,
+    };
 
     axios
-      .post(route('youth-register.store'), {
-        ...allValues,
-        birth_date: allValues.birth_date?.format('YYYY-MM-DD'),
-      })
+      .post(route('youth-register.store'), payload)
       .then((res) => {
-        if(res.data.success){
-          //window.location.href = route('youth-login.index');
+        if (res.data.success) {
           modal.success({
-            title: 'Youth Profile Created',
+            title: 'Youth Profile Created Successfully!',
             content:
-              'Your youth profile has been created. You may now sign in and apply for available MYDO services such as scholarship, cash incentives, and activities.',
-            okText: 'Got it',
+              'Your youth registration has been saved. You may now sign in to your eKabataan account to apply for scholarships, participate in youth activities, and access cash incentives.',
+            okText: 'Proceed to Sign In',
             onOk: () => {
-              router.visit(route('youth-login.index'))
-            }
+              router.visit(route('youth-login.index'));
+            },
           });
         }
       })
@@ -146,7 +169,7 @@ export default function YouthRegisterPage() {
           modal.error({
             title: 'Please check your registration details',
             content: (
-              <ul className="mb-0 list-disc pl-5">
+              <ul className="mb-0 list-disc pl-5 text-sm">
                 {errorMessages.map((message, index) => (
                   <li key={`${message}-${index}`}>{message}</li>
                 ))}
@@ -175,331 +198,515 @@ export default function YouthRegisterPage() {
     });
   };
 
+  // Restrict birth date: must be between 15 and 30 years old
+  const disabledBirthDate = (current: Dayjs) => {
+    if (!current) return false;
+    const youngest = dayjs().subtract(15, 'year').endOf('day');
+    const oldest = dayjs().subtract(31, 'year').startOf('day');
+    return current.isAfter(youngest) || current.isBefore(oldest);
+  };
+
   return (
     <>
-      <Head title="Youth Registration" />
+      <Head title="Youth Registration - eKabataan" />
 
-      <main className="min-h-screen bg-[#f7f9f5] text-slate-950">
-        <div className="mx-auto w-full max-w-7xl px-6 py-6 lg:px-8">
+      <main className="min-h-screen bg-slate-50 text-slate-900">
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="mb-6 flex items-center justify-between">
-            <Link href={route('home')} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-950">
+            <Link
+              href={route('home')}
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-emerald-700"
+            >
               <ArrowLeft className="h-4 w-4" />
-              Back to portal
+              Back to portal home
             </Link>
 
-            <Link href={route('youth-login.index')} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
-              Already registered?
-            </Link>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-slate-500">Already registered?</span>
+              <Link
+                href={route('youth-login.index')}
+                className="font-semibold text-emerald-700 underline-offset-4 hover:text-emerald-800 hover:underline"
+              >
+                Sign in here
+              </Link>
+            </div>
           </div>
 
-          <section className="overflow-hidden rounded-lg border border-emerald-900/10 bg-white shadow-xl shadow-emerald-900/10">
-            <div className="grid lg:grid-cols-[360px_1fr]">
-              <aside className="bg-emerald-800 px-6 py-8 text-white sm:px-8">
-                <Link href={route('home')} className="inline-flex w-fit items-center gap-3 group">
-                  <div className="flex items-center gap-2">
-                    <MydoLogo className="h-11 w-11 rounded-full bg-white p-0.5 shadow-sm" />
-                    <div className="h-6 w-px bg-white/20" />
-                    <BrandLogo className="h-10 w-10 rounded-md bg-white p-1" />
-                  </div>
-                  <span>
-                    <span className="block text-sm font-bold tracking-wide text-white">eKabataan</span>
-                    <span className="block text-xs text-emerald-100">Municipal Youth Office</span>
-                  </span>
-                </Link>
+          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50">
+            <div className="grid lg:grid-cols-[380px_1fr]">
+              {/* Left Brand & Step Guide Sidebar */}
+              <aside className="relative flex flex-col justify-between bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 p-6 text-white sm:p-8">
+                <div>
+                  <Link href={route('home')} className="group inline-flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <MydoLogo className="h-11 w-11 rounded-full bg-white p-0.5 shadow-sm transition-transform group-hover:scale-105" />
+                      <div className="h-6 w-px bg-white/20" />
+                      <BrandLogo className="h-10 w-10 rounded-lg bg-white p-1 transition-transform group-hover:scale-105" />
+                    </div>
+                    <div>
+                      <span className="block text-base font-bold tracking-tight text-white">eKabataan</span>
+                      <span className="block text-xs font-medium text-emerald-200">Municipal Youth Development Office</span>
+                    </div>
+                  </Link>
 
-                <div className="mt-10">
-                  <div className="mb-5 inline-flex items-center gap-2 rounded-md bg-white/10 px-3 py-2 text-sm font-medium text-emerald-50">
-                    <ClipboardList className="h-4 w-4" />
-                    Youth Profiling
+                  <div className="mt-8">
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-emerald-100 ring-1 ring-white/15 backdrop-blur-sm">
+                      <ClipboardList className="h-3.5 w-3.5" />
+                      Official Youth Registry
+                    </div>
+
+                    <h1 className="text-2xl font-bold leading-snug sm:text-3xl">
+                      Create your youth resident profile.
+                    </h1>
+                    <p className="mt-3 text-sm leading-relaxed text-emerald-100/90">
+                      Register once to access youth scholarships, cash incentives, community activities, and youth leadership programs.
+                    </p>
                   </div>
 
-                  <h1 className="text-3xl font-bold leading-tight">Create your youth account.</h1>
-                  <p className="mt-4 text-sm leading-6 text-emerald-50">
-                    Fill out your basic youth information once, then use this profile when applying for MYDO services.
-                  </p>
+                  <div className="mt-8 space-y-2.5">
+                    <SidebarItem icon={LockKeyhole} label="Account & Login" step={1} />
+                    <SidebarItem icon={UserRound} label="Personal Identity" step={2} />
+                    <SidebarItem icon={Home} label="Barangay & Address" step={3} />
+                    <SidebarItem icon={GraduationCap} label="Educational Status" step={4} />
+                    <SidebarItem icon={Users} label="Family & Guardian" step={5} />
+                  </div>
                 </div>
 
-                <div className="mt-10 space-y-3">
-                  <SidebarItem icon={UserRound} label="Personal details" />
-                  <SidebarItem icon={Home} label="Address verification" />
-                  <SidebarItem icon={Users} label="Family / guardian details" />
-                  <SidebarItem icon={LockKeyhole} label="Secure login account" />
+                <div className="mt-10 rounded-xl bg-white/5 p-4 ring-1 ring-white/10 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-200">
+                    <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                    Data Privacy Protected
+                  </div>
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-emerald-100/75">
+                    Under RA 10742 (SK Reform Act of 2015), youth profiling covers residents aged 15 to 30. Your details are securely handled under RA 10173.
+                  </p>
                 </div>
               </aside>
 
-              <div className="px-6 py-8 sm:px-8 lg:px-10">
-                <div className="mb-8">
-                  <p className="text-sm font-semibold uppercase text-emerald-700">Applicant Form</p>
-                  <Typography.Title level={2} className="!mb-0 !mt-2 !text-2xl">
-                    Youth profile registration
+              {/* Right Form Container */}
+              <div className="p-6 sm:p-8 lg:p-10">
+                <div className="mb-8 border-b border-slate-100 pb-6">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase text-emerald-700">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Profiling Form
+                  </span>
+                  <Typography.Title level={2} className="!mb-1 !mt-2 !text-2xl !font-bold !text-slate-900">
+                    Youth Profile Registration
                   </Typography.Title>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Complete your personal, address, and guardian information. Service applications are available after login.
+                  <p className="text-sm text-slate-500">
+                    Please provide accurate information. You will use these records when applying for MYDO services.
                   </p>
                 </div>
 
-                <Form form={form}
+                <Form
+                  form={form}
                   layout="vertical"
                   onFinish={submit}
-                  onFinishFailed={(errorInfo) => {
-                    console.log('Youth registration validation failed:', errorInfo);
-                  }}
                   preserve
                   initialValues={initialData}
-                  className="space-y-6">
-                      <FormSection icon={LockKeyhole} title="Account Information">
-                        <div className="flex md:gap-4 flex-col md:flex-row">
-                          <div className="w-full">
+                  className="space-y-6"
+                >
+                  {/* Step 1: Account Information */}
+                  <FormSection icon={LockKeyhole} title="Account & Security">
+                    <div className="w-full">
+                      <Form.Item
+                        name="email"
+                        label="Email Address"
+                        validateStatus={errors.email ? 'error' : ''}
+                        help={errors.email ? errors.email[0] : 'This will be used for your portal sign in and notifications.'}
+                        rules={[{ required: true, message: 'Please enter a valid email address.' }]}
+                      >
+                        <Input
+                          size="large"
+                          prefix={<Mail className="h-4 w-4 text-slate-400" />}
+                          placeholder="your.email@example.com"
+                        />
+                      </Form.Item>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Form.Item
+                        name="password"
+                        label="Password"
+                        validateStatus={errors.password ? 'error' : ''}
+                        help={errors.password ? errors.password[0] : ''}
+                        rules={[{ required: true, message: 'Password is required.' }]}
+                      >
+                        <Input.Password size="large" placeholder="Create a secure password" />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="password_confirmation"
+                        label="Confirm Password"
+                        validateStatus={errors.password_confirmation ? 'error' : ''}
+                        help={errors.password_confirmation ? errors.password_confirmation[0] : ''}
+                        rules={[{ required: true, message: 'Please confirm your password.' }]}
+                      >
+                        <Input.Password size="large" placeholder="Re-type your password" />
+                      </Form.Item>
+                    </div>
+                  </FormSection>
+
+                  {/* Step 2: Personal Information */}
+                  <FormSection icon={UserRound} title="Personal Information">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Form.Item
+                        name="lname"
+                        label="Last Name"
+                        validateStatus={errors.lname ? 'error' : ''}
+                        help={errors.lname ? errors.lname[0] : ''}
+                        rules={[{ required: true, message: 'Last name is required.' }]}
+                      >
+                        <Input size="large" placeholder="e.g. Dela Cruz" />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="fname"
+                        label="First Name"
+                        validateStatus={errors.fname ? 'error' : ''}
+                        help={errors.fname ? errors.fname[0] : ''}
+                        rules={[{ required: true, message: 'First name is required.' }]}
+                      >
+                        <Input size="large" placeholder="e.g. Juan" />
+                      </Form.Item>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div className="sm:col-span-2">
+                        <Form.Item
+                          name="mname"
+                          label="Middle Name (Optional)"
+                          validateStatus={errors.mname ? 'error' : ''}
+                          help={errors.mname ? errors.mname[0] : ''}
+                        >
+                          <Input size="large" placeholder="e.g. Santos" />
+                        </Form.Item>
+                      </div>
+
+                      <div>
+                        <Form.Item
+                          name="suffix"
+                          label="Suffix (Optional)"
+                          validateStatus={errors.suffix ? 'error' : ''}
+                          help={errors.suffix ? errors.suffix[0] : ''}
+                        >
+                          <Input size="large" placeholder="e.g. Jr., III" />
+                        </Form.Item>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div>
+                        <Form.Item
+                          name="birth_date"
+                          label="Date of Birth"
+                          validateStatus={errors.birth_date ? 'error' : ''}
+                          help={errors.birth_date ? errors.birth_date[0] : 'Ages 15–30 eligible'}
+                          rules={[{ required: true, message: 'Birth date is required.' }]}
+                        >
+                          <DatePicker
+                            size="large"
+                            className="w-full"
+                            placeholder="YYYY-MM-DD"
+                            disabledDate={disabledBirthDate}
+                          />
+                        </Form.Item>
+                      </div>
+
+                      <div>
+                        <Form.Item
+                          name="sex"
+                          label="Sex"
+                          validateStatus={errors.sex ? 'error' : ''}
+                          help={errors.sex ? errors.sex[0] : ''}
+                          rules={[{ required: true, message: 'Sex is required.' }]}
+                        >
+                          <Select size="large" allowClear options={sexOptions} placeholder="Select sex" />
+                        </Form.Item>
+                      </div>
+
+                      <div>
+                        <Form.Item
+                          name="civil_status"
+                          label="Civil Status"
+                          validateStatus={errors.civil_status ? 'error' : ''}
+                          help={errors.civil_status ? errors.civil_status[0] : ''}
+                          rules={[{ required: true, message: 'Civil status is required.' }]}
+                        >
+                          <Select size="large" allowClear options={civilStatusOptions} placeholder="Select status" />
+                        </Form.Item>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Form.Item
+                        name="mobile_number"
+                        label="Active Mobile Number"
+                        validateStatus={errors.mobile_number ? 'error' : ''}
+                        help={errors.mobile_number ? errors.mobile_number[0] : 'Format: 09XXXXXXXXX or +639XXXXXXXXX'}
+                        rules={[{ required: true, message: 'Mobile number is required.' }]}
+                      >
+                        <Input
+                          size="large"
+                          prefix={<Phone className="h-4 w-4 text-slate-400" />}
+                          placeholder="09XXXXXXXXX"
+                        />
+                      </Form.Item>
+                    </div>
+                  </FormSection>
+
+                  {/* Step 3: Address Information */}
+                  <FormSection icon={Home} title="Residential Address">
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div>
+                        <Form.Item
+                          name="provCode"
+                          label="Province"
+                          validateStatus={errors.provCode ? 'error' : ''}
+                          help={errors.provCode ? errors.provCode[0] : ''}
+                          rules={[{ required: true, message: 'Province is required.' }]}
+                        >
+                          <SelectProvince onChange={resetCityAndBarangay} />
+                        </Form.Item>
+                      </div>
+
+                      <div>
+                        <Form.Item
+                          name="citymunCode"
+                          label="City / Municipality"
+                          validateStatus={errors.citymunCode ? 'error' : ''}
+                          help={errors.citymunCode ? errors.citymunCode[0] : ''}
+                          rules={[{ required: true, message: 'City / Municipality is required.' }]}
+                        >
+                          <SelectCity provinceCode={provCode} onChange={resetBarangay} />
+                        </Form.Item>
+                      </div>
+
+                      <div>
+                        <Form.Item
+                          name="brgyCode"
+                          label="Barangay"
+                          validateStatus={errors.brgyCode ? 'error' : ''}
+                          help={errors.brgyCode ? errors.brgyCode[0] : ''}
+                          rules={[{ required: true, message: 'Barangay is required.' }]}
+                        >
+                          <SelectBarangay provinceCode={provCode} cityCode={citymunCode} />
+                        </Form.Item>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-[1fr_160px]">
+                      <div>
+                        <Form.Item
+                          name="street_address"
+                          label="House No. / Street / Purok / Sitio"
+                          validateStatus={errors.street_address ? 'error' : ''}
+                          help={errors.street_address ? errors.street_address[0] : ''}
+                          rules={[{ required: true, message: 'Street address is required.' }]}
+                        >
+                          <Input size="large" placeholder="Purok 4, Mabini Street" />
+                        </Form.Item>
+                      </div>
+
+                      <div>
+                        <Form.Item
+                          name="zip_code"
+                          label="ZIP Code"
+                          validateStatus={errors.zip_code ? 'error' : ''}
+                          help={errors.zip_code ? errors.zip_code[0] : ''}
+                        >
+                          <Input size="large" placeholder="e.g. 8714" />
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </FormSection>
+
+                  {/* Step 4: Educational Background */}
+                  <FormSection icon={GraduationCap} title="Educational Background">
+                    <div className="mb-4">
+                      <Form.Item
+                        name="educational_status"
+                        label="Current Educational Category"
+                        validateStatus={errors.educational_status ? 'error' : ''}
+                        help={errors.educational_status ? errors.educational_status[0] : ''}
+                      >
+                        <Radio.Group
+                          size="middle"
+                          className="w-full grid grid-cols-1 sm:grid-cols-3 gap-2"
+                          options={educationalStatusOptions}
+                          optionType="button"
+                          buttonStyle="solid"
+                        />
+                      </Form.Item>
+                    </div>
+
+                    {educationalStatus === 'out_of_school' ? (
+                      <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-900">
+                        <div className="flex items-start gap-3">
+                          <Info className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
+                          <div>
+                            <p className="font-semibold text-amber-950">Out-of-School Youth (OSY) Profile</p>
+                            <p className="mt-1 text-xs leading-5 text-amber-800">
+                              School details are not required. You will be eligible for MYDO community programs,
+                              vocational skills development, sports events, and cash assistance initiatives.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="sm:col-span-2">
                             <Form.Item
-                              name="email"
-                              label="Email"
-                              validateStatus={errors.email ? "error" : ""}
-                              help={errors.email ? errors.email[0] : ""}
+                              name="school_name"
+                              label={educationalStatus === 'graduated' ? 'Last School Attended' : 'School / College / University'}
+                              validateStatus={errors.school_name ? 'error' : ''}
+                              help={errors.school_name ? errors.school_name[0] : ''}
                             >
-                              <Input prefix={<Mail className="h-4 w-4 text-slate-400" />}
-                                placeholder="email@example.com" />
+                              <Input
+                                size="large"
+                                prefix={<GraduationCap className="h-4 w-4 text-slate-400" />}
+                                placeholder="e.g. Bukidnon State University, Don Carlos High School"
+                              />
+                            </Form.Item>
+                          </div>
+
+                          <div>
+                            <Form.Item
+                              name="program"
+                              label="Course / Degree / Strand / Track"
+                              validateStatus={errors.program ? 'error' : ''}
+                              help={errors.program ? errors.program[0] : ''}
+                            >
+                              <Input
+                                size="large"
+                                prefix={<BookOpen className="h-4 w-4 text-slate-400" />}
+                                placeholder="e.g. BS Information Technology / STEM"
+                              />
+                            </Form.Item>
+                          </div>
+
+                          <div>
+                            <Form.Item
+                              name="year"
+                              label="Year Level"
+                              validateStatus={errors.year ? 'error' : ''}
+                              help={errors.year ? errors.year[0] : ''}
+                            >
+                              <Select
+                                size="large"
+                                allowClear
+                                options={yearLevelOptions}
+                                placeholder="Select year level"
+                              />
+                            </Form.Item>
+                          </div>
+
+                          <div>
+                            <Form.Item
+                              name="student_id"
+                              label="Student ID Number (Optional)"
+                              validateStatus={errors.student_id ? 'error' : ''}
+                              help={errors.student_id ? errors.student_id[0] : ''}
+                            >
+                              <Input
+                                size="large"
+                                prefix={<Hash className="h-4 w-4 text-slate-400" />}
+                                placeholder="e.g. 2024-00123"
+                              />
+                            </Form.Item>
+                          </div>
+
+                          <div>
+                            <Form.Item
+                              name="school_address"
+                              label="School Location / Address (Optional)"
+                              validateStatus={errors.school_address ? 'error' : ''}
+                              help={errors.school_address ? errors.school_address[0] : ''}
+                            >
+                              <Input
+                                size="large"
+                                prefix={<Building2 className="h-4 w-4 text-slate-400" />}
+                                placeholder="e.g. Malaybalay City / Maramag"
+                              />
                             </Form.Item>
                           </div>
                         </div>
+                      </div>
+                    )}
+                  </FormSection>
 
-                        <div className='flex gap-4 md:flex-row md:gap-4 flex-col'>
-                          <div className="w-full">
-                            <Form.Item
-                              name="password"
-                              label="Password"
-                              validateStatus={errors.password ? "error" : ""}
-                              help={errors.password ? errors.password[0] : ""}
-                            >
-                              <Input.Password placeholder="Create a password" />
-                            </Form.Item>
-                          </div>
+                  {/* Step 5: Family & Guardian Information */}
+                  <FormSection icon={Users} title="Family & Guardian Information">
+                    <div>
+                      <Form.Item
+                        name="guardian_name"
+                        label="Parent or Guardian Full Name"
+                        validateStatus={errors.guardian_name ? 'error' : ''}
+                        help={errors.guardian_name ? errors.guardian_name[0] : ''}
+                        rules={[{ required: true, message: 'Guardian name is required.' }]}
+                      >
+                        <Input size="large" placeholder="Full name of parent or legal guardian" />
+                      </Form.Item>
+                    </div>
 
-                          <div className="w-full">
-                            <Form.Item
-                              name="password_confirmation"
-                              label="Confirm password"
-                              validateStatus={errors.password_confirmation ? "error" : ""}
-                              help={errors.password_confirmation ? errors.password_confirmation[0] : ""}
-                            >
-                              <Input.Password placeholder="Confirm your password" />
-                            </Form.Item>
-                          </div>
-                        </div>
-                      </FormSection>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <Form.Item
+                          name="guardian_contact_number"
+                          label="Guardian Mobile Contact"
+                          validateStatus={errors.guardian_contact_number ? 'error' : ''}
+                          help={errors.guardian_contact_number ? errors.guardian_contact_number[0] : ''}
+                          rules={[{ required: true, message: 'Guardian contact number is required.' }]}
+                        >
+                          <Input
+                            size="large"
+                            prefix={<Phone className="h-4 w-4 text-slate-400" />}
+                            placeholder="09XXXXXXXXX"
+                          />
+                        </Form.Item>
+                      </div>
 
-                      <FormSection icon={UserRound} title="Personal Information">
-                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
-
-                          <div className="w-full">
-                            <Form.Item
-                              name="lname"
-                              label="Last name"
-                              validateStatus={errors.lname ? "error" : ""}
-                              help={errors.lname ? errors.lname[0] : ""}
-                            >
-                              <Input placeholder="Dela Cruz" />
-                            </Form.Item>
-                          </div>
-
-                          <div className="w-full">
-                            <Form.Item
-                              name="fname"
-                              label="First name"
-                              validateStatus={errors.fname ? "error" : ""}
-                              help={errors.fname ? errors.fname[0] : ""}
-                            >
-                              <Input placeholder="Juan" />
-                            </Form.Item>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
-                          <div className="w-full">
-                            <Form.Item
-                              name="mname"
-                              label="Middle name"
-                              validateStatus={errors.mname ? "error" : ""}
-                              help={errors.mname ? errors.mname[0] : ""}
-                            >
-                              <Input placeholder="Santos" />
-                            </Form.Item>
-                          </div>
-
-                          <div className="w-full">
-                            <Form.Item
-                              name="suffix"
-                              label="Suffix"
-                              validateStatus={errors.suffix ? "error" : ""}
-                              help={errors.suffix ? errors.suffix[0] : ""}
-                            >
-                              <Input placeholder="Jr., III, etc." />
-                            </Form.Item>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
-                          <div className="w-full">
-                            <Form.Item
-                              name="birth_date"
-                              label="Birth date"
-                              validateStatus={errors.birth_date ? "error" : ""}
-                              help={errors.birth_date ? errors.birth_date[0] : ""}
-                            >
-                              <DatePicker className="w-full" placeholder="Select birth date" />
-                            </Form.Item>
-                          </div>
-
-                          <div className="w-full">
-                            <Form.Item
-                              name="sex"
-                              label="Sex"
-                              validateStatus={errors.sex ? "error" : ""}
-                              help={errors.sex ? errors.sex[0] : ""}
-                            >
-                              <Select allowClear options={sexOptions} placeholder="Select sex" />
-                            </Form.Item>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
-                          <div className="w-full">
-                            <Form.Item
-                              name="civil_status"
-                              label="Civil status"
-                              validateStatus={errors.civil_status ? "error" : ""}
-                              help={errors.civil_status ? errors.civil_status[0] : ""}
-                            >
-                              <Select allowClear options={civilStatusOptions} placeholder="Select civil status" />
-                            </Form.Item>
-                          </div>
-
-                          <div className="w-full">
-                            <Form.Item
-                              name="mobile_number"
-                              label="Mobile number"
-                              validateStatus={errors.mobile_number ? "error" : ""}
-                              help={errors.mobile_number ? errors.mobile_number[0] : ""}
-                            >
-                              <Input prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
-                            </Form.Item>
-                          </div>
-                        </div>
-                      </FormSection>
-
-                      <FormSection icon={Home} title="Address Information">
-                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
-                          <div className="w-full">
-                            <Form.Item
-                              name="provCode"
-                              label="Province"
-                              validateStatus={errors.provCode ? "error" : ""}
-                              help={errors.provCode ? errors.provCode[0] : ""}
-                            >
-                              <SelectProvince onChange={resetCityAndBarangay} />
-                            </Form.Item>
-                          </div>
-
-                          <div className="w-full">
-                            <Form.Item
-                              name="citymunCode"
-                              label="City / Municipality"
-                              validateStatus={errors.citymunCode ? "error" : ""}
-                              help={errors.citymunCode ? errors.citymunCode[0] : ""}
-                            >
-                              <SelectCity provinceCode={provCode} onChange={resetBarangay} />
-                            </Form.Item>
-                          </div>
-
-                          <div className="w-full">
-                            <Form.Item
-                              name="brgyCode"
-                              label="Barangay"
-                              validateStatus={errors.brgyCode ? "error" : ""}
-                              help={errors.brgyCode ? errors.brgyCode[0] : ""}
-                            >
-                              <SelectBarangay provinceCode={provCode} cityCode={citymunCode} />
-                            </Form.Item>
-                          </div>
-                        </div>
-
-
-                        <div className="flex gap-4 md:flex-row md:gap-4 flex-col">
-                          <div className="w-full">
-                            <Form.Item
-                              name="street_address"
-                              label="Street address"
-                              validateStatus={errors.street_address ? "error" : ""}
-                              help={errors.street_address ? errors.street_address[0] : ""}
-                            >
-                              <Input placeholder="House no., street, purok, subdivision" />
-                            </Form.Item>
-                          </div>
-
-                          <div className="w-full">
-                            <Form.Item
-                              name="zip_code"
-                              label="ZIP code"
-                              validateStatus={errors.zip_code ? "error" : ""}
-                              help={errors.zip_code ? errors.zip_code[0] : ""}
-                            >
-                              <Input placeholder="0000" />
-                            </Form.Item>
-                          </div>
-                        </div>
-                      </FormSection>
-
-                      <FormSection icon={Users} title="Family / Guardian Information">
-                        <div>
-                          <Form.Item
-                              name="guardian_name"
-                              label="Guardian name"
-                              validateStatus={errors.guardian_name ? "error" : ""}
-                              help={errors.guardian_name ? errors.guardian_name[0] : ""}
-                            >
-                              <Input placeholder="Full name of parent or guardian" />
-                            </Form.Item>
-                        </div>
-
-                        <div className="flex md:gap-4 md:flex-row flex-col">
-                          <div className="w-full">
-                            <Form.Item
-                              name="guardian_contact_number"
-                              label="Guardian contact number"
-                              validateStatus={errors.guardian_contact_number ? "error" : ""}
-                              help={errors.guardian_contact_number ? errors.guardian_contact_number[0] : ""}
-                            >
-                              <Input prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
-                            </Form.Item>
-                          </div>
-
-                          <div className="w-full">
-                            <Form.Item
-                              className="w-full"
-                              name="monthly_family_income"
-                              label="Monthly family income"
-                              validateStatus={errors.monthly_family_income ? "error" : ""}
-                              help={errors.monthly_family_income ? errors.monthly_family_income[0] : ""}
-                            >
-                              <InputNumber className="w-full" min={0} placeholder="e.g. 10000" />
-                            </Form.Item>
-                          </div>
-                        </div>
-                      </FormSection>
+                      <div>
+                        <Form.Item
+                          name="monthly_family_income"
+                          label="Estimated Monthly Household Income (₱)"
+                          validateStatus={errors.monthly_family_income ? 'error' : ''}
+                          help={errors.monthly_family_income ? errors.monthly_family_income[0] : ''}
+                          rules={[{ required: true, message: 'Monthly family income is required.' }]}
+                        >
+                          <InputNumber
+                            size="large"
+                            className="w-full"
+                            min={0}
+                            placeholder="e.g. 10000"
+                            formatter={(value) => `₱ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={(value) => value!.replace(/₱\s?|(,*)/g, '') as unknown as number}
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </FormSection>
                 </Form>
 
-                <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                  <Link href={route('youth-login.index')} className="inline-flex justify-center rounded-md px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                  <Link
+                    href={route('youth-login.index')}
+                    className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+                  >
                     I already have an account
                   </Link>
 
-                  <Button htmlType="button"
-                    type="primary" size="large"
+                  <Button
+                    htmlType="button"
+                    type="primary"
+                    size="large"
                     loading={processing}
-                    onClick={() => {
-                      form.submit();
-                    }}>
-                    Create Youth Profile
-                    <ArrowRight className="h-4 w-4" />
+                    onClick={() => form.submit()}
+                    className="!h-12 !rounded-xl !bg-emerald-700 !px-8 !text-base !font-semibold shadow-md shadow-emerald-700/25 hover:!bg-emerald-800"
+                  >
+                    <span>Complete Youth Registration</span>
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -511,11 +718,24 @@ export default function YouthRegisterPage() {
   );
 }
 
-function SidebarItem({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
+function SidebarItem({
+  icon: Icon,
+  label,
+  step,
+}: {
+  icon: LucideIcon;
+  label: string;
+  step: number;
+}) {
   return (
-    <div className="rounded-md bg-white/10 p-4">
-      <Icon className="h-5 w-5 text-emerald-100" />
-      <p className="mt-3 text-sm font-semibold">{label}</p>
+    <div className="flex items-center gap-3.5 rounded-xl bg-white/10 p-3 backdrop-blur-sm transition-colors hover:bg-white/15">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/30 text-emerald-100 ring-1 ring-white/20">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold tracking-wider uppercase text-emerald-200">Step 0{step}</p>
+        <p className="text-sm font-medium text-white">{label}</p>
+      </div>
     </div>
   );
 }

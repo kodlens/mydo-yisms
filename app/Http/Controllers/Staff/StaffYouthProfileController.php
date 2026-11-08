@@ -20,13 +20,38 @@ class StaffYouthProfileController extends Controller
         $search = trim((string) $req->input('search', ''));
         $status = $req->input('status');
 
-        $data = YouthProfile::when($search !== '', function($q){
-            $q->where('lname', 'like', "%{$search}%");
-        })
-            ->orderBy('id', 'desc')
-            ->paginate($perPage);
+        $query = YouthProfile::query()
+            ->with(['barangay', 'city', 'province', 'scholarshipApplications.scholarshipType']);
 
-        return $data;
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('lname', 'like', "%{$search}%")
+                    ->orWhere('fname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('reference_code', 'like', "%{$search}%")
+                    ->orWhere('school_name', 'like', "%{$search}%")
+                    ->orWhere('program', 'like', "%{$search}%");
+            });
+        }
+
+        if ($status === 'enrolled') {
+            $query->where('is_graduated', false)
+                ->whereNotNull('school_name')
+                ->where('school_name', '!=', '');
+        } elseif ($status === 'out_of_school') {
+            $query->where('is_graduated', false)
+                ->where(function ($q) {
+                    $q->whereNull('school_name')->orWhere('school_name', '');
+                });
+        } elseif ($status === 'graduated') {
+            $query->where('is_graduated', true);
+        } elseif ($status === 'active') {
+            $query->where('is_active', true);
+        } elseif ($status === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        return $query->orderBy('id', 'desc')->paginate($perPage);
 
     }
 }

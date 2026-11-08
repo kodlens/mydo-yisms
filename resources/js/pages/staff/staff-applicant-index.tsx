@@ -31,10 +31,14 @@ const statusOptions = [
   { label: 'Draft', value: 'draft' },
 ];
 
+type Props = {
+  initialStatus?: string;
+};
+
 const formatName = (youth: Youth) =>
   [youth.lname, youth.fname, youth.mname].filter(Boolean).join(', ').replace(', ,', ',');
 
-const StaffApplicantIndex = () => {
+const StaffApplicantIndex = ({ initialStatus = 'all' }: Props) => {
   const { notification } = App.useApp();
 
   const [applicants, setApplicants] = useState<PaginatedResponse<Youth>>();
@@ -42,7 +46,22 @@ const StaffApplicantIndex = () => {
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('all');
+  const [status, setStatus] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const urlStatus = new URLSearchParams(window.location.search).get('status');
+      if (urlStatus && ['pending', 'approved', 'rejected', 'draft', 'all'].includes(urlStatus)) {
+        return urlStatus;
+      }
+    }
+    return initialStatus;
+  });
+
+  useEffect(() => {
+    if (initialStatus && ['pending', 'approved', 'rejected', 'draft', 'all'].includes(initialStatus)) {
+      setStatus(initialStatus);
+      setPage(1);
+    }
+  }, [initialStatus]);
 
   const rows = useMemo(() => (Array.isArray(applicants?.data) ? applicants.data : []), [applicants]);
 
@@ -109,6 +128,16 @@ const StaffApplicantIndex = () => {
 
     if (page !== 1) {
       setPage(1);
+    }
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (nextStatus === 'all') {
+        url.searchParams.delete('status');
+      } else {
+        url.searchParams.set('status', nextStatus);
+      }
+      window.history.replaceState({}, '', url.toString());
     }
   };
 

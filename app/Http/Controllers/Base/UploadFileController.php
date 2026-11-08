@@ -21,12 +21,12 @@ class UploadFileController extends Controller
 
         $file = $req->upload;
         $imagePath = $file->store('temp', 'public');
-        $n = explode('/', $imagePath);
+        $filename = basename($imagePath);
 
-        if(isset($n[1])) {
+        if ($filename) {
             return response()->json([
                 'status' => 'success',
-                'filename' => $n[1],
+                'filename' => $filename,
                 'path' => $imagePath
             ], 200);
         }
@@ -41,16 +41,17 @@ class UploadFileController extends Controller
 
     public function tempRemove($fileName){
         try {
-            if(Storage::disk('public')->exists('temp/' .$fileName)) {
+            $fileName = basename($fileName);
+            if(Storage::disk('public')->exists('temp/' . $fileName)) {
                 Storage::disk('public')->delete('temp/' . $fileName);
-                return response()->json([
-                    'status' => 'temp_deleted'
-                ], 200);
             }
+            return response()->json([
+                'status' => 'temp_deleted'
+            ], 200);
         }catch(\Exception $e) {
              return response()->json([
                 'status' => 'temp_error',
-                'message' => $e
+                'message' => $e->getMessage()
             ], 500);
         }
 
