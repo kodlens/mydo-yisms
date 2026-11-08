@@ -14,7 +14,9 @@ class SelectBeneficiariesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'youth_profile_id' => ['required', 'integer', 'exists:youth_profiles,id'],
+            'youth_profile_id' => ['required_without:youth_profile_ids', 'nullable', 'integer', 'exists:youth_profiles,id'],
+            'youth_profile_ids' => ['required_without:youth_profile_id', 'nullable', 'array', 'min:1'],
+            'youth_profile_ids.*' => ['integer', 'exists:youth_profiles,id'],
             'remarks' => ['nullable', 'string', 'max:1000'],
         ];
     }

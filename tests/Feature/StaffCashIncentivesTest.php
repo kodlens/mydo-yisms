@@ -143,6 +143,38 @@ test('staff can query eligible youth pool and select a beneficiary with historic
         ->assertJsonMissing(['id' => $youth->id]);
 });
 
+test('staff can batch select multiple youth beneficiaries at once', function () {
+    $staff = makeStaffUser();
+    $youth1 = makeYouthProfile();
+    $youth2 = makeYouthProfile();
+
+    $program = CashIncentiveProgram::create([
+        'code' => 'CIP-2026-BATCH',
+        'title' => 'Batch Selection Program',
+        'funding_year' => 2026,
+        'amount_per_beneficiary' => 3000,
+        'allocated_budget' => 300000,
+        'max_beneficiaries' => 100,
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($staff, 'web')
+        ->post("/staff/cash-incentives/{$program->id}/beneficiaries/select", [
+            'youth_profile_ids' => [$youth1->id, $youth2->id],
+        ])
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('cash_incentive_beneficiaries', [
+        'program_id' => $program->id,
+        'youth_profile_id' => $youth1->id,
+    ]);
+
+    $this->assertDatabaseHas('cash_incentive_beneficiaries', [
+        'program_id' => $program->id,
+        'youth_profile_id' => $youth2->id,
+    ]);
+});
+
 test('duplicate selection in the same program is strictly prevented', function () {
     $staff = makeStaffUser();
     $youth = makeYouthProfile();

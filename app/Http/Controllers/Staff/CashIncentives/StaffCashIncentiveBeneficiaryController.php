@@ -65,11 +65,28 @@ class StaffCashIncentiveBeneficiaryController extends Controller
      */
     public function select(SelectBeneficiariesRequest $request, CashIncentiveProgram $program)
     {
+        $actor = $request->user();
+        $remarks = $request->validated('remarks');
+
+        if ($request->filled('youth_profile_ids') && is_array($request->input('youth_profile_ids'))) {
+            $ids = $request->input('youth_profile_ids');
+            $added = 0;
+            foreach ($ids as $id) {
+                try {
+                    $this->selectionService->selectBeneficiary($program, (int) $id, $actor, $remarks);
+                    $added++;
+                } catch (\Exception $e) {
+                    // skip duplicate or limit errors for remaining batch
+                }
+            }
+            return back()->with('success', "{$added} youth beneficiaries selected successfully.");
+        }
+
         $this->selectionService->selectBeneficiary(
             $program,
             (int) $request->validated('youth_profile_id'),
-            $request->user(),
-            $request->validated('remarks')
+            $actor,
+            $remarks
         );
 
         return back()->with('success', 'Youth member selected successfully for eligibility review.');
