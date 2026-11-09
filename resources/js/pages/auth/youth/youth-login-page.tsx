@@ -1,7 +1,7 @@
 import BrandLogo from '@/components/brand-logo';
 import MydoLogo from '@/components/mydo-logo';
 import { Head, Link, router } from '@inertiajs/react';
-import { Button, Checkbox, Form, Input } from 'antd';
+import { Button, Form, Input } from 'antd';
 import axios from 'axios';
 import {
   ArrowLeft,
@@ -21,7 +21,6 @@ import { useState } from 'react';
 type LoginProps = {
   email: string;
   password: string;
-  remember?: boolean;
 };
 
 export default function YouthLoginPage() {
@@ -265,17 +264,7 @@ export default function YouthLoginPage() {
 
                 <Form.Item
                   name="password"
-                  label={
-                    <div className="flex w-full items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700">Password</span>
-                      <Link
-                        href={route('password.request')}
-                        className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
-                  }
+                  label="Password"
                   rules={[{ required: true, message: 'Please enter your password' }]}
                   className="mb-3"
                 >
@@ -288,13 +277,23 @@ export default function YouthLoginPage() {
                   />
                 </Form.Item>
 
-                <div className="mb-5 flex items-center justify-between">
+                <div className='mb-4'>
+                  <Link
+                    href={route('password.request')}
+                    className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+
+
+                {/* <div className="mb-5 flex items-center justify-between">
                   <Form.Item name="remember" valuePropName="checked" noStyle>
                     <Checkbox className="text-xs text-slate-600">
                       Keep me signed in on this device
                     </Checkbox>
                   </Form.Item>
-                </div>
+                </div> */}
 
                 <Button
                   loading={loading}
