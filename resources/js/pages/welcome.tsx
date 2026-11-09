@@ -54,9 +54,9 @@ const portalServices = [
   },
   {
     category: 'Community Engagement',
-    title: 'Youth Programs & Activities',
+    title: 'Youth Events & Activities',
     description:
-      'Participate in community programs, tree-planting drives, leadership summits, disaster preparedness, and youth assemblies organized by MYDO.',
+      'Participate in community events/programs, tree-planting drives, leadership summits, disaster preparedness, and youth assemblies organized by MYDO.',
     icon: Users,
     badge: 'Open for Registration',
     badgeColor: 'bg-teal-50 text-teal-700 border-teal-200',
