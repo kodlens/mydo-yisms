@@ -99,7 +99,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
               <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.12em] text-green-700">Web Guard Login</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.12em] text-green-700">Management</p>
                   <h2 className="mt-2 text-2xl font-semibold text-stone-950">Sign in to your account</h2>
                   <p className="mt-2 text-sm leading-6 text-stone-500">For MYDO staff and admin accounts only.</p>
                 </div>
