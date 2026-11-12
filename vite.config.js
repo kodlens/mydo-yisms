@@ -6,15 +6,15 @@ import {
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-    // server: {
-    //     host: '127.0.0.1',
-    //     hmr: {
-    //         host: '127.0.0.1',
-    //     },
-    //     watch: {
-    //         ignored: ['**/app/**'],
-    //     },
-    // },
+    server: {
+        host: '127.0.0.1',
+        hmr: {
+            host: '127.0.0.1',
+        },
+        watch: {
+            ignored: ['**/app/**'],
+        },
+    },
 
     plugins: [
 

@@ -13,7 +13,6 @@ import {
   ArrowRight,
   BookOpen,
   Building2,
-  CheckCircle2,
   ClipboardList,
   GraduationCap,
   Hash,
@@ -125,11 +124,19 @@ export default function YouthRegisterPage() {
     monthly_family_income: 0,
   };
 
-  const submit = () => {
+  const submit = (values:YouthRegistrationForm) => {
+
+
     setProcessing(true);
     setErrors({});
 
     const allValues = form.getFieldsValue(true);
+
+    console.log('fired');
+    console.log(values);
+
+    return;
+
     const isOsy = allValues.educational_status === 'out_of_school';
     const isGraduated = allValues.educational_status === 'graduated';
 
@@ -199,12 +206,12 @@ export default function YouthRegisterPage() {
   };
 
   // Restrict birth date: must be between 15 and 30 years old
-  const disabledBirthDate = (current: Dayjs) => {
-    if (!current) return false;
-    const youngest = dayjs().subtract(15, 'year').endOf('day');
-    const oldest = dayjs().subtract(31, 'year').startOf('day');
-    return current.isAfter(youngest) || current.isBefore(oldest);
-  };
+  // const disabledBirthDate = (current: Dayjs) => {
+  //   if (!current) return false;
+  //   const youngest = dayjs().subtract(15, 'year').endOf('day');
+  //   const oldest = dayjs().subtract(31, 'year').startOf('day');
+  //   return current.isAfter(youngest) || current.isBefore(oldest);
+  // };
 
   return (
     <>
@@ -302,7 +309,6 @@ export default function YouthRegisterPage() {
                   form={form}
                   layout="vertical"
                   onFinish={submit}
-                  preserve
                   initialValues={initialData}
                   className="space-y-6"
                 >
@@ -408,7 +414,7 @@ export default function YouthRegisterPage() {
                             size="large"
                             className="w-full"
                             placeholder="YYYY-MM-DD"
-                            disabledDate={disabledBirthDate}
+                            //disabledDate={disabledBirthDate}
                           />
                         </Form.Item>
                       </div>
@@ -678,7 +684,6 @@ export default function YouthRegisterPage() {
                           <InputNumber
                             size="large"
                             className="w-full"
-                            min={0}
                             placeholder="e.g. 10000"
                             formatter={(value) => `₱ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                             parser={(value) => value!.replace(/₱\s?|(,*)/g, '') as unknown as number}
@@ -687,7 +692,6 @@ export default function YouthRegisterPage() {
                       </div>
                     </div>
                   </FormSection>
-                </Form>
 
                 <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <Link
@@ -698,17 +702,18 @@ export default function YouthRegisterPage() {
                   </Link>
 
                   <Button
-                    htmlType="button"
+                    htmlType="submit"
                     type="primary"
                     size="large"
                     loading={processing}
-                    onClick={() => form.submit()}
                     className="!h-12 !rounded-xl !bg-emerald-700 !px-8 !text-base !font-semibold shadow-md shadow-emerald-700/25 hover:!bg-emerald-800"
                   >
                     <span>Complete Youth Registration</span>
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
+                </Form>
+
               </div>
             </div>
           </section>

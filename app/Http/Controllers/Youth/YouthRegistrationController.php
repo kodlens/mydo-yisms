@@ -22,7 +22,7 @@ class YouthRegistrationController extends Controller
 
     public function store(StoreYouthRegistrationRequest $req)
     {
-        //return $req;
+        return $req;
         $validated = $req->validated();
 
         // DB::transaction(function () use ($validated) {
