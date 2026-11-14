@@ -1,6 +1,6 @@
 import { Youth } from '@/types';
 import { router } from '@inertiajs/react';
-import { App, Form, Input, InputNumber, Modal, Radio, Select } from 'antd';
+import { App, Form, Input, InputNumber, Modal, Select } from 'antd';
 import { BookOpen, Building2, GraduationCap, Hash, Phone, UserRound, Users, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -14,11 +14,10 @@ type Props = {
 
 type FormValues = {
   mobile_number: string;
-  educational_status: 'enrolled' | 'out_of_school' | 'graduated';
-  school_name?: string;
+  school_name: string;
   school_address?: string;
-  program?: string;
-  year?: number;
+  program: string;
+  year: number;
   student_id?: string;
   is_graduated?: boolean;
   guardian_name: string;
@@ -26,15 +25,9 @@ type FormValues = {
   monthly_family_income: number;
 };
 
-const educationalStatusOptions = [
-  { value: 'enrolled', label: 'Currently Enrolled (Student)' },
-  { value: 'out_of_school', label: 'Out-of-School Youth (OSY)' },
-  { value: 'graduated', label: 'Graduated / Working' },
-];
-
 const yearLevelOptions = [
-  { value: 1, label: '1st Year College / Grade 11' },
-  { value: 2, label: '2nd Year College / Grade 12' },
+  { value: 1, label: '1st Year College' },
+  { value: 2, label: '2nd Year College' },
   { value: 3, label: '3rd Year College' },
   { value: 4, label: '4th Year College' },
   { value: 5, label: '5th Year College' },
@@ -45,25 +38,16 @@ export default function YouthEditProfileModal({ open, onClose, youth }: Props) {
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
 
-  const educationalStatus = Form.useWatch('educational_status', form) ?? 'enrolled';
-
   useEffect(() => {
     if (open) {
-      const defaultStatus = youth.is_graduated
-        ? 'graduated'
-        : youth.school_name
-        ? 'enrolled'
-        : 'out_of_school';
-
       form.setFieldsValue({
         mobile_number: youth.mobile_number || '',
-        educational_status: defaultStatus,
         school_name: youth.school_name || '',
         school_address: youth.school_address || '',
         program: youth.program || '',
         year: youth.year ? Number(youth.year) : 1,
         student_id: youth.student_id || '',
-        is_graduated: Boolean(youth.is_graduated),
+        is_graduated: false,
         guardian_name: youth.guardian_name || '',
         guardian_contact_number: youth.guardian_contact_number || '',
         monthly_family_income: youth.monthly_family_income ? Number(youth.monthly_family_income) : 0,
@@ -76,17 +60,14 @@ export default function YouthEditProfileModal({ open, onClose, youth }: Props) {
       const values = await form.validateFields();
       setLoading(true);
 
-      const isOsy = values.educational_status === 'out_of_school';
-      const isGraduated = values.educational_status === 'graduated';
-
       const payload = {
         mobile_number: values.mobile_number,
-        school_name: isOsy ? null : values.school_name?.trim() || null,
-        school_address: isOsy ? null : values.school_address?.trim() || null,
-        program: isOsy ? null : values.program?.trim() || null,
-        year: isOsy ? null : values.year || null,
-        student_id: isOsy ? null : values.student_id?.trim() || null,
-        is_graduated: isGraduated,
+        school_name: values.school_name.trim(),
+        school_address: values.school_address?.trim() || null,
+        program: values.program.trim(),
+        year: values.year,
+        student_id: values.student_id?.trim() || null,
+        is_graduated: false,
         guardian_name: values.guardian_name,
         guardian_contact_number: values.guardian_contact_number,
         monthly_family_income: values.monthly_family_income,
@@ -150,85 +131,72 @@ export default function YouthEditProfileModal({ open, onClose, youth }: Props) {
           <Input size="large" prefix={<Phone className="h-4 w-4 text-slate-400" />} placeholder="09XXXXXXXXX" />
         </Form.Item>
 
-        {/* Educational Details */}
+        {/* College Educational Details */}
         <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
             <GraduationCap className="h-4 w-4 text-teal-700" />
-            <span>Academic Background</span>
+            <span>College Academic Background</span>
           </div>
 
-          <Form.Item
-            name="educational_status"
-            label={<span className="text-xs font-semibold text-slate-600">Current Status</span>}
-          >
-            <Radio.Group
-              options={educationalStatusOptions}
-              optionType="button"
-              buttonStyle="solid"
-              className="w-full grid grid-cols-1 sm:grid-cols-3 gap-1"
-            />
-          </Form.Item>
+          <div className="space-y-3">
+            <Form.Item
+              name="school_name"
+              label={<span className="text-xs font-medium text-slate-700">College / University Name</span>}
+              rules={[{ required: true, message: 'College or university name is required.' }]}
+            >
+              <Input
+                size="large"
+                prefix={<GraduationCap className="h-4 w-4 text-slate-400" />}
+                placeholder="e.g. Bukidnon State University"
+              />
+            </Form.Item>
 
-          {educationalStatus !== 'out_of_school' && (
-            <div className="space-y-3 pt-2 border-t border-slate-200/60">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Form.Item
-                name="school_name"
-                label={<span className="text-xs font-medium text-slate-700">School / College Name</span>}
-                rules={[{ required: true, message: 'School name is required.' }]}
+                name="program"
+                label={<span className="text-xs font-medium text-slate-700">Degree Program / Course</span>}
+                rules={[{ required: true, message: 'Degree program is required.' }]}
               >
                 <Input
                   size="large"
-                  prefix={<GraduationCap className="h-4 w-4 text-slate-400" />}
-                  placeholder="e.g. Bukidnon State University"
+                  prefix={<BookOpen className="h-4 w-4 text-slate-400" />}
+                  placeholder="e.g. BS Information Technology"
                 />
               </Form.Item>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Form.Item
-                  name="program"
-                  label={<span className="text-xs font-medium text-slate-700">Course / Program / Strand</span>}
-                  rules={[{ required: true, message: 'Program or strand is required.' }]}
-                >
-                  <Input
-                    size="large"
-                    prefix={<BookOpen className="h-4 w-4 text-slate-400" />}
-                    placeholder="e.g. BS Information Technology"
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="year"
-                  label={<span className="text-xs font-medium text-slate-700">Year Level</span>}
-                >
-                  <Select size="large" options={yearLevelOptions} placeholder="Select level" />
-                </Form.Item>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Form.Item
-                  name="student_id"
-                  label={<span className="text-xs font-medium text-slate-700">Student ID (Optional)</span>}
-                >
-                  <Input
-                    size="large"
-                    prefix={<Hash className="h-4 w-4 text-slate-400" />}
-                    placeholder="e.g. 2024-00123"
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="school_address"
-                  label={<span className="text-xs font-medium text-slate-700">School Address (Optional)</span>}
-                >
-                  <Input
-                    size="large"
-                    prefix={<Building2 className="h-4 w-4 text-slate-400" />}
-                    placeholder="City / Municipality"
-                  />
-                </Form.Item>
-              </div>
+              <Form.Item
+                name="year"
+                label={<span className="text-xs font-medium text-slate-700">College Year Level</span>}
+                rules={[{ required: true, message: 'College year level is required.' }]}
+              >
+                <Select size="large" options={yearLevelOptions} placeholder="Select year level" />
+              </Form.Item>
             </div>
-          )}
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Form.Item
+                name="student_id"
+                label={<span className="text-xs font-medium text-slate-700">Student ID (Optional)</span>}
+              >
+                <Input
+                  size="large"
+                  prefix={<Hash className="h-4 w-4 text-slate-400" />}
+                  placeholder="e.g. 2024-00123"
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="school_address"
+                label={<span className="text-xs font-medium text-slate-700">Campus / Address (Optional)</span>}
+              >
+                <Input
+                  size="large"
+                  prefix={<Building2 className="h-4 w-4 text-slate-400" />}
+                  placeholder="City / Municipality"
+                />
+              </Form.Item>
+            </div>
+          </div>
         </div>
 
         {/* Guardian Information */}

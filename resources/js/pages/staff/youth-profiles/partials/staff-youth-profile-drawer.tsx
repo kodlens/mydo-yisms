@@ -91,11 +91,7 @@ export default function StaffYouthProfileDrawer({ open, onClose, youth }: Props)
     .filter(Boolean)
     .join(', ');
 
-  const educationalCategory = youth.is_graduated
-    ? 'Graduated'
-    : youth.school_name
-    ? 'Currently Enrolled'
-    : 'Out-of-School Youth (OSY)';
+  const educationalCategory = 'College Student';
 
   return (
     <Drawer

@@ -1,6 +1,6 @@
 import BrandLogo from '@/components/brand-logo';
 import MydoLogo from '@/components/mydo-logo';
-import YouthNotificationBell from '@/components/mydo-components/youth-notification-bell';
+// import YouthNotificationBell from '@/components/mydo-components/youth-notification-bell';
 import { Youth } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import {
@@ -322,7 +322,7 @@ export default function YouthAuthLayout({
             </div>
 
             <div className="flex shrink-0 items-center gap-2.5">
-              <YouthNotificationBell />
+              {/* <YouthNotificationBell /> */}
               <Dropdown
                 trigger={['click']}
                 menu={{

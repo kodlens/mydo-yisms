@@ -5,9 +5,16 @@ import SelectBarangay from '@/components/select-barangay';
 import SelectCity from '@/components/select-city';
 import SelectProvince from '@/components/select-province';
 import { Head, Link, router } from '@inertiajs/react';
-import { App, Button, DatePicker, Form, Input, InputNumber, Radio, Select, Typography } from 'antd';
+import { App, Button, DatePicker, Form, Input, InputNumber, Select, Typography } from 'antd';
 import axios, { isAxiosError } from 'axios';
 import dayjs, { type Dayjs } from 'dayjs';
+
+import type { FormProps } from 'antd';
+
+type FormError<T> = Parameters<
+  NonNullable<FormProps<T>['onFinishFailed']>
+>[0];
+
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,7 +24,6 @@ import {
   GraduationCap,
   Hash,
   Home,
-  Info,
   LockKeyhole,
   Mail,
   Phone,
@@ -28,6 +34,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
+
+
 
 type YouthRegistrationForm = {
   email: string;
@@ -46,12 +54,11 @@ type YouthRegistrationForm = {
   brgyCode: string;
   street_address: string;
   zip_code?: string;
-  educational_status: 'enrolled' | 'out_of_school' | 'graduated';
   student_id?: string;
-  school_name?: string;
+  school_name: string;
   school_address?: string;
-  program?: string;
-  year?: number;
+  program: string;
+  year: number;
   previous_semester_gwa?: number;
   is_graduated?: boolean;
   guardian_name: string;
@@ -71,15 +78,9 @@ const civilStatusOptions = [
   { value: 'Separated', label: 'Separated' },
 ];
 
-const educationalStatusOptions = [
-  { value: 'enrolled', label: 'Currently Enrolled (Student)' },
-  { value: 'out_of_school', label: 'Out-of-School Youth (OSY)' },
-  { value: 'graduated', label: 'Graduated / Working' },
-];
-
 const yearLevelOptions = [
-  { value: 1, label: '1st Year College / Grade 11' },
-  { value: 2, label: '2nd Year College / Grade 12' },
+  { value: 1, label: '1st Year College' },
+  { value: 2, label: '2nd Year College' },
   { value: 3, label: '3rd Year College' },
   { value: 4, label: '4th Year College' },
   { value: 5, label: '5th Year College' },
@@ -93,7 +94,6 @@ export default function YouthRegisterPage() {
 
   const provCode = Form.useWatch('provCode', form) ?? '';
   const citymunCode = Form.useWatch('citymunCode', form) ?? '';
-  const educationalStatus = Form.useWatch('educational_status', form) ?? 'enrolled';
 
   const initialData = {
     email: '',
@@ -112,7 +112,6 @@ export default function YouthRegisterPage() {
     brgyCode: undefined,
     street_address: '',
     zip_code: '',
-    educational_status: 'enrolled' as const,
     student_id: '',
     school_name: '',
     school_address: '',
@@ -124,31 +123,48 @@ export default function YouthRegisterPage() {
     monthly_family_income: 0,
   };
 
-  const submit = (values:YouthRegistrationForm) => {
+  const sampleData = {
+    email: 'shen@mail.test',
+    password: 'password123',
+    password_confirmation: 'password123',
+    lname: 'Dela Cruz',
+    fname: 'Shen',
+    mname: 'N',
+    suffix: '',
+    sex: 'Male',
+    birth_date: dayjs('2001-03-04'),
+    civil_status: 'Single',
+    mobile_number: '09121231234',
+    provCode: '973',
+    citymunCode: '97308',
+    brgyCode: '97308035',
+    street_address: 'Purok 1, Poblacion',
+    zip_code: '9123',
+    student_id: '20101122',
+    school_name: 'Polytechnic University of the Philippines',
+    school_address: 'Taguig City',
+    program: 'BS Information Technology',
+    year: 1,
+    is_graduated: false,
+    guardian_name: 'Maria Clara Dela Cruz',
+    guardian_contact_number: '09121122123',
+    monthly_family_income: 10000,
+  };
 
-
+  const submit = (values: YouthRegistrationForm) => {
+    if (processing) return;
     setProcessing(true);
     setErrors({});
 
-    const allValues = form.getFieldsValue(true);
-
-    console.log('fired');
-    console.log(values);
-
-    return;
-
-    const isOsy = allValues.educational_status === 'out_of_school';
-    const isGraduated = allValues.educational_status === 'graduated';
-
     const payload = {
-      ...allValues,
-      birth_date: allValues.birth_date ? dayjs(allValues.birth_date).format('YYYY-MM-DD') : null,
-      school_name: isOsy ? null : allValues.school_name?.trim() || null,
-      school_address: isOsy ? null : allValues.school_address?.trim() || null,
-      program: isOsy ? null : allValues.program?.trim() || null,
-      year: isOsy ? null : allValues.year || null,
-      student_id: isOsy ? null : allValues.student_id?.trim() || null,
-      is_graduated: isGraduated,
+      ...values,
+      birth_date: values.birth_date ? dayjs(values.birth_date).format('YYYY-MM-DD') : null,
+      school_name: values.school_name.trim(),
+      school_address: values.school_address?.trim() || null,
+      program: values.program.trim(),
+      year: values.year,
+      student_id: values.student_id?.trim() || null,
+      is_graduated: false,
     };
 
     axios
@@ -188,6 +204,25 @@ export default function YouthRegisterPage() {
       .finally(() => {
         setProcessing(false);
       });
+  };
+
+  const onFinishFailed = (errorInfo:FormError<YouthRegistrationForm>) => {
+    console.warn('Form validation failed:', errorInfo);
+    modal.warning({
+      title: 'Please check required fields',
+      content: (
+        <div>
+          <p className="text-sm text-slate-600 mb-2">Some required fields are missing or invalid:</p>
+          <ul className="list-disc pl-5 text-xs text-red-600 space-y-1">
+            {errorInfo.errorFields.map((field, idx: number) => (
+              <li key={idx}>
+                <span className="font-semibold capitalize">{field.name.join(' ').replace(/_/g, ' ')}:</span> {field.errors.join(', ')}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ),
+    });
   };
 
   const resetCityAndBarangay = (value: string) => {
@@ -274,7 +309,7 @@ export default function YouthRegisterPage() {
                     <SidebarItem icon={LockKeyhole} label="Account & Login" step={1} />
                     <SidebarItem icon={UserRound} label="Personal Identity" step={2} />
                     <SidebarItem icon={Home} label="Barangay & Address" step={3} />
-                    <SidebarItem icon={GraduationCap} label="Educational Status" step={4} />
+                    <SidebarItem icon={GraduationCap} label="College Education" step={4} />
                     <SidebarItem icon={Users} label="Family & Guardian" step={5} />
                   </div>
                 </div>
@@ -309,7 +344,9 @@ export default function YouthRegisterPage() {
                   form={form}
                   layout="vertical"
                   onFinish={submit}
-                  initialValues={initialData}
+                  onFinishFailed={onFinishFailed}
+                  scrollToFirstError
+                  initialValues={sampleData}
                   className="space-y-6"
                 >
                   {/* Step 1: Account Information */}
@@ -527,119 +564,90 @@ export default function YouthRegisterPage() {
                     </div>
                   </FormSection>
 
-                  {/* Step 4: Educational Background */}
-                  <FormSection icon={GraduationCap} title="Educational Background">
-                    <div className="mb-4">
-                      <Form.Item
-                        name="educational_status"
-                        label="Current Educational Category"
-                        validateStatus={errors.educational_status ? 'error' : ''}
-                        help={errors.educational_status ? errors.educational_status[0] : ''}
-                      >
-                        <Radio.Group
-                          size="middle"
-                          className="w-full grid grid-cols-1 sm:grid-cols-3 gap-2"
-                          options={educationalStatusOptions}
-                          optionType="button"
-                          buttonStyle="solid"
-                        />
-                      </Form.Item>
+                  {/* Step 4: College Educational Background */}
+                  <FormSection icon={GraduationCap} title="College Educational Background">
+                    <div className="space-y-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <Form.Item
+                            name="school_name"
+                            label="College / University Name"
+                            validateStatus={errors.school_name ? 'error' : ''}
+                            help={errors.school_name ? errors.school_name[0] : ''}
+                            rules={[{ required: true, message: 'College or university name is required.' }]}
+                          >
+                            <Input
+                              size="large"
+                              prefix={<GraduationCap className="h-4 w-4 text-slate-400" />}
+                              placeholder="e.g. Bukidnon State University, Central Mindanao University"
+                            />
+                          </Form.Item>
+                        </div>
+
+                        <div>
+                          <Form.Item
+                            name="program"
+                            label="Course / Degree Program"
+                            validateStatus={errors.program ? 'error' : ''}
+                            help={errors.program ? errors.program[0] : ''}
+                            rules={[{ required: true, message: 'Degree program or course is required.' }]}
+                          >
+                            <Input
+                              size="large"
+                              prefix={<BookOpen className="h-4 w-4 text-slate-400" />}
+                              placeholder="e.g. BS Information Technology, BS Nursing"
+                            />
+                          </Form.Item>
+                        </div>
+
+                        <div>
+                          <Form.Item
+                            name="year"
+                            label="Year Level"
+                            validateStatus={errors.year ? 'error' : ''}
+                            help={errors.year ? errors.year[0] : ''}
+                            rules={[{ required: true, message: 'College year level is required.' }]}
+                          >
+                            <Select
+                              size="large"
+                              allowClear
+                              options={yearLevelOptions}
+                              placeholder="Select college year level"
+                            />
+                          </Form.Item>
+                        </div>
+
+                        <div>
+                          <Form.Item
+                            name="student_id"
+                            label="Student ID Number (Optional)"
+                            validateStatus={errors.student_id ? 'error' : ''}
+                            help={errors.student_id ? errors.student_id[0] : ''}
+                          >
+                            <Input
+                              size="large"
+                              prefix={<Hash className="h-4 w-4 text-slate-400" />}
+                              placeholder="e.g. 2024-00123"
+                            />
+                          </Form.Item>
+                        </div>
+
+                        <div>
+                          <Form.Item
+                            name="school_address"
+                            label="College Campus / Address (Optional)"
+                            validateStatus={errors.school_address ? 'error' : ''}
+                            help={errors.school_address ? errors.school_address[0] : ''}
+                          >
+                            <Input
+                              size="large"
+                              prefix={<Building2 className="h-4 w-4 text-slate-400" />}
+                              placeholder="e.g. Malaybalay City, Bukidnon"
+                            />
+                          </Form.Item>
+                        </div>
+                      </div>
                     </div>
-
-                    {educationalStatus === 'out_of_school' ? (
-                      <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-900">
-                        <div className="flex items-start gap-3">
-                          <Info className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
-                          <div>
-                            <p className="font-semibold text-amber-950">Out-of-School Youth (OSY) Profile</p>
-                            <p className="mt-1 text-xs leading-5 text-amber-800">
-                              School details are not required. You will be eligible for MYDO community programs,
-                              vocational skills development, sports events, and cash assistance initiatives.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          <div className="sm:col-span-2">
-                            <Form.Item
-                              name="school_name"
-                              label={educationalStatus === 'graduated' ? 'Last School Attended' : 'School / College / University'}
-                              validateStatus={errors.school_name ? 'error' : ''}
-                              help={errors.school_name ? errors.school_name[0] : ''}
-                            >
-                              <Input
-                                size="large"
-                                prefix={<GraduationCap className="h-4 w-4 text-slate-400" />}
-                                placeholder="e.g. Bukidnon State University, Don Carlos High School"
-                              />
-                            </Form.Item>
-                          </div>
-
-                          <div>
-                            <Form.Item
-                              name="program"
-                              label="Course / Degree / Strand / Track"
-                              validateStatus={errors.program ? 'error' : ''}
-                              help={errors.program ? errors.program[0] : ''}
-                            >
-                              <Input
-                                size="large"
-                                prefix={<BookOpen className="h-4 w-4 text-slate-400" />}
-                                placeholder="e.g. BS Information Technology / STEM"
-                              />
-                            </Form.Item>
-                          </div>
-
-                          <div>
-                            <Form.Item
-                              name="year"
-                              label="Year Level"
-                              validateStatus={errors.year ? 'error' : ''}
-                              help={errors.year ? errors.year[0] : ''}
-                            >
-                              <Select
-                                size="large"
-                                allowClear
-                                options={yearLevelOptions}
-                                placeholder="Select year level"
-                              />
-                            </Form.Item>
-                          </div>
-
-                          <div>
-                            <Form.Item
-                              name="student_id"
-                              label="Student ID Number (Optional)"
-                              validateStatus={errors.student_id ? 'error' : ''}
-                              help={errors.student_id ? errors.student_id[0] : ''}
-                            >
-                              <Input
-                                size="large"
-                                prefix={<Hash className="h-4 w-4 text-slate-400" />}
-                                placeholder="e.g. 2024-00123"
-                              />
-                            </Form.Item>
-                          </div>
-
-                          <div>
-                            <Form.Item
-                              name="school_address"
-                              label="School Location / Address (Optional)"
-                              validateStatus={errors.school_address ? 'error' : ''}
-                              help={errors.school_address ? errors.school_address[0] : ''}
-                            >
-                              <Input
-                                size="large"
-                                prefix={<Building2 className="h-4 w-4 text-slate-400" />}
-                                placeholder="e.g. Malaybalay City / Maramag"
-                              />
-                            </Form.Item>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </FormSection>
 
                   {/* Step 5: Family & Guardian Information */}
@@ -706,6 +714,7 @@ export default function YouthRegisterPage() {
                     type="primary"
                     size="large"
                     loading={processing}
+                    onClick={() => form.submit()}
                     className="!h-12 !rounded-xl !bg-emerald-700 !px-8 !text-base !font-semibold shadow-md shadow-emerald-700/25 hover:!bg-emerald-800"
                   >
                     <span>Complete Youth Registration</span>

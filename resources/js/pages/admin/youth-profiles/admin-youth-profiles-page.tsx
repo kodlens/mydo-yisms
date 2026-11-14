@@ -20,9 +20,7 @@ const { Search } = Input;
 
 const statusOptions = [
   { label: 'All', value: 'all' },
-  { label: 'Enrolled', value: 'enrolled' },
-  { label: 'Out of School', value: 'out_of_school' },
-  { label: 'Graduated', value: 'graduated' },
+  { label: 'College Students', value: 'enrolled' },
   { label: 'Active', value: 'active' },
   { label: 'Inactive', value: 'inactive' },
 ];
@@ -199,16 +197,10 @@ const AdminYouthProfilesPage = () => {
               <Column<ExtendedYouth>
                 title="Status"
                 key="classification"
-                width={130}
-                render={(_, youth) => {
-                  if (youth.is_graduated) {
-                    return <Tag color="blue">Graduated</Tag>;
-                  }
-                  if (youth.school_name) {
-                    return <Tag color="green">Enrolled</Tag>;
-                  }
-                  return <Tag color="orange">Out of School</Tag>;
-                }}
+                width={140}
+                render={(_, youth) => (
+                  <Tag color="green">College Student</Tag>
+                )}
               />
               <Column<ExtendedYouth>
                 title="Action"

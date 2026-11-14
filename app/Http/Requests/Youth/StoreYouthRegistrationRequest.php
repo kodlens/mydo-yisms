@@ -73,10 +73,10 @@ class StoreYouthRegistrationRequest extends FormRequest
             'street_address' => ['required', 'string', 'max:255'],
             'zip_code' => ['nullable', 'string', 'max:10'],
 
-            'school_name' => ['nullable', 'string', 'max:255'],
+            'school_name' => ['required', 'string', 'max:255'],
             'school_address' => ['nullable', 'string', 'max:255'],
-            'program' => ['nullable', 'string', 'max:255'],
-            'year' => ['nullable', 'integer', 'between:1,6'],
+            'program' => ['required', 'string', 'max:255'],
+            'year' => ['required', 'integer', 'between:1,5'],
             'student_id' => ['nullable', 'string', 'max:50'],
             'previous_semester_gwa' => ['nullable', 'numeric', 'between:1,100'],
             'is_graduated' => ['nullable', 'boolean'],

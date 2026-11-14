@@ -22,13 +22,9 @@ class YouthRegistrationController extends Controller
 
     public function store(StoreYouthRegistrationRequest $req)
     {
-        return $req;
         $validated = $req->validated();
 
-        // DB::transaction(function () use ($validated) {
-        //     return [$student, $profile];
-        // });
-         $youth = YouthProfile::create([
+        $youth = YouthProfile::create([
             ...$validated,
             'password' => Hash::make($validated['password']),
             'role' => 'youth',
@@ -38,8 +34,6 @@ class YouthRegistrationController extends Controller
         return response()->json([
             'success' => true,
         ], 200);
-
-        //return to_route('youth-login.index')->with('status', 'Registration submitted. Please sign in once your account is approved.');
     }
 
 }

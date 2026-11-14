@@ -19,9 +19,7 @@ const { Search } = Input;
 
 const statusOptions = [
   { label: 'All', value: 'all' },
-  { label: 'Enrolled', value: 'enrolled' },
-  { label: 'Out of School', value: 'out_of_school' },
-  { label: 'Graduated', value: 'graduated' },
+  { label: 'College Students', value: 'enrolled' },
   { label: 'Active', value: 'active' },
   { label: 'Inactive', value: 'inactive' },
 ];
@@ -190,27 +188,23 @@ const StaffYouthProfilesPage = () => {
                 title="Status"
                 key="status"
                 width={140}
-                render={(_, youth) => {
-                  const isGrad = youth.is_graduated;
-                  const isEnrolled = !isGrad && !!youth.school_name;
-                  return (
-                    <div className="flex flex-col gap-1 items-start">
-                      <Tag color={isGrad ? 'purple' : isEnrolled ? 'blue' : 'orange'} className="m-0 text-xs">
-                        {isGrad ? 'Graduated' : isEnrolled ? 'Enrolled' : 'OSY'}
-                      </Tag>
-                      <span className="text-[11px] text-stone-500">
-                        {youth.is_active ? '● Active' : '○ Inactive'}
-                      </span>
-                    </div>
-                  );
-                }}
+                render={(_, youth) => (
+                  <div className="flex flex-col gap-1 items-start">
+                    <Tag color="green" className="m-0 text-xs">
+                      College Student
+                    </Tag>
+                    <span className="text-[11px] text-stone-500">
+                      {youth.is_active ? '● Active' : '○ Inactive'}
+                    </span>
+                  </div>
+                )}
               />
               <Column<ExtendedYouth> title="Mobile" dataIndex="mobile_number" key="mobile_number" width={130} />
               <Column<ExtendedYouth>
                 title="School"
                 dataIndex="school_name"
                 key="school_name"
-                render={(school) => school || <span className="text-stone-400 italic">None / OSY</span>}
+                render={(school) => school || <span className="text-stone-400 italic">—</span>}
               />
               <Column<ExtendedYouth>
                 title="Program / Year"

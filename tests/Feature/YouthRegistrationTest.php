@@ -126,6 +126,9 @@ class YouthRegistrationTest extends TestCase
             'citymunCode' => $this->barangay->citymunCode,
             'brgyCode' => $this->barangay->brgyCode,
             'street_address' => 'Purok 3',
+            'school_name' => 'Bukidnon State University',
+            'program' => 'BS Information Technology',
+            'year' => 2,
             'guardian_name' => 'Jose Reyes',
             'guardian_contact_number' => '+639189876543',
             'monthly_family_income' => 8000,
@@ -142,12 +145,12 @@ class YouthRegistrationTest extends TestCase
         ]);
     }
 
-    public function test_out_of_school_youth_registers_without_school(): void
+    public function test_college_details_are_required_for_registration(): void
     {
         $birthDate = now()->subYears(22)->toDateString();
 
         $payload = [
-            'email' => 'osy@example.com',
+            'email' => 'nocollege@example.com',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
             'lname' => 'Gomez',
@@ -160,10 +163,6 @@ class YouthRegistrationTest extends TestCase
             'citymunCode' => $this->barangay->citymunCode,
             'brgyCode' => $this->barangay->brgyCode,
             'street_address' => 'Purok 5',
-            'school_name' => null,
-            'program' => null,
-            'year' => null,
-            'is_graduated' => false,
             'guardian_name' => 'Juana Gomez',
             'guardian_contact_number' => '09219876543',
             'monthly_family_income' => 6000,
@@ -171,14 +170,7 @@ class YouthRegistrationTest extends TestCase
 
         $response = $this->postJson(route('youth-register.store'), $payload);
 
-        $response->assertOk();
-
-        $this->assertDatabaseHas('youth_profiles', [
-            'email' => 'osy@example.com',
-            'school_name' => null,
-            'program' => null,
-            'year' => null,
-            'is_graduated' => false,
-        ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['school_name', 'program', 'year']);
     }
 }

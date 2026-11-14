@@ -74,9 +74,6 @@ export default function AdminYouthProfileDrawer({ open, onClose, youth }: Props)
     .filter(Boolean)
     .join(', ');
 
-  const isEnrolled = Boolean(youth.school_name && !youth.is_graduated);
-  const isOsy = Boolean(!youth.school_name && !youth.is_graduated);
-
   return (
     <Drawer
       open={open}
@@ -124,7 +121,7 @@ export default function AdminYouthProfileDrawer({ open, onClose, youth }: Props)
           <div className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">Category</span>
             <span className="mt-1 text-xs font-bold text-slate-800 block">
-              {youth.is_graduated ? '🎓 Graduated' : isEnrolled ? '📚 Enrolled (ISY)' : isOsy ? '🌱 OSY' : 'Youth'}
+              📚 College Student
             </span>
           </div>
 
