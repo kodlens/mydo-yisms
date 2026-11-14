@@ -123,33 +123,33 @@ export default function YouthRegisterPage() {
     monthly_family_income: 0,
   };
 
-  const sampleData = {
-    email: 'shen@mail.test',
-    password: 'password123',
-    password_confirmation: 'password123',
-    lname: 'Dela Cruz',
-    fname: 'Shen',
-    mname: 'N',
-    suffix: '',
-    sex: 'Male',
-    birth_date: dayjs('2001-03-04'),
-    civil_status: 'Single',
-    mobile_number: '09121231234',
-    provCode: '973',
-    citymunCode: '97308',
-    brgyCode: '97308035',
-    street_address: 'Purok 1, Poblacion',
-    zip_code: '9123',
-    student_id: '20101122',
-    school_name: 'Polytechnic University of the Philippines',
-    school_address: 'Taguig City',
-    program: 'BS Information Technology',
-    year: 1,
-    is_graduated: false,
-    guardian_name: 'Maria Clara Dela Cruz',
-    guardian_contact_number: '09121122123',
-    monthly_family_income: 10000,
-  };
+  // const sampleData = {
+  //   email: 'shen@mail.test',
+  //   password: 'password123',
+  //   password_confirmation: 'password123',
+  //   lname: 'Dela Cruz',
+  //   fname: 'Shen',
+  //   mname: 'N',
+  //   suffix: '',
+  //   sex: 'Male',
+  //   birth_date: dayjs('2001-03-04'),
+  //   civil_status: 'Single',
+  //   mobile_number: '09121231234',
+  //   provCode: '973',
+  //   citymunCode: '97308',
+  //   brgyCode: '97308035',
+  //   street_address: 'Purok 1, Poblacion',
+  //   zip_code: '9123',
+  //   student_id: '20101122',
+  //   school_name: 'Polytechnic University of the Philippines',
+  //   school_address: 'Taguig City',
+  //   program: 'BS Information Technology',
+  //   year: 1,
+  //   is_graduated: false,
+  //   guardian_name: 'Maria Clara Dela Cruz',
+  //   guardian_contact_number: '09121122123',
+  //   monthly_family_income: 10000,
+  // };
 
   const submit = (values: YouthRegistrationForm) => {
     if (processing) return;
@@ -346,7 +346,7 @@ export default function YouthRegisterPage() {
                   onFinish={submit}
                   onFinishFailed={onFinishFailed}
                   scrollToFirstError
-                  initialValues={sampleData}
+                  initialValues={initialData}
                   className="space-y-6"
                 >
                   {/* Step 1: Account Information */}
