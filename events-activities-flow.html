@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eKabataan - Events & Activities Module Workflow</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #4338ca;
+      --primary-dark: #3730a3;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 32px 16px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);
+      color: white;
+      padding: 32px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(67, 56, 202, 0.15);
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    header p {
+      color: #e0e7ff;
+      font-size: 14px;
+      max-width: 700px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .diagram-wrapper {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: var(--primary-dark);
+    }
+    button.secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button.secondary:hover {
+      background: #f1f5f9;
+    }
+    @media print {
+      body { padding: 0; background: white; }
+      .actions { display: none; }
+      .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">MYDO · Official Architecture</span>
+      <h1>Events & Programs Module - Process Flow</h1>
+      <p>Complete lifecycle workflow of municipal youth development summits, leadership workshops, participant registration, live QR attendance tracking, and youth participation records.</p>
+    </header>
+
+    <div class="actions">
+      <button onclick="window.print()">
+        🖨️ Print / Save as PDF
+      </button>
+      <button class="secondary" onclick="navigator.clipboard.writeText(window.location.href); alert('URL copied to clipboard!')">
+        🔗 Copy File Path
+      </button>
+    </div>
+
+    <!-- SECTION 1: END TO END FLOWCHART -->
+    <div class="card">
+      <h2 class="card-title">1. End-to-End Operational Flowchart</h2>
+      <p class="card-desc">Shows how municipal activities are created, joined by college students, moderated by staff, and verified via live attendance check-ins.</p>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph EventSetup["1. Activity Setup (Staff & Admin)"]
+        A["Admin configures Categories<br/>(Leadership, Skills Training, Sports, Culture)"] --> B["Staff creates Activity Record<br/>(Title, Venue, Dates, Slot Capacity, Requirements)"]
+        B --> C{"Requires Approval?"}
+        C -- "Yes" --> D["Set requires_approval = true"]
+        C -- "No (Auto-Confirm)" --> E["Set requires_approval = false"]
+        D --> F["Publish Activity (status: published)"]
+        E --> F
+    end
+
+    subgraph StudentJoin["2. Youth Registration (Youth Portal)"]
+        F --> G["Student browses Events Feed (/youth/services/events-activities)"]
+        G --> H["Student clicks 'Join Activity'"]
+        H --> I{"Slot Available?"}
+        I -- "Capacity Reached" --> J["Error: Activity slots fully booked"]
+        I -- "Slot Open" --> K{"Requires Staff Approval?"}
+        K -- "Yes" --> L["ActivityRegistration created (status: PENDING)"]
+        K -- "No" --> M["ActivityRegistration created (status: APPROVED)"]
+    end
+
+    subgraph ParticipantManagement["3. Staff Participant Moderation"]
+        L --> N["Staff opens Participant Roster (/staff/activity-participants)"]
+        N --> O{"Review Applicant"}
+        O -- "Approve" --> P["Status: APPROVED (Slot Confirmed)"]
+        O -- "Reject" --> Q["Status: REJECTED (Slot Freed)"]
+    end
+
+    subgraph LiveAttendance["4. On-Site Live Attendance & Check-In"]
+        M --> R["Event Day: Student arrives at Venue"]
+        P --> R
+        R --> S["Staff opens Live Attendance Scanner (/staff/activity-attendance)"]
+        S --> T["Scan Student QR Reference Code or Search Name"]
+        T --> U{"Valid Registered Participant?"}
+        U -- "Verified" --> V["ActivityAttendance recorded<br/>(Timestamp, Recorded by Staff, Method: QR/Manual)"]
+        U -- "Unregistered / Walk-in" --> W["Warning: Participant not on confirmed list"]
+    end
+
+    subgraph RecordHistory["5. Youth History & Ledger"]
+        V --> X["Attendance reflected on Student Dashboard"]
+        X --> Y["Verified attendance count & event completion record saved"]
+    end
+
+    classDef primary fill:#3730a3,stroke:#312e81,color:#fff;
+    classDef success fill:#16a34a,stroke:#15803d,color:#fff;
+    classDef warning fill:#dc2626,stroke:#b91c1c,color:#fff;
+    classDef neutral fill:#f8fafc,stroke:#cbd5e1,color:#0f172a;
+
+    class A,B,F primary;
+    class M,P,V,Y success;
+    class J,Q,W warning;
+    class C,D,E,G,H,I,K,L,N,O,R,S,T,U,X neutral;
+        </pre>
+      </div>
+    </div>
+
+    <!-- SECTION 2: SEQUENCE DIAGRAM -->
+    <div class="card">
+      <h2 class="card-title">2. Role Interaction & Sequence Diagram</h2>
+      <p class="card-desc">Step-by-step communication between College Student, Staff Organizer, eKabataan Portal, and Database.</p>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Staff as Staff Organizer
+    participant Portal as eKabataan Web App
+    participant DB as Database (Activities, Registrations, Attendance)
+    actor Youth as College Student
+
+    Note over Staff, DB: Phase 1: Event Publication
+    Staff->>Portal: Create Activity (Title, Venue, Dates, Capacity: 100)
+    Portal->>DB: Save Activity (status = published)
+
+    Note over Youth, DB: Phase 2: Registration
+    Youth->>Portal: View /youth/services/events-activities
+    Portal->>DB: Query published events & check if youth has registered
+    DB-->>Portal: Return events with has_joined and is_approved flags
+    Youth->>Portal: Click "Join Activity"
+    Portal->>DB: Count current registrations (scopeReservingSlot)
+    alt Slot Available
+        Portal->>DB: Create ActivityRegistration (status: approved/pending)
+        Portal-->>Youth: Return success confirmation ("Joined successfully")
+    else Over Capacity
+        Portal-->>Youth: Return error ("Capacity reached")
+    end
+
+    Note over Staff, DB: Phase 3: On-Site Attendance Check-In
+    Youth->>Staff: Present Reference Code (YD-XXXX-XXXX) at registration desk
+    Staff->>Portal: Scan QR or search ref code in /staff/activity-attendance
+    Portal->>DB: Check ActivityRegistration (must be approved)
+    Portal->>DB: Create ActivityAttendance (attended_at: now(), recorded_by: staff_id)
+    Portal-->>Staff: Sound confirmation & green participant checkmark
+
+    Note over Youth, Portal: Phase 4: Attendance Verification
+    Youth->>Portal: Check Dashboard or Events Page
+    Portal-->>Youth: Shows "✓ Attended" badge & increments attended sessions count
+        </pre>
+      </div>
+    </div>
+
+    <!-- SECTION 3: STATE LIFECYCLE -->
+    <div class="card">
+      <h2 class="card-title">3. Registration & Attendance State Machine</h2>
+      <p class="card-desc">Lifecycle of a participant's sign-up from registration to attendance recording.</p>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+stateDiagram-v2
+    [*] --> SlotChecked: Student clicks Join
+
+    state RegistrationState {
+        SlotChecked --> PendingApproval: If event requires approval
+        SlotChecked --> Approved: If auto-confirm is enabled
+        PendingApproval --> Approved: Staff approves participant
+        PendingApproval --> Rejected: Staff rejects participant (slot freed)
+        Approved --> Cancelled: Student cancels registration prior to event
+    }
+
+    state EventDayAttendance {
+        Approved --> Attended: Staff scans QR / checks-in student at venue
+        Approved --> Absent: Event concludes without check-in
+    }
+
+    state RecordedInProfile {
+        Attended --> VerifiedAttendanceRecord: Counts toward student's youth leadership participation
+    }
+        </pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>

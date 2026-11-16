@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eKabataan - Cash Incentives Workflow & Architecture</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 32px 16px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header {
+      background: linear-gradient(135deg, #04242e 0%, #0f766e 100%);
+      color: white;
+      padding: 32px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.15);
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    header p {
+      color: #ccfbf1;
+      font-size: 14px;
+      max-width: 700px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .diagram-wrapper {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: var(--primary-dark);
+    }
+    button.secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button.secondary:hover {
+      background: #f1f5f9;
+    }
+    @media print {
+      body { padding: 0; background: white; }
+      .actions { display: none; }
+      .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">MYDO · Official Architecture</span>
+      <h1>Cash Incentives Module - Process Flow</h1>
+      <p>Complete lifecycle workflow of municipal educational cash assistance and financial incentives in the eKabataan portal.</p>
+    </header>
+
+    <div class="actions">
+      <button onclick="window.print()">
+        🖨️ Print / Save as PDF
+      </button>
+      <button class="secondary" onclick="navigator.clipboard.writeText(window.location.href); alert('URL copied to clipboard!')">
+        🔗 Copy File Path
+      </button>
+    </div>
+
+    <!-- SECTION 1: END TO END FLOWCHART -->
+    <div class="card">
+      <h2 class="card-title">1. End-to-End Operational Flowchart</h2>
+      <p class="card-desc">Shows how Admin and Staff configure programs and approve beneficiaries, leading to student ledger visibility.</p>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph AdminStaff["1. Administration & Staff (Program Setup & Selection)"]
+        A["Admin / Staff creates Cash Incentive Program<br/>(Title, Funding Year, Amount per Beneficiary, Budget)"] --> B["Program Status set to Ongoing"]
+        B --> C["Filter & Select Eligible College Youth<br/>(By Barangay, Year Level, Enrolled Status)"]
+        C --> D["System takes Snapshot of Student Details<br/>(Historical School, Course, Year Level, Barangay)"]
+    end
+
+    subgraph Evaluation["2. Review & Approval Stage"]
+        D --> E{"Staff / Admin Review Nomination"}
+        E -- "Criteria Met" --> F["Status: Approved Beneficiary"]
+        E -- "Ineligible / Over-quota" --> G["Status: Rejected (Reason Recorded)"]
+    end
+
+    subgraph ReleaseStage["3. Disbursement & Distribution"]
+        F --> H["Create Cash Incentive Release Record"]
+        H --> I["Schedule Release Date & Venue"]
+        I --> J["Disbursement Payout<br/>(Cash release at Municipal Hall / Treasury)"]
+        J --> K["Update Release Status to Disbursed<br/>(Record Actual Date & Acknowledgment Ref No.)"]
+    end
+
+    subgraph YouthView["4. Youth / Student Portal (Read-Only Ledger)"]
+        K --> L["Student logs in to eKabataan Portal"]
+        L --> M["Navigates to Cash Incentives Ledger"]
+        M --> N["Filter Records by Academic / Funding Year"]
+        N --> O["Inspect Grant Details<br/>(Amount, Status, Release Date, ACK Tracking)"]
+    end
+
+    classDef primary fill:#0f766e,stroke:#0d9488,color:#fff;
+    classDef success fill:#16a34a,stroke:#15803d,color:#fff;
+    classDef warning fill:#d97706,stroke:#b45309,color:#fff;
+    classDef neutral fill:#f8fafc,stroke:#cbd5e1,color:#0f172a;
+
+    class A,B,C,D primary;
+    class F,K,O success;
+    class G,I,J warning;
+    class E,H,L,M,N neutral;
+        </pre>
+      </div>
+    </div>
+
+    <!-- SECTION 2: SEQUENCE DIAGRAM -->
+    <div class="card">
+      <h2 class="card-title">2. Role Interaction & Sequence Diagram</h2>
+      <p class="card-desc">Step-by-step communication between Staff/Admin, Database Models, and the Youth Student Portal.</p>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Staff as Staff / Admin
+    participant System as eKabataan System
+    participant DB as Database (Programs, Beneficiaries, Releases)
+    actor Youth as College Student
+
+    Note over Staff, DB: Phase 1: Program Creation & Nomination
+    Staff->>System: Create Program (e.g., A.Y. 2026 College Financial Aid, ₱5,000)
+    System->>DB: Save CashIncentiveProgram (funding_year = 2026)
+    Staff->>System: Filter active college youth & select beneficiaries
+    System->>DB: Save snapshot in CashIncentiveBeneficiary (status: pending)
+    
+    Note over Staff, DB: Phase 2: Evaluation & Release Scheduling
+    Staff->>System: Approve nominated beneficiary
+    System->>DB: Update beneficiary status = approved
+    Staff->>System: Schedule disbursement & set release date
+    System->>DB: Create CashIncentiveRelease (status: scheduled)
+
+    Note over Staff, DB: Phase 3: Payout & Acknowledgment
+    Staff->>Youth: Disburse cash grant during municipal payout
+    Staff->>System: Mark as Released (input actual date & ACK-2026-XXXX)
+    System->>DB: Update CashIncentiveRelease (status: released)
+
+    Note over Youth, System: Phase 4: Student Verification
+    Youth->>System: Sign in & open "Cash Incentives" module
+    System->>DB: Fetch CashIncentiveBeneficiary & Release records for student
+    DB-->>System: Return historical records grouped by funding year
+    System-->>Youth: Display Ledger (Amount, Status, A.Y. Filter, ACK Ref)
+        </pre>
+      </div>
+    </div>
+
+    <!-- SECTION 3: STATE LIFECYCLE -->
+    <div class="card">
+      <h2 class="card-title">3. Beneficiary & Release State Lifecycle</h2>
+      <p class="card-desc">State machine representation of statuses from nomination to disbursement.</p>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+stateDiagram-v2
+    [*] --> Nominated: Staff selects student from Youth Registry
+    
+    state BeneficiaryEvaluation {
+        Nominated --> Approved: Staff / Admin approves nomination
+        Nominated --> Rejected: Rejected with documented reason
+    }
+    
+    state DisbursementLifecycle {
+        Approved --> Scheduled: Release date set by MYDO
+        Scheduled --> Disbursed: Cash paid & ACK Reference recorded
+        Scheduled --> Unclaimed: Student failed to claim during release window
+        Scheduled --> Cancelled: Program cancelled or student forfeited
+    }
+    
+    state StudentPortalView {
+        Disbursed --> ViewableOnLedger: Student sees ₱ amount, release date & receipt ref
+        Scheduled --> ViewableOnLedger: Student sees "Scheduled for Release"
+        Rejected --> ViewableOnLedger: Student sees evaluation status
+    }
+        </pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>
