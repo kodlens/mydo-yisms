@@ -10,6 +10,7 @@ use App\Http\Controllers\Youth\YouthRegistrationController;
 use App\Http\Controllers\Youth\YouthServiceController;
 use App\Http\Controllers\Youth\YouthMyProfileController;
 use App\Http\Controllers\Youth\YouthApplyScholarshipController;
+use App\Http\Controllers\Youth\YouthCashIncentiveController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest:youth')->group(function () {
@@ -58,6 +59,9 @@ Route::middleware('auth:youth')->group(function () {
 
     Route::get('/youth/my-profile', [YouthMyProfileController::class, 'index'])->name('youth.youth-my-profile.index');
     Route::put('/youth/my-profile', [YouthMyProfileController::class, 'update'])->name('youth.youth-my-profile.update');
+
+    Route::get('/youth/cash-incentives', [YouthCashIncentiveController::class, 'index'])
+        ->name('youth.youth-cash-incentives.index');
 
     Route::get('/youth/services', [YouthServiceController::class, 'index'])->name('youth.youth-services.index');
     // Route::get('/youth/services/{service}', [YouthServiceController::class, 'show'])->name('youth.youth-services.show');

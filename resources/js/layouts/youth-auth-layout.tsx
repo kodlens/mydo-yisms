@@ -27,6 +27,7 @@ import {
   PanelLeftOpen,
   Sparkles,
   UserRound,
+  Wallet,
 } from 'lucide-react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 
@@ -53,6 +54,12 @@ const destinations: Destination[] = [
     matches: (route: string) =>
       route.startsWith('youth.services.youth-scholarships.') ||
       route.startsWith('youth.services.apply-scholarship.'),
+  },
+  {
+    key: 'youth.youth-cash-incentives.index',
+    prefix: 'youth.youth-cash-incentives.',
+    label: 'Cash Incentives',
+    icon: Wallet,
   },
   { key: 'youth.youth-my-profile.index', prefix: 'youth.youth-my-profile.', label: 'My Profile', icon: UserRound },
 ];
