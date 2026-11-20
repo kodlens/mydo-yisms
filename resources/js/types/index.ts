@@ -66,7 +66,15 @@ export interface Youth extends User {
     cedula_path?: string | null;
     school_id_path?: string | null;
     psa_path?: string | null;
+    status?: 'pending' | 'approved' | 'rejected' | string | null;
     registration_status?: string | null;
+    approved_by?: number | null;
+    approved_at?: string | null;
+    approver?: {
+        id: number;
+        fname?: string;
+        lname?: string;
+    } | null;
     rejection_reason?: string | null;
     is_active?: boolean;
     province?: {

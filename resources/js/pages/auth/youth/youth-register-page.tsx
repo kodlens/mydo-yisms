@@ -171,13 +171,13 @@ export default function YouthRegisterPage() {
       .post(route('youth-register.store'), payload)
       .then((res) => {
         if (res.data.success) {
-          modal.success({
-            title: 'Youth Profile Created Successfully!',
+          modal.info({
+            title: 'Registration Submitted for Review',
             content:
-              'Your youth registration has been saved. You may now sign in to your eKabataan account to apply for scholarships, participate in youth activities, and access cash incentives.',
-            okText: 'Proceed to Sign In',
+              'Your youth registration has been submitted successfully! It is now pending verification and approval by the Municipal Youth Development Office (MYDO) staff. You will be able to sign in once your account has been approved.',
+            okText: 'Return to Home Portal',
             onOk: () => {
-              router.visit(route('youth-login.index'));
+              router.visit(route('home'));
             },
           });
         }
@@ -714,7 +714,6 @@ export default function YouthRegisterPage() {
                     type="primary"
                     size="large"
                     loading={processing}
-                    onClick={() => form.submit()}
                     className="!h-12 !rounded-xl !bg-emerald-700 !px-8 !text-base !font-semibold shadow-md shadow-emerald-700/25 hover:!bg-emerald-800"
                   >
                     <span>Complete Youth Registration</span>

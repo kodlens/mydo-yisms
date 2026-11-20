@@ -8,6 +8,7 @@ use App\Http\Controllers\Staff\StaffActivityAttendanceController;
 use App\Http\Controllers\Staff\StaffApplicantController;
 use App\Http\Controllers\Staff\StaffDashboardController;
 use App\Http\Controllers\Staff\StaffEventActivityController;
+use App\Http\Controllers\Staff\StaffNotificationController;
 use App\Http\Controllers\Staff\StaffReportController;
 use App\Http\Controllers\Staff\StaffScholarshipController;
 use App\Http\Controllers\Staff\StaffYouthProfileController;
@@ -19,6 +20,8 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
 
     Route::resource('/youth-profiles', StaffYouthProfileController::class)->names('youth-profiles');
     Route::get('/get-youth-profiles', [StaffYouthProfileController::class, 'getData'])->name('youth-profiles.get-data');
+    Route::post('/youth-profiles/{id}/approve', [StaffYouthProfileController::class, 'approve'])->name('youth-profiles.approve');
+    Route::post('/youth-profiles/{id}/reject', [StaffYouthProfileController::class, 'reject'])->name('youth-profiles.reject');
 
 
     // Scholarships Management
@@ -33,6 +36,11 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::resource('/applicants', StaffApplicantController::class)->names('scholarship-applicants');
     Route::get('/get-applicants', [StaffApplicantController::class, 'getData'])->name('scholarship-applicants.get-data');
 
+
+    // Notifications
+    Route::get('/notifications', [StaffNotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [StaffNotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+    Route::post('/notifications/read-all', [StaffNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
 
     // Events & activities. Spelled out instead of Route::resource because this module has no
     // show/create/edit pages; the form is a modal driven by the JSON endpoints below.

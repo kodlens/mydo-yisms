@@ -1,5 +1,6 @@
 import BrandLogo from '@/components/brand-logo';
 import MydoLogo from '@/components/mydo-logo';
+import StaffNotificationBell from '@/components/mydo-components/staff-notification-bell';
 import { User } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import {
@@ -284,50 +285,54 @@ export default function StaffAuthLayout({ user, children, header }: PropsWithChi
               </div>
             </div>
 
-            <Dropdown
-              trigger={['click']}
-              placement="bottomRight"
-              menu={{
-                items: [
-                  {
-                    key: 'profile-info',
-                    label: (
-                      <div className="py-1">
-                        <p className="text-xs font-bold text-slate-900">{fullName}</p>
-                        <p className="text-[11px] text-slate-500">Staff Member</p>
-                      </div>
-                    ),
-                    disabled: true,
-                  },
-                  { type: 'divider' },
-                  {
-                    key: 'logout',
-                    icon: <LogOut size={16} />,
-                    label: 'Logout',
-                    danger: true,
-                    disabled: processing,
-                    onClick: logout,
-                  },
-                ],
-              }}
-            >
-              <button
-                type="button"
-                aria-label={`Account menu for ${fullName}`}
-                className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 text-sm text-slate-700 shadow-2xs transition hover:bg-slate-50 sm:px-3"
+            <div className="flex items-center gap-2">
+              <StaffNotificationBell />
+
+              <Dropdown
+                trigger={['click']}
+                placement="bottomRight"
+                menu={{
+                  items: [
+                    {
+                      key: 'profile-info',
+                      label: (
+                        <div className="py-1">
+                          <p className="text-xs font-bold text-slate-900">{fullName}</p>
+                          <p className="text-[11px] text-slate-500">Staff Member</p>
+                        </div>
+                      ),
+                      disabled: true,
+                    },
+                    { type: 'divider' },
+                    {
+                      key: 'logout',
+                      icon: <LogOut size={16} />,
+                      label: 'Logout',
+                      danger: true,
+                      disabled: processing,
+                      onClick: logout,
+                    },
+                  ],
+                }}
               >
-                <Avatar
-                  size="small"
-                  className="!bg-emerald-700 font-bold text-white shadow-xs"
+                <button
+                  type="button"
+                  aria-label={`Account menu for ${fullName}`}
+                  className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 text-sm text-slate-700 shadow-2xs transition hover:bg-slate-50 sm:px-3"
                 >
-                  {initials || 'S'}
-                </Avatar>
-                <span className="hidden max-w-40 truncate font-semibold sm:block text-xs text-slate-800">
-                  {fullName}
-                </span>
-                <ChevronDown size={14} className="text-slate-400" />
-              </button>
-            </Dropdown>
+                  <Avatar
+                    size="small"
+                    className="!bg-emerald-700 font-bold text-white shadow-xs"
+                  >
+                    {initials || 'S'}
+                  </Avatar>
+                  <span className="hidden max-w-40 truncate font-semibold sm:block text-xs text-slate-800">
+                    {fullName}
+                  </span>
+                  <ChevronDown size={14} className="text-slate-400" />
+                </button>
+              </Dropdown>
+            </div>
           </div>
         </Header>
 

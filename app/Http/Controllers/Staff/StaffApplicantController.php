@@ -87,6 +87,17 @@ class StaffApplicantController extends Controller
             ['scholarship_application_id' => $applicant->id]
         );
 
+        $freshApplicant = $applicant->fresh(['youthProfile', 'scholarshipType']);
+        if ($freshApplicant->youthProfile && in_array($validated['registration_status'], ['approved', 'rejected'], true)) {
+            $freshApplicant->youthProfile->notify(new \App\Notifications\ScholarshipApplicationStatusNotification($freshApplicant));
+
+            try {
+                event(new \App\Events\ScholarshipApplicationStatusEvent($freshApplicant));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Failed to broadcast ScholarshipApplicationStatusEvent: ' . $e->getMessage());
+            }
+        }
+
         return back()->with('status', 'Applicant status updated.');
     }
 

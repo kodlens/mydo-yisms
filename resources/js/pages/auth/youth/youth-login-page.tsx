@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ChevronDown,
   CircleAlert,
+  Clock,
   GraduationCap,
   HeartHandshake,
   HelpCircle,
@@ -25,6 +26,7 @@ type LoginProps = {
 
 export default function YouthLoginPage() {
   const [errors, setErrors] = useState<Record<string, string | string[]>>({});
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showHelp, setShowHelp] = useState<boolean>(false);
 
@@ -32,6 +34,7 @@ export default function YouthLoginPage() {
 
   const submit = async (values: LoginProps) => {
     setErrors({});
+    setErrorStatus(null);
     setLoading(true);
     try {
       const { data } = await axios.post('/youth-login', values, {
@@ -43,6 +46,10 @@ export default function YouthLoginPage() {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 422) {
         setErrors(error.response.data.errors ?? { login: 'Please check your login credentials.' });
+      } else if (axios.isAxiosError(error) && error.response?.status === 403) {
+        const msg = error.response.data?.message || 'Access denied.';
+        setErrorStatus(error.response.data?.status || 'denied');
+        setErrors({ login: msg });
       } else if (axios.isAxiosError(error) && error.response?.status === 401) {
         setErrors({ login: 'Invalid email or password. Please verify and try again.' });
       } else {
@@ -219,12 +226,30 @@ export default function YouthLoginPage() {
                   id="login-errors"
                   role="alert"
                   aria-atomic="true"
-                  className="mt-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4"
+                  className={`mt-6 flex items-start gap-3 rounded-xl border p-4 ${
+                    errorStatus === 'pending'
+                      ? 'border-amber-200 bg-amber-50'
+                      : 'border-red-200 bg-red-50'
+                  }`}
                 >
-                  <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+                  {errorStatus === 'pending' ? (
+                    <Clock aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                  ) : (
+                    <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+                  )}
                   <div className="min-w-0">
-                    <h3 className="text-xs font-bold uppercase tracking-wide text-red-900">Sign In Failed</h3>
-                    <ul className="mt-1 list-inside list-disc space-y-1 text-xs text-red-700">
+                    <h3
+                      className={`text-xs font-bold uppercase tracking-wide ${
+                        errorStatus === 'pending' ? 'text-amber-900' : 'text-red-900'
+                      }`}
+                    >
+                      {errorStatus === 'pending' ? 'Account Pending Approval' : 'Sign In Notice'}
+                    </h3>
+                    <ul
+                      className={`mt-1 list-inside list-disc space-y-1 text-xs ${
+                        errorStatus === 'pending' ? 'text-amber-800' : 'text-red-700'
+                      }`}
+                    >
                       {errorMessages.map((message) => (
                         <li key={message}>{message}</li>
                       ))}

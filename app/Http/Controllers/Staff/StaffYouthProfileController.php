@@ -3,25 +3,27 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Models\YouthProfile;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\YouthProfile;
 
 class StaffYouthProfileController extends Controller
 {
-    public function index(){
+    public function index(): Response
+    {
         return Inertia::render('staff/youth-profiles/staff-youth-profiles-page');
     }
 
-    public function getData(Request $req){
-
+    public function getData(Request $req)
+    {
         $perPage = (int) $req->input('perpage', 10);
         $search = trim((string) $req->input('search', ''));
         $status = $req->input('status');
 
         $query = YouthProfile::query()
-            ->with(['barangay', 'city', 'province', 'scholarshipApplications.scholarshipType']);
+            ->with(['barangay', 'city', 'province', 'scholarshipApplications.scholarshipType', 'approver:id,fname,lname']);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -34,7 +36,13 @@ class StaffYouthProfileController extends Controller
             });
         }
 
-        if ($status === 'enrolled') {
+        if ($status === 'pending') {
+            $query->where('status', 'pending');
+        } elseif ($status === 'approved') {
+            $query->where('status', 'approved');
+        } elseif ($status === 'rejected') {
+            $query->where('status', 'rejected');
+        } elseif ($status === 'enrolled') {
             $query->where('is_graduated', false)
                 ->whereNotNull('school_name')
                 ->where('school_name', '!=', '');
@@ -52,6 +60,67 @@ class StaffYouthProfileController extends Controller
         }
 
         return $query->orderBy('id', 'desc')->paginate($perPage);
+    }
 
+    public function approve(Request $req, $id)
+    {
+        $youth = YouthProfile::findOrFail($id);
+        $old = $youth->toArray();
+
+        $youth->update([
+            'status' => 'approved',
+            'is_active' => true,
+            'approved_by' => $req->user()->id,
+            'approved_at' => now(),
+            'rejection_reason' => null,
+        ]);
+
+        ActivityLogger::log(
+            'youth_profile.approved',
+            "Approved youth registration for: {$youth->fname} {$youth->lname} (Ref: {$youth->reference_code})",
+            $youth,
+            $old,
+            $youth->fresh()->toArray(),
+            ['youth_profile_id' => $youth->id, 'reference_code' => $youth->reference_code]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Youth profile for {$youth->fname} {$youth->lname} has been approved successfully.",
+        ]);
+    }
+
+    public function reject(Request $req, $id)
+    {
+        $req->validate([
+            'rejection_reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $youth = YouthProfile::findOrFail($id);
+        $old = $youth->toArray();
+
+        $youth->update([
+            'status' => 'rejected',
+            'is_active' => false,
+            'rejection_reason' => $req->input('rejection_reason'),
+        ]);
+
+        ActivityLogger::log(
+            'youth_profile.rejected',
+            "Rejected youth registration for: {$youth->fname} {$youth->lname} (Ref: {$youth->reference_code})",
+            $youth,
+            $old,
+            $youth->fresh()->toArray(),
+            [
+                'youth_profile_id' => $youth->id,
+                'reference_code' => $youth->reference_code,
+                'reason' => $req->input('rejection_reason'),
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Youth registration for {$youth->fname} {$youth->lname} has been rejected.",
+        ]);
     }
 }

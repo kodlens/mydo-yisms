@@ -9,6 +9,7 @@ use App\Http\Controllers\Youth\YouthScholarshipController;
 use App\Http\Controllers\Youth\YouthRegistrationController;
 use App\Http\Controllers\Youth\YouthServiceController;
 use App\Http\Controllers\Youth\YouthMyProfileController;
+use App\Http\Controllers\Youth\YouthNotificationController;
 use App\Http\Controllers\Youth\YouthApplyScholarshipController;
 use App\Http\Controllers\Youth\YouthCashIncentiveController;
 use Illuminate\Support\Facades\Route;
@@ -65,4 +66,9 @@ Route::middleware('auth:youth')->group(function () {
 
     Route::get('/youth/services', [YouthServiceController::class, 'index'])->name('youth.youth-services.index');
     // Route::get('/youth/services/{service}', [YouthServiceController::class, 'show'])->name('youth.youth-services.show');
+
+    // Notifications
+    Route::get('/youth/notifications', [YouthNotificationController::class, 'index'])->name('youth.notifications.index');
+    Route::post('/youth/notifications/{id}/read', [YouthNotificationController::class, 'markAsRead'])->name('youth.notifications.mark-as-read');
+    Route::post('/youth/notifications/read-all', [YouthNotificationController::class, 'markAllAsRead'])->name('youth.notifications.mark-all-read');
 });

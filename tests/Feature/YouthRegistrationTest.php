@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Barangay;
+use App\Models\User;
 use App\Models\YouthProfile;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -71,7 +72,8 @@ class YouthRegistrationTest extends TestCase
             'program' => 'BS Information Technology',
             'year' => 1,
             'student_id' => 'BSIT-2024-001',
-            'is_active' => true,
+            'status' => 'pending',
+            'is_active' => false,
         ]);
 
         $youth = YouthProfile::where('email', 'student15@example.com')->first();
@@ -172,5 +174,95 @@ class YouthRegistrationTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['school_name', 'program', 'year']);
+    }
+
+    public function test_youth_approval_and_rejection_workflow_and_login_gate(): void
+    {
+        $staff = User::create([
+            'username' => 'staff_' . \Illuminate\Support\Str::random(6),
+            'fname' => 'Staff',
+            'lname' => 'Reviewer',
+            'email' => 'staff_' . \Illuminate\Support\Str::random(6) . '@example.gov.ph',
+            'password' => bcrypt('password'),
+            'role' => 'staff',
+            'is_active' => true,
+        ]);
+
+        $birthDate = now()->subYears(18)->toDateString();
+        $payload = [
+            'email' => 'workflow@example.com',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+            'lname' => 'Penduko',
+            'fname' => 'Pedro',
+            'birth_date' => $birthDate,
+            'sex' => 'Male',
+            'civil_status' => 'Single',
+            'mobile_number' => '09123456789',
+            'provCode' => $this->barangay->provCode,
+            'citymunCode' => $this->barangay->citymunCode,
+            'brgyCode' => $this->barangay->brgyCode,
+            'street_address' => 'Purok 1',
+            'school_name' => 'Bukidnon State University',
+            'program' => 'BS Information Technology',
+            'year' => 2,
+            'guardian_name' => 'Nanay Penduko',
+            'guardian_contact_number' => '09987654321',
+            'monthly_family_income' => 5000,
+        ];
+
+        // 1. Youth registers -> status is pending, is_active is false
+        $this->postJson(route('youth-register.store'), $payload)->assertOk();
+        $youth = YouthProfile::where('email', 'workflow@example.com')->firstOrFail();
+        $this->assertEquals('pending', $youth->status);
+        $this->assertFalse((bool) $youth->is_active);
+
+        // 2. Pending youth tries to login -> 403 Forbidden with pending status
+        $loginResponse = $this->postJson(route('youth-login.login'), [
+            'email' => 'workflow@example.com',
+            'password' => 'Password123!',
+        ]);
+        $loginResponse->assertStatus(403);
+        $loginResponse->assertJson(['status' => 'pending']);
+
+        // 3. Staff rejects youth profile with reason
+        $this->actingAs($staff, 'web')
+            ->postJson(route('staff.youth-profiles.reject', $youth->id), [
+                'rejection_reason' => 'Incomplete or unreadable ID card.',
+            ])
+            ->assertOk();
+
+        $youth->refresh();
+        $this->assertEquals('rejected', $youth->status);
+        $this->assertEquals('Incomplete or unreadable ID card.', $youth->rejection_reason);
+        $this->assertFalse((bool) $youth->is_active);
+
+        // 4. Rejected youth tries to login -> 403 with rejection reason
+        $this->postJson(route('youth-login.login'), [
+            'email' => 'workflow@example.com',
+            'password' => 'Password123!',
+        ])->assertStatus(403)->assertJson([
+            'status' => 'rejected',
+            'rejection_reason' => 'Incomplete or unreadable ID card.',
+        ]);
+
+        // 5. Staff approves the youth profile
+        $this->actingAs($staff, 'web')
+            ->postJson(route('staff.youth-profiles.approve', $youth->id))
+            ->assertOk();
+
+        $youth->refresh();
+        $this->assertEquals('approved', $youth->status);
+        $this->assertTrue((bool) $youth->is_active);
+        $this->assertEquals($staff->id, $youth->approved_by);
+        $this->assertNotNull($youth->approved_at);
+
+        // 6. Approved youth can now log in successfully
+        $this->postJson(route('youth-login.login'), [
+            'email' => 'workflow@example.com',
+            'password' => 'Password123!',
+        ])->assertOk()->assertJson([
+            'success' => true,
+        ]);
     }
 }

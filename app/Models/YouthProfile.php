@@ -13,6 +13,8 @@ use Illuminate\Support\Str;
 
 class YouthProfile extends Authenticatable
 {
+    use Notifiable;
+
     protected $hidden = [
         'password',
         'remember_token',
@@ -45,6 +47,10 @@ class YouthProfile extends Authenticatable
         'monthly_family_income',
         'password',
         'role',
+        'status',
+        'approved_by',
+        'approved_at',
+        'rejection_reason',
         'email_verified_at',
         'is_active',
         'is_graduated',
@@ -58,7 +64,13 @@ class YouthProfile extends Authenticatable
             'previous_semester_gwa' => 'decimal:2',
             'monthly_family_income' => 'decimal:2',
             'is_active' => 'boolean',
+            'approved_at' => 'datetime',
         ];
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
 

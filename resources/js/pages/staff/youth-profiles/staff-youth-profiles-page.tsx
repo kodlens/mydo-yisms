@@ -19,9 +19,10 @@ const { Search } = Input;
 
 const statusOptions = [
   { label: 'All', value: 'all' },
+  { label: 'Pending Review', value: 'pending' },
+  { label: 'Approved', value: 'approved' },
+  { label: 'Rejected', value: 'rejected' },
   { label: 'College Students', value: 'enrolled' },
-  { label: 'Active', value: 'active' },
-  { label: 'Inactive', value: 'inactive' },
 ];
 
 const StaffYouthProfilesPage = () => {
@@ -185,19 +186,34 @@ const StaffYouthProfilesPage = () => {
                 )}
               />
               <Column<ExtendedYouth>
-                title="Status"
+                title="Registration Status"
                 key="status"
-                width={140}
-                render={(_, youth) => (
-                  <div className="flex flex-col gap-1 items-start">
-                    <Tag color="green" className="m-0 text-xs">
-                      College Student
-                    </Tag>
-                    <span className="text-[11px] text-stone-500">
-                      {youth.is_active ? '● Active' : '○ Inactive'}
-                    </span>
-                  </div>
-                )}
+                width={170}
+                render={(_, youth) => {
+                  const regStatus = youth.status || 'pending';
+                  return (
+                    <div className="flex flex-col gap-1 items-start">
+                      {regStatus === 'approved' && (
+                        <Tag color="success" className="m-0 text-xs font-semibold">
+                          Approved
+                        </Tag>
+                      )}
+                      {regStatus === 'pending' && (
+                        <Tag color="warning" className="m-0 text-xs font-semibold">
+                          Pending Approval
+                        </Tag>
+                      )}
+                      {regStatus === 'rejected' && (
+                        <Tag color="error" className="m-0 text-xs font-semibold">
+                          Rejected
+                        </Tag>
+                      )}
+                      <span className="text-[11px] text-stone-500">
+                        {youth.is_active ? '● Active Account' : '○ Locked / Inactive'}
+                      </span>
+                    </div>
+                  );
+                }}
               />
               <Column<ExtendedYouth> title="Mobile" dataIndex="mobile_number" key="mobile_number" width={130} />
               <Column<ExtendedYouth>
@@ -257,6 +273,7 @@ const StaffYouthProfilesPage = () => {
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
           youth={selectedYouth}
+          onUpdated={() => loadApplicants()}
         />
       </div>
     </>

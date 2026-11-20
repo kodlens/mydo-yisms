@@ -159,6 +159,23 @@ class YouthApplyScholarshipController extends Controller
             'submitted_at' => now(),
         ]);
 
+        // Notify all staff members
+        $staffUsers = \App\Models\User::where('role', 'staff')->get();
+
+        if ($staffUsers->isNotEmpty()) {
+            \Illuminate\Support\Facades\Notification::send(
+                $staffUsers,
+                new \App\Notifications\NewScholarshipApplicationNotification($application)
+            );
+        }
+
+        // Broadcast real-time event to staff channel
+        try {
+            event(new \App\Events\NewScholarshipApplicationEvent($application));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to broadcast NewScholarshipApplicationEvent: ' . $e->getMessage());
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Scholarship application successfully submitted.',

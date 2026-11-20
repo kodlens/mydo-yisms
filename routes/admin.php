@@ -27,6 +27,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('/youth-profiles', App\Http\Controllers\Admin\AdminYouthProfileController::class)->names('youth-profiles');
     Route::get('/get-youth-profiles', [App\Http\Controllers\Admin\AdminYouthProfileController::class, 'getData'])->name('youth-profiles.get-data');
     Route::post('/youth-profiles/{id}/change-password', [App\Http\Controllers\Admin\AdminYouthProfileController::class, 'changePassword'])->name('youth-profiles.change-password');
+    Route::post('/youth-profiles/{id}/approve', [App\Http\Controllers\Admin\AdminYouthProfileController::class, 'approve'])->name('youth-profiles.approve');
+    Route::post('/youth-profiles/{id}/reject', [App\Http\Controllers\Admin\AdminYouthProfileController::class, 'reject'])->name('youth-profiles.reject');
 
     // Cash Incentives Management
     Route::prefix('cash-incentives')->name('cash-incentives.')->group(function () {

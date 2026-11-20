@@ -20,9 +20,10 @@ const { Search } = Input;
 
 const statusOptions = [
   { label: 'All', value: 'all' },
+  { label: 'Pending Review', value: 'pending' },
+  { label: 'Approved', value: 'approved' },
+  { label: 'Rejected', value: 'rejected' },
   { label: 'College Students', value: 'enrolled' },
-  { label: 'Active', value: 'active' },
-  { label: 'Inactive', value: 'inactive' },
 ];
 
 const AdminYouthProfilesPage = () => {
@@ -195,12 +196,34 @@ const AdminYouthProfilesPage = () => {
               <Column<ExtendedYouth> title="School" dataIndex="school_name" key="school_name" />
               <Column<ExtendedYouth> title="Program / Course" dataIndex="program" key="program" />
               <Column<ExtendedYouth>
-                title="Status"
+                title="Registration Status"
                 key="classification"
-                width={140}
-                render={(_, youth) => (
-                  <Tag color="green">College Student</Tag>
-                )}
+                width={170}
+                render={(_, youth) => {
+                  const regStatus = youth.status || 'pending';
+                  return (
+                    <div className="flex flex-col gap-1 items-start">
+                      {regStatus === 'approved' && (
+                        <Tag color="success" className="m-0 text-xs font-semibold">
+                          Approved
+                        </Tag>
+                      )}
+                      {regStatus === 'pending' && (
+                        <Tag color="warning" className="m-0 text-xs font-semibold">
+                          Pending Approval
+                        </Tag>
+                      )}
+                      {regStatus === 'rejected' && (
+                        <Tag color="error" className="m-0 text-xs font-semibold">
+                          Rejected
+                        </Tag>
+                      )}
+                      <span className="text-[11px] text-stone-500">
+                        {youth.is_active ? '● Active' : '○ Locked / Inactive'}
+                      </span>
+                    </div>
+                  );
+                }}
               />
               <Column<ExtendedYouth>
                 title="Action"
@@ -241,6 +264,7 @@ const AdminYouthProfilesPage = () => {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         youth={selectedYouth}
+        onUpdated={() => loadApplicants()}
       />
     </>
   );

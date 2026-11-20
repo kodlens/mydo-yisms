@@ -28,7 +28,8 @@ class YouthRegistrationController extends Controller
             ...$validated,
             'password' => Hash::make($validated['password']),
             'role' => 'youth',
-            'is_active' => true,
+            'status' => 'pending',
+            'is_active' => false,
         ]);
 
         return response()->json([

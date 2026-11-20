@@ -1,21 +1,39 @@
 import { Youth } from '@/types';
 import { EyeOutlined, LockOutlined } from '@ant-design/icons';
 import { router } from '@inertiajs/react';
-import { Badge, Button, Descriptions, Drawer, Empty, Space, Tag, Typography } from 'antd';
+import {
+  Alert,
+  App,
+  Button,
+  Descriptions,
+  Drawer,
+  Empty,
+  Input,
+  Modal,
+  Space,
+  Tag,
+  Typography,
+} from 'antd';
+import axios from 'axios';
 import ChangeYouthPassword from './change-youth-password';
 import {
   BookOpen,
   Calendar,
+  CheckCircle2,
+  Clock,
   GraduationCap,
   Mail,
   MapPin,
   Phone,
+  ShieldAlert,
   ShieldCheck,
   UserCheck,
   UserRound,
   Users,
   Wallet,
+  XCircle,
 } from 'lucide-react';
+import { useState } from 'react';
 
 const { Text } = Typography;
 
@@ -43,6 +61,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   youth: ExtendedYouth | null;
+  onUpdated?: () => void;
 };
 
 function display(val: unknown): string {
@@ -59,10 +78,33 @@ function formatDate(val?: string | null): string {
     : new Intl.DateTimeFormat('en-PH', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(d);
 }
 
-export default function AdminYouthProfileDrawer({ open, onClose, youth }: Props) {
+function formatCurrency(val?: number | string | null): string {
+  if (!val || !Number.isFinite(Number(val))) return '—';
+  return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(val));
+}
+
+function calculateAge(birthDate?: string | null): number | null {
+  if (!birthDate) return null;
+  const birth = new Date(birthDate);
+  if (Number.isNaN(birth.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+export default function AdminYouthProfileDrawer({ open, onClose, youth, onUpdated }: Props) {
+  const { modal, notification } = App.useApp();
+  const [actionLoading, setActionLoading] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+
   if (!youth) return null;
 
   const fullName = [youth.fname, youth.mname, youth.lname, youth.suffix].filter(Boolean).join(' ');
+  const age = calculateAge(youth.birth_date);
+  const regStatus = youth.status || 'pending';
 
   const fullAddress = [
     youth.street_address,
@@ -74,205 +116,405 @@ export default function AdminYouthProfileDrawer({ open, onClose, youth }: Props)
     .filter(Boolean)
     .join(', ');
 
-  return (
-    <Drawer
-      open={open}
-      onClose={onClose}
-      width={720}
-      title={
-        <div className="flex items-center justify-between pr-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-amber-200 font-bold text-sm shadow-xs">
-              {youth.fname?.[0] ?? 'Y'}
-              {youth.lname?.[0] ?? ''}
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900 leading-tight">{fullName}</h2>
-              <p className="text-xs font-mono text-slate-500">{youth.reference_code || `ID #${youth.id}`}</p>
-            </div>
-          </div>
-          <Space>
-            <ChangeYouthPassword
-              youth={youth}
-              trigger={(openPasswordModal) => (
-                <Button
-                  size="small"
-                  icon={<LockOutlined />}
-                  onClick={openPasswordModal}
-                  className="text-xs font-medium"
-                >
-                  Change Password
-                </Button>
-              )}
-            />
-            <Tag color={youth.is_active ? 'green' : 'default'} className="font-semibold uppercase text-xs">
-              {youth.is_active ? 'Active Profile' : 'Inactive'}
-            </Tag>
-          </Space>
-        </div>
+  const handleApprove = () => {
+    modal.confirm({
+      title: 'Approve Youth Profile?',
+      content: `Verify and activate the account for ${fullName}? Once approved, the youth will be granted sign-in access to the eKabataan portal.`,
+      okText: 'Yes, Approve Profile',
+      okType: 'primary',
+      onOk: async () => {
+        setActionLoading(true);
+        try {
+          const res = await axios.post(`/admin/youth-profiles/${youth.id}/approve`);
+          if (res.data?.success) {
+            notification.success({
+              message: 'Account Approved',
+              description: res.data.message || `${fullName}'s registration is now approved.`,
+            });
+            onUpdated?.();
+            onClose();
+          }
+        } catch (err: any) {
+          notification.error({
+            message: 'Approval Failed',
+            description: err?.response?.data?.message || 'Could not approve account. Please try again.',
+          });
+        } finally {
+          setActionLoading(false);
+        }
+      },
+    });
+  };
+
+  const handleRejectConfirm = async () => {
+    setActionLoading(true);
+    try {
+      const res = await axios.post(`/admin/youth-profiles/${youth.id}/reject`, {
+        rejection_reason: rejectionReason.trim() || null,
+      });
+      if (res.data?.success) {
+        notification.warning({
+          message: 'Account Rejected',
+          description: res.data.message || `${fullName}'s registration has been rejected.`,
+        });
+        setRejectModalOpen(false);
+        setRejectionReason('');
+        onUpdated?.();
+        onClose();
       }
-      styles={{
-        body: { padding: '24px', background: '#fafaf9' },
-      }}
-    >
-      <div className="space-y-6">
-        {/* Quick Highlights Card */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">Category</span>
-            <span className="mt-1 text-xs font-bold text-slate-800 block">
-              📚 College Student
-            </span>
-          </div>
+    } catch (err: any) {
+      notification.error({
+        message: 'Rejection Failed',
+        description: err?.response?.data?.message || 'Could not reject account. Please try again.',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-          <div className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">Year Level</span>
-            <span className="mt-1 text-xs font-bold text-slate-800 block">
-              {youth.year ? `Year ${youth.year}` : 'N/A'}
-            </span>
-          </div>
-
-          <div className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">Barangay</span>
-            <span className="mt-1 text-xs font-bold text-slate-800 truncate block">
-              {youth.barangay?.brgyDesc || 'N/A'}
-            </span>
-          </div>
-
-          <div className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">Family Income</span>
-            <span className="mt-1 text-xs font-bold text-slate-800 block">
-              {youth.monthly_family_income ? `₱${Number(youth.monthly_family_income).toLocaleString()}` : '—'}
-            </span>
-          </div>
-        </div>
-
-        {/* Section: Personal Demographics */}
-        <section className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
-            <UserRound size={16} className="text-slate-600" />
-            <h3 className="text-sm font-bold text-slate-800">Demographic Information</h3>
-          </div>
-
-          <Descriptions size="small" column={{ xs: 1, sm: 2 }} className="text-xs">
-            <Descriptions.Item label="Full Name">{display(fullName) || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Sex">{display(youth.sex) || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Date of Birth">{formatDate(youth.birth_date)}</Descriptions.Item>
-            <Descriptions.Item label="Civil Status">{display(youth.civil_status) || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Guardian Name">{display(youth.guardian_name) || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Guardian Contact">{display(youth.guardian_contact_number) || '—'}</Descriptions.Item>
-          </Descriptions>
-        </section>
-
-        {/* Section: Contact & Location */}
-        <section className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
-            <MapPin size={16} className="text-slate-600" />
-            <h3 className="text-sm font-bold text-slate-800">Contact & Address</h3>
-          </div>
-
-          <Descriptions size="small" column={{ xs: 1, sm: 2 }} className="text-xs">
-            <Descriptions.Item label="Email Address">
-              <span className="text-slate-700">{display(youth.email) || '—'}</span>
-            </Descriptions.Item>
-            <Descriptions.Item label="Mobile Number">
-              <span className="font-mono">{display(youth.mobile_number) || '—'}</span>
-            </Descriptions.Item>
-            <Descriptions.Item label="Complete Address" span={2}>
-              {display(fullAddress) || '—'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Barangay">{display(youth.barangay?.brgyDesc) || '—'}</Descriptions.Item>
-            <Descriptions.Item label="City / Municipality">{display(youth.city?.citymunDesc) || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Province">{display(youth.province?.provDesc) || '—'}</Descriptions.Item>
-            <Descriptions.Item label="ZIP Code">{display(youth.zip_code) || '—'}</Descriptions.Item>
-          </Descriptions>
-        </section>
-
-        {/* Section: Academic Background */}
-        <section className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
-            <GraduationCap size={16} className="text-slate-600" />
-            <h3 className="text-sm font-bold text-slate-800">Academic & Educational Background</h3>
-          </div>
-
-          <Descriptions size="small" column={{ xs: 1, sm: 2 }} className="text-xs">
-            <Descriptions.Item label="School / University" span={2}>
-              <span className="font-semibold text-slate-800">{display(youth.school_name) || 'Not Enrolled / None'}</span>
-            </Descriptions.Item>
-            <Descriptions.Item label="Program / Degree / Strand">
-              {display(youth.program) || '—'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Student ID / LRN">
-              <span className="font-mono">{display(youth.student_id) || '—'}</span>
-            </Descriptions.Item>
-            <Descriptions.Item label="Current Year Level">
-              {youth.year ? `Year ${youth.year}` : '—'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Previous Semester GWA">
-              {display(youth.previous_semester_gWA) || '—'}
-            </Descriptions.Item>
-            <Descriptions.Item label="School Address" span={2}>
-              {display(youth.school_address) || '—'}
-            </Descriptions.Item>
-          </Descriptions>
-        </section>
-
-        {/* Section: Linked Scholarship History */}
-        <section className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-emerald-700" />
-              <h3 className="text-sm font-bold text-slate-800">Scholarship Applications History</h3>
+  return (
+    <>
+      <Drawer
+        open={open}
+        onClose={onClose}
+        width={720}
+        title={
+          <div className="flex items-center justify-between pr-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-amber-200 font-bold text-sm shadow-xs">
+                {youth.fname?.[0] ?? 'Y'}
+                {youth.lname?.[0] ?? ''}
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900 leading-tight">{fullName}</h2>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs font-mono text-slate-500">{youth.reference_code || `ID #${youth.id}`}</span>
+                  {regStatus === 'approved' && (
+                    <Tag color="success" className="text-xs m-0 font-semibold">
+                      Approved
+                    </Tag>
+                  )}
+                  {regStatus === 'pending' && (
+                    <Tag color="warning" className="text-xs m-0 font-semibold">
+                      Pending Approval
+                    </Tag>
+                  )}
+                  {regStatus === 'rejected' && (
+                    <Tag color="error" className="text-xs m-0 font-semibold">
+                      Rejected
+                    </Tag>
+                  )}
+                </div>
+              </div>
             </div>
-            <span className="text-xs text-slate-500 font-medium">
-              {youth.scholarship_applications?.length ?? 0} application(s)
-            </span>
-          </div>
-
-          {youth.scholarship_applications && youth.scholarship_applications.length > 0 ? (
-            <div className="space-y-2">
-              {youth.scholarship_applications.map((app) => (
-                <div
-                  key={app.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3.5 hover:border-slate-300 transition-colors"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-900 text-sm">
-                        {app.scholarship_type?.name ?? `Scholarship #${app.id}`}
-                      </span>
-                      <Tag color={app.status === 'approved' ? 'green' : app.status === 'rejected' ? 'red' : 'gold'}>
-                        {app.status.toUpperCase()}
-                      </Tag>
-                    </div>
-                    <div className="mt-1 text-xs text-slate-500">
-                      Tracking: <span className="font-mono text-slate-700">{app.reference || `#${app.id}`}</span>
-                      {' · '}
-                      Applied on {formatDate(app.created_at)}
-                    </div>
-                  </div>
-
+            <Space>
+              <ChangeYouthPassword
+                youth={youth}
+                trigger={(openPasswordModal) => (
                   <Button
                     size="small"
-                    icon={<EyeOutlined />}
-                    onClick={() => {
-                      onClose();
-                      router.visit(`/admin/applicants/${app.id}`);
-                    }}
-                    className="self-start sm:self-center"
+                    icon={<LockOutlined />}
+                    onClick={openPasswordModal}
                   >
-                    View Application
+                    Change Password
                   </Button>
-                </div>
-              ))}
+                )}
+                onSuccess={() => onUpdated?.()}
+              />
+            </Space>
+          </div>
+        }
+        footer={
+          <div className="flex items-center justify-between gap-3">
+            <Button onClick={onClose} disabled={actionLoading}>
+              Close
+            </Button>
+            <div className="flex items-center gap-2">
+              {regStatus !== 'approved' && (
+                <Button
+                  type="primary"
+                  icon={<CheckCircle2 size={16} />}
+                  loading={actionLoading}
+                  onClick={handleApprove}
+                  className="!bg-emerald-600 hover:!bg-emerald-700 font-semibold"
+                >
+                  Approve Account
+                </Button>
+              )}
+              {regStatus !== 'rejected' && (
+                <Button
+                  danger
+                  icon={<XCircle size={16} />}
+                  loading={actionLoading}
+                  onClick={() => setRejectModalOpen(true)}
+                  className="font-semibold"
+                >
+                  Reject Registration
+                </Button>
+              )}
             </div>
-          ) : (
-            <div className="rounded-lg border border-dashed border-slate-200 p-4 text-center text-xs text-slate-500">
-              No scholarship applications submitted yet.
+          </div>
+        }
+      >
+        <div className="space-y-6">
+          {/* Registration Status Banner */}
+          {regStatus === 'pending' && (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 shadow-2xs">
+              <div className="flex items-start gap-3">
+                <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold text-amber-950">Registration Pending Review</h4>
+                  <p className="text-xs text-amber-800 mt-0.5">
+                    This youth registered on {formatDate(youth.created_at)}. Their account is currently blocked from signing in until a staff member reviews and approves it.
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Button
+                      type="primary"
+                      size="small"
+                      icon={<CheckCircle2 size={14} />}
+                      onClick={handleApprove}
+                      loading={actionLoading}
+                      className="!bg-emerald-600 hover:!bg-emerald-700 font-semibold"
+                    >
+                      Approve Profile
+                    </Button>
+                    <Button
+                      danger
+                      size="small"
+                      icon={<XCircle size={14} />}
+                      onClick={() => setRejectModalOpen(true)}
+                      loading={actionLoading}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
-        </section>
-      </div>
-    </Drawer>
+
+          {regStatus === 'approved' && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5">
+              <div className="flex items-center gap-2.5 text-xs text-emerald-900 font-medium">
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                <span>
+                  Account verified and approved
+                  {youth.approver ? ` by ${youth.approver.fname} ${youth.approver.lname}` : ''}
+                  {youth.approved_at ? ` on ${formatDate(youth.approved_at)}` : ''}.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {regStatus === 'rejected' && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
+              <div className="flex items-start gap-3">
+                <ShieldAlert className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold text-rose-950">Registration Rejected</h4>
+                  <p className="text-xs text-rose-800 mt-1">
+                    <strong>Reason:</strong> {youth.rejection_reason || 'No specific reason provided.'}
+                  </p>
+                  <div className="mt-3">
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={handleApprove}
+                      loading={actionLoading}
+                      className="!bg-emerald-600 hover:!bg-emerald-700 font-semibold"
+                    >
+                      Re-Approve Account
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Stats Strip */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+            <div>
+              <span className="text-xs text-slate-500">Classification</span>
+              <p className="mt-1 font-semibold text-slate-800 text-sm">College Student</p>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500">Age</span>
+              <p className="mt-1 font-semibold text-slate-800 text-sm">{age !== null ? `${age} years old` : '—'}</p>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500">Year Level</span>
+              <p className="mt-1 font-semibold text-slate-800 text-sm">
+                {youth.year ? `Year ${youth.year}` : '—'}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500">Registered GWA</span>
+              <p className="mt-1 font-semibold text-slate-800 text-sm">
+                {youth.previous_semester_gwa ? Number(youth.previous_semester_gwa).toFixed(2) : '—'}
+              </p>
+            </div>
+          </div>
+
+          {/* Personal Information */}
+          <section>
+            <div className="flex items-center gap-2 mb-3 text-slate-900 font-semibold">
+              <UserCheck size={18} className="text-emerald-700" />
+              <span>Personal Information</span>
+            </div>
+            <Descriptions size="small" bordered column={{ xs: 1, sm: 2 }}>
+              <Descriptions.Item label="Full Name">{fullName || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Sex">{display(youth.sex) || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Date of Birth">{formatDate(youth.birth_date)}</Descriptions.Item>
+              <Descriptions.Item label="Civil Status">{display(youth.civil_status) || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Email" span={2}>
+                <div className="flex items-center gap-1.5">
+                  <Mail size={14} className="text-slate-400" />
+                  <span>{display(youth.email) || '—'}</span>
+                </div>
+              </Descriptions.Item>
+              <Descriptions.Item label="Mobile Number" span={2}>
+                <div className="flex items-center gap-1.5">
+                  <Phone size={14} className="text-slate-400" />
+                  <span>{display(youth.mobile_number) || '—'}</span>
+                </div>
+              </Descriptions.Item>
+            </Descriptions>
+          </section>
+
+          {/* Address Information */}
+          <section>
+            <div className="flex items-center gap-2 mb-3 text-slate-900 font-semibold">
+              <MapPin size={18} className="text-emerald-700" />
+              <span>Residential Address</span>
+            </div>
+            <Descriptions size="small" bordered column={{ xs: 1, sm: 2 }}>
+              <Descriptions.Item label="Barangay">{display(youth.barangay?.brgyDesc) || '—'}</Descriptions.Item>
+              <Descriptions.Item label="City / Municipality">{display(youth.city?.citymunDesc) || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Province">{display(youth.province?.provDesc) || '—'}</Descriptions.Item>
+              <Descriptions.Item label="ZIP Code">{display(youth.zip_code) || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Street Address" span={2}>
+                {display(youth.street_address) || '—'}
+              </Descriptions.Item>
+            </Descriptions>
+          </section>
+
+          {/* Academic Background */}
+          <section>
+            <div className="flex items-center gap-2 mb-3 text-slate-900 font-semibold">
+              <GraduationCap size={18} className="text-emerald-700" />
+              <span>Academic Details</span>
+            </div>
+            <Descriptions size="small" bordered column={{ xs: 1, sm: 2 }}>
+              <Descriptions.Item label="School Name" span={2}>
+                {display(youth.school_name) || '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="School Address" span={2}>
+                {display(youth.school_address) || '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Program / Course">{display(youth.program) || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Year Level">{youth.year ? `Year ${youth.year}` : '—'}</Descriptions.Item>
+              <Descriptions.Item label="Student ID">{display(youth.student_id) || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Previous GWA">
+                {youth.previous_semester_gwa ? Number(youth.previous_semester_gwa).toFixed(2) : '—'}
+              </Descriptions.Item>
+            </Descriptions>
+          </section>
+
+          {/* Family & Guardian */}
+          <section>
+            <div className="flex items-center gap-2 mb-3 text-slate-900 font-semibold">
+              <Users size={18} className="text-emerald-700" />
+              <span>Family & Guardian</span>
+            </div>
+            <Descriptions size="small" bordered column={{ xs: 1, sm: 2 }}>
+              <Descriptions.Item label="Guardian Name" span={2}>
+                {display(youth.guardian_name) || '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Guardian Contact" span={2}>
+                {display(youth.guardian_contact_number) || '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Monthly Family Income" span={2}>
+                {formatCurrency(youth.monthly_family_income)}
+              </Descriptions.Item>
+            </Descriptions>
+          </section>
+
+          {/* Scholarship Applications History */}
+          <section>
+            <div className="flex items-center gap-2 mb-3 text-slate-900 font-semibold">
+              <ShieldCheck size={18} className="text-emerald-700" />
+              <span>Scholarship Applications ({youth.scholarship_applications?.length ?? 0})</span>
+            </div>
+
+            {youth.scholarship_applications && youth.scholarship_applications.length > 0 ? (
+              <div className="space-y-2">
+                {youth.scholarship_applications.map((app) => (
+                  <div
+                    key={app.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3.5 hover:border-slate-300 transition-colors"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-900 text-sm">
+                          {app.scholarship_type?.name ?? `Scholarship #${app.id}`}
+                        </span>
+                        <Tag color={app.status === 'approved' ? 'green' : app.status === 'rejected' ? 'red' : 'gold'}>
+                          {app.status.toUpperCase()}
+                        </Tag>
+                      </div>
+                      <div className="mt-1 text-xs text-slate-500">
+                        Tracking: <span className="font-mono text-slate-700">{app.reference || `#${app.id}`}</span>
+                        {' · '}
+                        Applied on {formatDate(app.created_at)}
+                      </div>
+                    </div>
+
+                    <Button
+                      size="small"
+                      icon={<EyeOutlined />}
+                      onClick={() => {
+                        onClose();
+                        router.visit(`/admin/applicants/${app.id}`);
+                      }}
+                      className="self-start sm:self-center"
+                    >
+                      View Application
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-slate-200 p-4 text-center text-xs text-slate-500">
+                No scholarship applications submitted yet.
+              </div>
+            )}
+          </section>
+        </div>
+      </Drawer>
+
+      {/* Reject Reason Modal */}
+      <Modal
+        title="Reject Youth Registration"
+        open={rejectModalOpen}
+        onCancel={() => {
+          setRejectModalOpen(false);
+          setRejectionReason('');
+        }}
+        onOk={handleRejectConfirm}
+        confirmLoading={actionLoading}
+        okText="Confirm Rejection"
+        okType="danger"
+      >
+        <p className="text-xs text-slate-600 mb-3">
+          Please provide a reason for rejecting <strong>{fullName}</strong>'s registration. This will be shown to the youth when they attempt to sign in.
+        </p>
+        <Input.TextArea
+          rows={3}
+          placeholder="e.g. Incomplete address documentation, invalid school credentials, or out of municipality resident."
+          value={rejectionReason}
+          onChange={(e) => setRejectionReason(e.target.value)}
+        />
+      </Modal>
+    </>
   );
 }
