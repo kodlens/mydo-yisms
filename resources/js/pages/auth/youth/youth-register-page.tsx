@@ -207,7 +207,7 @@ export default function YouthRegisterPage() {
   };
 
   const onFinishFailed = (errorInfo:FormError<YouthRegistrationForm>) => {
-    console.warn('Form validation failed:', errorInfo);
+    //console.warn('Form validation failed:', errorInfo);
     modal.warning({
       title: 'Please check required fields',
       content: (

@@ -25,3 +25,22 @@ require __DIR__.'/auth.php';
 require __DIR__.'/youth.php';
 require __DIR__.'/admin.php';
 require __DIR__.'/staff.php';
+
+
+
+//testing routes purpose
+use App\Events\MydoTestEvent;
+
+Route::get('/test', function () {
+   return Inertia::render('broadcast-test');
+});
+
+Route::get('/test-broadcast', function () {
+
+    MydoTestEvent::dispatch('Hello from MYDO!');
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Broadcast event dispatched!',
+    ]);
+});

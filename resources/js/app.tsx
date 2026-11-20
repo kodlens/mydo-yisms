@@ -11,6 +11,11 @@ import { route as routeFn } from 'ziggy-js';
 import { App as AntApp, ConfigProvider } from 'antd';
 import { StyleProvider } from '@ant-design/cssinjs';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { configureEcho } from '@laravel/echo-react';
+
+configureEcho({
+    broadcaster: 'pusher',
+});
 
 declare global {
   const route: typeof routeFn;
