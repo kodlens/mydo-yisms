@@ -77,11 +77,11 @@ export default function YouthApplyScholarshipPage({
       .then((res) => {
         if (res.data.success) {
           modal.success({
-            title: 'Scholarship Application Submitted!',
+            title: 'Application Successfully Submitted',
             content: (
-              <div className="space-y-2 pt-2">
+              <div className="space-y-2.5 pt-2">
                 <p className="text-sm text-slate-600">
-                  Your scholarship application has been received and is now pending review by MYDO staff.
+                  Your scholarship application and required documentary attachments have been successfully submitted to the Municipal Youth Development Office (MYDO).
                 </p>
                 {res.data.reference && (
                   <div className="rounded-lg bg-emerald-50 p-2.5 text-xs text-emerald-900 border border-emerald-200">
@@ -89,7 +89,7 @@ export default function YouthApplyScholarshipPage({
                   </div>
                 )}
                 <p className="text-xs text-slate-500">
-                  Please keep this reference number for your records. Check your notifications for review updates.
+                  Your application has been officially queued for evaluation. You can track status updates in your youth portal notifications.
                 </p>
               </div>
             ),

@@ -56,7 +56,7 @@ export default function YouthNotificationBell() {
     if (!currentUserId) return;
 
     const channelName = `youth-notifications.${currentUserId}`;
-    const channel = echo.private(channelName);
+    const channel = echo.channel(channelName);
 
     channel.listen('.scholarship.status.updated', (event: any) => {
       // 1. Ant design toast

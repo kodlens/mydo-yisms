@@ -50,7 +50,7 @@ export default function StaffNotificationBell() {
   useEffect(() => {
     fetchNotifications();
 
-    const channel = echo.private('staff-notifications');
+    const channel = echo.channel('staff-notifications');
 
     channel.listen('.scholarship.application.submitted', (event: any) => {
       // 1. Real-time floating toast

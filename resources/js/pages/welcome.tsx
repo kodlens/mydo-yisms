@@ -150,39 +150,22 @@ const requirementsData = {
   },
 };
 
-const faqs = [
-  {
-    question: 'Who can register in the eKabataan Portal?',
-    answer:
-      'All bona fide youth residents aged 15 to 30 years old (in-school, out-of-school, working youth, and youth with specific needs) residing within the municipality are eligible and encouraged to register.',
-  },
-  {
-    question: 'How do I know the status of my scholarship application?',
-    answer:
-      'Once logged in to your portal dashboard, navigate to "My Applications" where you can monitor real-time review stages: Submitted, Under Evaluation, Approved, or Pending Document Correction.',
-  },
-  {
-    question: 'Are there fees required to use this portal or apply for services?',
-    answer:
-      'No. The eKabataan portal is a 100% free public service provided by the Municipal Government and the Municipal Youth Development Office (MYDO). No transaction or processing fees are ever charged.',
-  },
-  {
-    question: 'What should I do if a submitted document was marked as rejected?',
-    answer:
-      'Evaluators provide specific remarks if an upload is blurry or outdated. You can simply upload a clearer copy directly from your dashboard without having to recreate your application.',
-  },
-  {
-    question: 'How is my personal information protected?',
-    answer:
-      'The portal complies strictly with the Republic Act No. 10173 (Data Privacy Act of 2012). Your records and uploaded credentials are encrypted and accessed solely by authorized MYDO officers for official evaluation.',
-  },
-];
-
 export default function Welcome() {
   const { auth } = usePage<SharedData>().props;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeReqTab, setActiveReqTab] = useState<'scholarship' | 'incentive'>('scholarship');
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
+    workflow: false,
+    scholarship: false,
+    incentive: false,
+    guidelines: false,
+  });
+
+  const toggleAccordion = (key: string) => {
+    setOpenAccordions((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   const isYouth = auth.user && auth.user.role === 'youth';
   //const isAdminOrStaff = auth.user && auth.user.role !== 'youth';
@@ -263,14 +246,11 @@ export default function Welcome() {
               <a href="#services" className="text-sm font-semibold text-slate-600 transition hover:text-emerald-700">
                 Portal Services
               </a>
-              <a href="#how-it-works" className="text-sm font-semibold text-slate-600 transition hover:text-emerald-700">
-                How It Works
+              <a href="#how-to-access" className="text-sm font-semibold text-slate-600 transition hover:text-emerald-700">
+                How to Access Services
               </a>
               <a href="#requirements" className="text-sm font-semibold text-slate-600 transition hover:text-emerald-700">
-                Requirements
-              </a>
-              <a href="#faq" className="text-sm font-semibold text-slate-600 transition hover:text-emerald-700">
-                Help & FAQ
+                Document Requirements
               </a>
             </nav>
 
@@ -330,25 +310,18 @@ export default function Welcome() {
                   Portal Services
                 </a>
                 <a
-                  href="#how-it-works"
+                  href="#how-to-access"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block rounded-md px-3 py-2 text-base font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
                 >
-                  How It Works
+                  How to Access Services
                 </a>
                 <a
                   href="#requirements"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block rounded-md px-3 py-2 text-base font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
                 >
-                  Requirements
-                </a>
-                <a
-                  href="#faq"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block rounded-md px-3 py-2 text-base font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
-                >
-                  Help & FAQ
+                  Document Requirements
                 </a>
               </div>
 
@@ -657,58 +630,298 @@ export default function Welcome() {
           </div>
         </section>
 
-        {/* HOW IT WORKS SECTION */}
-        <section id="how-it-works" className="border-y border-slate-200 bg-[#f1f5ee] py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* HOW TO ACCESS SERVICES & DOCUMENT PREPARATION ACCORDION */}
+        <section id="how-to-access" className="border-y border-slate-200 bg-[#f1f5ee] py-20">
+          <div id="requirements" className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <span className="text-xs font-bold tracking-wider uppercase text-emerald-700">
-                Application Workflow
+                Application Guide & Document Checklist
               </span>
               <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-                How to Access Services Online
+                How to Access Services Online & What to Prepare
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 sm:text-base">
-                Follow four simple steps to establish your municipal youth record and apply for all official programs.
+                Follow our official municipal workflow and prepare all required documentary attachments for fast evaluation.
               </p>
             </div>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {workflowSteps.map((step) => {
-                const Icon = step.icon;
-
-                return (
-                  <div
-                    key={step.step}
-                    className="relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
-                  >
+            <div className="mt-12 space-y-4">
+              {/* Accordion 1: How to Access Services Online */}
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition hover:border-slate-300">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion('workflow')}
+                  className="flex w-full items-center justify-between gap-4 p-5 sm:p-6 text-left transition hover:bg-slate-50/80"
+                  aria-expanded={openAccordions.workflow}
+                >
+                  <div className="flex items-center gap-3.5 sm:gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 shadow-2xs">
+                      <UserPlus className="h-5 w-5" />
+                    </span>
                     <div>
-                      <div className="flex items-center justify-between">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
-                          <Icon className="h-5 w-5" />
-                        </span>
-                        <span className="text-2xl font-black text-slate-300">
-                          {step.step}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-bold text-slate-900 sm:text-lg">
+                          How to Access Services Online
+                        </h3>
+                        <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
+                          4 Steps
                         </span>
                       </div>
-
-                      <h3 className="mt-4 text-base font-bold text-slate-900">
-                        {step.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                        {step.description}
+                      <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
+                        Step-by-step workflow to register, select programs, and track results
                       </p>
                     </div>
+                  </div>
 
-                    <div className="mt-5 flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>Step {step.step} in portal</span>
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200 ${
+                      openAccordions.workflow ? 'rotate-180 text-emerald-700' : ''
+                    }`}
+                  />
+                </button>
+
+                {openAccordions.workflow && (
+                  <div className="border-t border-slate-100 bg-[#fbfcfb] p-5 sm:p-7">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      {workflowSteps.map((step) => {
+                        const Icon = step.icon;
+
+                        return (
+                          <div
+                            key={step.step}
+                            className="relative flex flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs transition hover:border-emerald-300"
+                          >
+                            <div>
+                              <div className="flex items-center justify-between">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800">
+                                  <Icon className="h-5 w-5" />
+                                </span>
+                                <span className="text-xl font-black text-slate-300">
+                                  {step.step}
+                                </span>
+                              </div>
+
+                              <h4 className="mt-3 text-sm font-bold text-slate-900">
+                                {step.title}
+                              </h4>
+                              <p className="mt-1.5 text-xs leading-relaxed text-slate-600">
+                                {step.description}
+                              </p>
+                            </div>
+
+                            <div className="mt-4 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              <span>Step {step.step}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-6 flex flex-col items-center justify-between gap-3 rounded-xl border border-emerald-200/70 bg-emerald-50/50 p-4 sm:flex-row sm:px-5">
+                      <div className="flex items-center gap-2.5 text-xs text-emerald-950">
+                        <Sparkles className="h-4 w-4 text-emerald-700 shrink-0" />
+                        <span>Ready to establish your record? Registration takes only 3 minutes.</span>
+                      </div>
+                      <Link
+                        href={auth.user ? dashboardRoute : route('youth-register.index')}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-800"
+                      >
+                        <span>{auth.user ? 'Open Dashboard' : 'Register Profile'}</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
                     </div>
                   </div>
-                );
-              })}
+                )}
+              </div>
+
+              {/* Accordion 2: What to Prepare: Scholarship & Educational Assistance */}
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition hover:border-slate-300">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion('scholarship')}
+                  className="flex w-full items-center justify-between gap-4 p-5 sm:p-6 text-left transition hover:bg-slate-50/80"
+                  aria-expanded={openAccordions.scholarship}
+                >
+                  <div className="flex items-center gap-3.5 sm:gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 shadow-2xs">
+                      <GraduationCap className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-bold text-slate-900 sm:text-lg">
+                          What to Prepare: Scholarship & Educational Assistance
+                        </h3>
+                        <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
+                          6 Documents
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
+                        Required documents for tertiary and senior high school applicants
+                      </p>
+                    </div>
+                  </div>
+
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200 ${
+                      openAccordions.scholarship ? 'rotate-180 text-emerald-700' : ''
+                    }`}
+                  />
+                </button>
+
+                {openAccordions.scholarship && (
+                  <div className="border-t border-slate-100 bg-[#fbfcfb] p-5 sm:p-7">
+                    <p className="mb-4 text-xs text-slate-600 sm:text-sm">
+                      Prepare clear scanned copies or readable photos of these 6 attachments before starting your scholarship application:
+                    </p>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {requirementsData.scholarship.items.map((item) => (
+                        <div
+                          key={item.name}
+                          className="flex items-start gap-3 rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs transition hover:border-emerald-300 hover:bg-emerald-50/20"
+                        >
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                          <div>
+                            <p className="text-xs font-bold text-slate-900 sm:text-sm">{item.name}</p>
+                            <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">{item.note}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion 3: What to Prepare: Academic & Honor Cash Grants */}
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition hover:border-slate-300">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion('incentive')}
+                  className="flex w-full items-center justify-between gap-4 p-5 sm:p-6 text-left transition hover:bg-slate-50/80"
+                  aria-expanded={openAccordions.incentive}
+                >
+                  <div className="flex items-center gap-3.5 sm:gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800 shadow-2xs">
+                      <Award className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-bold text-slate-900 sm:text-lg">
+                          What to Prepare: Academic & Honor Cash Incentives
+                        </h3>
+                        <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 border border-amber-200">
+                          4 Documents
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
+                        Required documents for honor graduates and licensure examination topnotchers
+                      </p>
+                    </div>
+                  </div>
+
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200 ${
+                      openAccordions.incentive ? 'rotate-180 text-amber-700' : ''
+                    }`}
+                  />
+                </button>
+
+                {openAccordions.incentive && (
+                  <div className="border-t border-slate-100 bg-[#fbfcfb] p-5 sm:p-7">
+                    <p className="mb-4 text-xs text-slate-600 sm:text-sm">
+                      Attach certified proof of your academic distinction or board / bar examination rating:
+                    </p>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {requirementsData.incentive.items.map((item) => (
+                        <div
+                          key={item.name}
+                          className="flex items-start gap-3 rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs transition hover:border-amber-300 hover:bg-amber-50/20"
+                        >
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                          <div>
+                            <p className="text-xs font-bold text-slate-900 sm:text-sm">{item.name}</p>
+                            <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">{item.note}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion 4: Document Upload Standards & Fast Approval Tips */}
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition hover:border-slate-300">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion('guidelines')}
+                  className="flex w-full items-center justify-between gap-4 p-5 sm:p-6 text-left transition hover:bg-slate-50/80"
+                  aria-expanded={openAccordions.guidelines}
+                >
+                  <div className="flex items-center gap-3.5 sm:gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-800 shadow-2xs">
+                      <FileCheck2 className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-bold text-slate-900 sm:text-lg">
+                          Document Upload Standards & Tips for Fast Approval
+                        </h3>
+                        <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-semibold text-teal-700 border border-teal-200">
+                          Guidelines
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
+                        File format guidelines, resolution standards, and scanning assistance
+                      </p>
+                    </div>
+                  </div>
+
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200 ${
+                      openAccordions.guidelines ? 'rotate-180 text-teal-700' : ''
+                    }`}
+                  />
+                </button>
+
+                {openAccordions.guidelines && (
+                  <div className="border-t border-slate-100 bg-[#fbfcfb] p-5 sm:p-7">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+                        <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">File Formats</p>
+                        <p className="mt-2 text-xs text-slate-600 leading-relaxed">
+                          Accepted formats are <strong>PDF, JPG, or PNG</strong>. Keep each file under <strong>5MB</strong> in size.
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+                        <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">Legibility</p>
+                        <p className="mt-2 text-xs text-slate-600 leading-relaxed">
+                          Ensure dry seals, registrar signatures, and grades are clearly visible and uncropped to avoid review delays.
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+                        <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">Avoid Rejection</p>
+                        <p className="mt-2 text-xs text-slate-600 leading-relaxed">
+                          Avoid blurry camera shots, dark shadows, or cropped margins. Evaluators may ask for resubmission if text is unreadable.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600 flex items-start gap-3 shadow-2xs">
+                      <Info className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold text-slate-900">Need free scanning assistance?</span> You may visit the MYDO counter at the Municipal Hall during regular office hours (Mon–Fri, 8:00 AM – 5:00 PM) for free document scanning and submission assistance.
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Quick Registration Callout */}
+            {/* Quick Registration Callout Banner */}
             <div className="mt-12 rounded-2xl bg-emerald-800 p-8 text-white shadow-xl shadow-emerald-950/10 sm:p-10">
               <div className="flex flex-col items-center justify-between gap-6 lg:flex-row">
                 <div className="max-w-2xl text-center lg:text-left">
@@ -746,183 +959,15 @@ export default function Welcome() {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* REQUIREMENTS CHECKLIST GUIDE */}
-        <section id="requirements" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <span className="text-xs font-bold tracking-wider uppercase text-emerald-700">
-              Document Checklist
-            </span>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-              What to Prepare Before Applying
-            </h2>
-            <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-              Ensure you have clear, scanned copies or readable photos of the following documents to prevent processing delays.
-            </p>
-          </div>
-
-          {/* Requirement Tabs */}
-          <div className="mt-8 flex justify-center">
-            <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
-              <button
-                type="button"
-                onClick={() => setActiveReqTab('scholarship')}
-                className={`rounded-md px-4 py-2 text-xs font-bold transition sm:text-sm ${
-                  activeReqTab === 'scholarship'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Scholarship Requirements
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveReqTab('incentive')}
-                className={`rounded-md px-4 py-2 text-xs font-bold transition sm:text-sm ${
-                  activeReqTab === 'incentive'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Honor & Cash Grants
-              </button>
-            </div>
-          </div>
-
-          {/* Tab Content Display */}
-          <div className="mt-8 grid gap-8 lg:grid-cols-[1.4fr_0.8fr]">
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
-              <div className="border-b border-slate-100 pb-4">
-                <h3 className="text-xl font-bold text-slate-900">
-                  {requirementsData[activeReqTab].title}
-                </h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  {requirementsData[activeReqTab].subtitle}
-                </p>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                {requirementsData[activeReqTab].items.map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-start gap-3 rounded-lg border border-slate-100 bg-[#fcfdfa] p-3.5 transition hover:border-emerald-200 hover:bg-emerald-50/30"
-                  >
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">{item.name}</p>
-                      <p className="text-xs text-slate-500">{item.note}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Upload Advice & Policy Card */}
-            <div className="flex flex-col justify-between rounded-xl border border-emerald-900/10 bg-emerald-900/5 p-6 sm:p-8">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-emerald-800">
-                  <Info className="h-4 w-4" />
-                  <span>Submission Standards</span>
-                </div>
-                <h4 className="mt-2 text-lg font-bold text-slate-900">
-                  Tips for Fast Approval
-                </h4>
-
-                <ul className="mt-4 space-y-3 text-xs leading-relaxed text-slate-700 sm:text-sm">
-                  <li className="flex items-start gap-2">
-                    <span className="font-bold text-emerald-700">•</span>
-                    <span>Accepted formats: <strong>PDF, JPG, or PNG</strong> under 5MB each.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-bold text-emerald-700">•</span>
-                    <span>Ensure all dry seals, registrar signatures, and grades are crisp and readable.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-bold text-emerald-700">•</span>
-                    <span>Avoid blurry camera photos, uneven shadows, or cropped document margins.</span>
-                  </li>
-                </ul>
-
-                <div className="mt-6 rounded-lg bg-white p-4 shadow-2xs border border-slate-200">
-                  <p className="text-xs font-semibold text-slate-900">Need verification help?</p>
-                  <p className="mt-1 text-xs text-slate-600">
-                    You may visit the MYDO counter at the Municipal Hall during regular office hours for free document scanning assistance.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <Link
-                  href={auth.user ? dashboardRoute : route('youth-register.index')}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
-                >
-                  <span>{auth.user ? 'Submit Documents via Dashboard' : 'Create Account to Submit'}</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* FREQUENTLY ASKED QUESTIONS */}
-        <section id="faq" className="border-t border-slate-200 bg-white py-20">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <span className="text-xs font-bold tracking-wider uppercase text-emerald-700">
-                Help & Public Assistance
-              </span>
-              <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-                Frequently Asked Questions
-              </h2>
-              <p className="mx-auto mt-2 max-w-xl text-sm text-slate-600 sm:text-base">
-                Common inquiries regarding the eKabataan portal, scholarship cycles, and municipal youth services.
-              </p>
-            </div>
-
-            <div className="mt-10 space-y-3">
-              {faqs.map((faq, index) => {
-                const isOpen = openFaq === index;
-
-                return (
-                  <div
-                    key={faq.question}
-                    className="overflow-hidden rounded-xl border border-slate-200 transition"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setOpenFaq(isOpen ? null : index)}
-                      className="flex w-full items-center justify-between bg-white px-5 py-4 text-left transition hover:bg-slate-50"
-                    >
-                      <span className="text-sm font-bold text-slate-900 sm:text-base">
-                        {faq.question}
-                      </span>
-                      <ChevronDown
-                        className={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200 ${
-                          isOpen ? 'rotate-180 text-emerald-600' : ''
-                        }`}
-                      />
-                    </button>
-
-                    {isOpen && (
-                      <div className="border-t border-slate-100 bg-[#f9faf7] px-5 py-4 text-sm leading-relaxed text-slate-600">
-                        {faq.answer}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
 
             {/* Assistance Contact Bar */}
-            <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-xl border border-slate-200 bg-[#f8faf8] p-5 sm:flex-row">
+            <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-xs sm:flex-row">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
                   <Phone className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="text-xs font-bold uppercase text-slate-500">Still have questions?</p>
+                  <p className="text-xs font-bold uppercase text-slate-500">Need assistance or have inquiries?</p>
                   <p className="text-sm font-bold text-slate-900">Contact the MYDO Youth Helpdesk</p>
                 </div>
               </div>
@@ -1019,13 +1064,13 @@ export default function Welcome() {
                     </Link>
                   </li>
                   <li>
-                    <a href="#requirements" className="transition hover:text-emerald-400">
-                      Check Document Requirements
+                    <a href="#how-to-access" className="transition hover:text-emerald-400">
+                      How to Access Services
                     </a>
                   </li>
                   <li>
-                    <a href="#faq" className="transition hover:text-emerald-400">
-                      Frequently Asked Questions
+                    <a href="#requirements" className="transition hover:text-emerald-400">
+                      Document Requirements
                     </a>
                   </li>
                   <li>
