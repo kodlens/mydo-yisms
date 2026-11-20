@@ -179,3 +179,48 @@ test('admin can enroll eligible youth, review eligibility, and disburse cash inc
     $revertResponse->assertSessionHasNoErrors();
     expect($release->fresh()->status)->toBe('pending');
 });
+
+test('admin can update program details and dates via PUT', function () {
+    $admin = makeAdminUser();
+
+    $program = CashIncentiveProgram::create([
+        'code' => 'CIP-ADM-UPDATE',
+        'title' => 'Initial Title',
+        'funding_year' => 2026,
+        'amount_per_beneficiary' => 5000,
+        'allocated_budget' => 500000,
+        'max_beneficiaries' => 100,
+        'status' => 'draft',
+        'selection_start_date' => '2026-11-20',
+        'selection_end_date' => '2026-11-25',
+        'release_start_date' => '2026-11-26',
+        'release_end_date' => '2026-11-30',
+    ]);
+
+    // Admin accesses show page for the newly created program
+    $showRes = $this->actingAs($admin, 'web')->get("/admin/cash-incentives/{$program->id}");
+    $showRes->assertOk();
+
+    // Admin updates the program
+    $updateRes = $this->actingAs($admin, 'web')->put("/admin/cash-incentives/{$program->id}", [
+        'title' => 'Updated Program Title',
+        'code' => 'CIP-ADM-UPDATE',
+        'funding_year' => 2026,
+        'amount_per_beneficiary' => 5000,
+        'allocated_budget' => 600000,
+        'max_beneficiaries' => 120,
+        'status' => 'active',
+        'description' => 'Updated description',
+        'selection_start_date' => '2026-12-01',
+        'selection_end_date' => '2026-12-05',
+        'release_start_date' => '2026-12-10',
+        'release_end_date' => '2026-12-15',
+    ]);
+
+    $updateRes->assertSessionHasNoErrors();
+    $program->refresh();
+    expect($program->title)->toBe('Updated Program Title');
+    expect($program->allocated_budget)->toBe('600000.00');
+    expect($program->selection_start_date->format('Y-m-d'))->toBe('2026-12-01');
+});
+

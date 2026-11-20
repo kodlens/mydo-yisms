@@ -11,7 +11,7 @@ import {
   Select,
 } from 'antd';
 import dayjs from 'dayjs';
-import { Coins, Sparkles } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import { useEffect } from 'react';
 
 type Props = {
@@ -175,7 +175,7 @@ export default function AdminProgramCreateEditModal({ open, onClose, program }: 
                   min={100}
                   step={500}
                   formatter={(val) => `₱ ${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(val) => Number(val?.replace(/\₱\s?|(,*)/g, '') || 0)}
+                  parser={(val) => Number(val?.replace(/₱\s?|(,*)/g, '') || 0)}
                   value={data.amount_per_beneficiary}
                   onChange={(val) => setData('amount_per_beneficiary', Number(val || 0))}
                 />
@@ -228,7 +228,7 @@ export default function AdminProgramCreateEditModal({ open, onClose, program }: 
                 min={minRequiredBudget}
                 step={5000}
                 formatter={(val) => `₱ ${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(val) => Number(val?.replace(/\₱\s?|(,*)/g, '') || 0)}
+                parser={(val) => Number(val?.replace(/₱\s?|(,*)/g, '') || 0)}
                 value={data.allocated_budget}
                 onChange={(val) => setData('allocated_budget', Number(val || 0))}
               />
@@ -242,14 +242,27 @@ export default function AdminProgramCreateEditModal({ open, onClose, program }: 
                 <DatePicker
                   placeholder="Selection Start"
                   className="w-full"
+                  format="YYYY-MM-DD"
                   value={data.selection_start_date ? dayjs(data.selection_start_date) : null}
-                  onChange={(d) => setData('selection_start_date', d ? d.format('Y-m-d') : null)}
+                  onChange={(d) => {
+                    const formatted = d ? d.format('YYYY-MM-DD') : null;
+                    if (formatted && data.selection_end_date && dayjs(data.selection_end_date).isBefore(dayjs(formatted), 'day')) {
+                      setData((prev) => ({ ...prev, selection_start_date: formatted, selection_end_date: null }));
+                    } else {
+                      setData('selection_start_date', formatted);
+                    }
+                  }}
                 />
                 <DatePicker
                   placeholder="Selection End"
                   className="w-full"
+                  format="YYYY-MM-DD"
+                  disabledDate={(current) => {
+                    if (!current || !data.selection_start_date) return false;
+                    return current.isBefore(dayjs(data.selection_start_date), 'day');
+                  }}
                   value={data.selection_end_date ? dayjs(data.selection_end_date) : null}
-                  onChange={(d) => setData('selection_end_date', d ? d.format('Y-m-d') : null)}
+                  onChange={(d) => setData('selection_end_date', d ? d.format('YYYY-MM-DD') : null)}
                 />
               </div>
             </div>
@@ -260,14 +273,27 @@ export default function AdminProgramCreateEditModal({ open, onClose, program }: 
                 <DatePicker
                   placeholder="Release Start"
                   className="w-full"
+                  format="YYYY-MM-DD"
                   value={data.release_start_date ? dayjs(data.release_start_date) : null}
-                  onChange={(d) => setData('release_start_date', d ? d.format('Y-m-d') : null)}
+                  onChange={(d) => {
+                    const formatted = d ? d.format('YYYY-MM-DD') : null;
+                    if (formatted && data.release_end_date && dayjs(data.release_end_date).isBefore(dayjs(formatted), 'day')) {
+                      setData((prev) => ({ ...prev, release_start_date: formatted, release_end_date: null }));
+                    } else {
+                      setData('release_start_date', formatted);
+                    }
+                  }}
                 />
                 <DatePicker
                   placeholder="Release End"
                   className="w-full"
+                  format="YYYY-MM-DD"
+                  disabledDate={(current) => {
+                    if (!current || !data.release_start_date) return false;
+                    return current.isBefore(dayjs(data.release_start_date), 'day');
+                  }}
                   value={data.release_end_date ? dayjs(data.release_end_date) : null}
-                  onChange={(d) => setData('release_end_date', d ? d.format('Y-m-d') : null)}
+                  onChange={(d) => setData('release_end_date', d ? d.format('YYYY-MM-DD') : null)}
                 />
               </div>
             </div>

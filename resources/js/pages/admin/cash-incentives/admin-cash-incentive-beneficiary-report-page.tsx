@@ -146,7 +146,7 @@ export default function AdminCashIncentiveBeneficiaryReportPage({ report }: Prop
             <div>
               <span className="text-slate-400 font-bold uppercase block">Fixed Grant Amount</span>
               <span className="font-mono font-black text-emerald-800 text-sm">
-                ₱{program.amount_per_beneficiary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                ₱{Number(program.amount_per_beneficiary || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
               </span>
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function AdminCashIncentiveBeneficiaryReportPage({ report }: Prop
                 <div>
                   <span className="text-slate-400 block font-medium">Amount Released</span>
                   <span className="font-mono font-black text-emerald-900 text-sm">
-                    ₱{release.amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    ₱{Number(release.amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div>

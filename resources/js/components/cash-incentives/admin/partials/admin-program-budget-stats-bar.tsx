@@ -11,8 +11,16 @@ import {
 } from 'lucide-react';
 
 export default function AdminProgramBudgetStatsBar({ summary }: { summary: CashIncentiveProgramSummary }) {
-  const formatPesos = (val: number) =>
-    '₱' + val.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formatPesos = (val?: number | null) =>
+    '₱' + (Number(val) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const approvedCount = summary?.approved_beneficiaries_count ?? summary?.approved_count ?? 0;
+  const totalSelected = summary?.total_beneficiaries_count ?? summary?.total_selected_count ?? 0;
+  const pendingReview = summary?.pending_beneficiaries_count ?? summary?.pending_review_count ?? 0;
+  const rejectedCount = summary?.rejected_beneficiaries_count ?? summary?.rejected_count ?? 0;
+  const remainingBudget = summary?.remaining_balance ?? summary?.remaining_budget ?? 0;
+  const pendingDisbursement = summary?.pending_disbursement_amount ?? Math.max(0, (summary?.committed_amount ?? 0) - (summary?.released_amount ?? 0));
+  const maxQuota = summary?.max_beneficiaries ?? 0;
 
   return (
     <div className="space-y-4">
@@ -28,10 +36,10 @@ export default function AdminProgramBudgetStatsBar({ summary }: { summary: CashI
               <Wallet size={18} />
             </div>
           </div>
-          <p className="mt-2 text-2xl font-black text-slate-900">{formatPesos(summary.allocated_budget)}</p>
+          <p className="mt-2 text-2xl font-black text-slate-900">{formatPesos(summary?.allocated_budget)}</p>
           <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
             <span>Per Beneficiary:</span>
-            <span className="font-bold text-slate-700">{formatPesos(summary.amount_per_beneficiary)}</span>
+            <span className="font-bold text-slate-700">{formatPesos(summary?.amount_per_beneficiary)}</span>
           </div>
         </div>
 
@@ -45,10 +53,10 @@ export default function AdminProgramBudgetStatsBar({ summary }: { summary: CashI
               <Banknote size={18} />
             </div>
           </div>
-          <p className="mt-2 text-2xl font-black text-emerald-900">{formatPesos(summary.released_amount)}</p>
+          <p className="mt-2 text-2xl font-black text-emerald-900">{formatPesos(summary?.released_amount)}</p>
           <div className="mt-2 flex items-center justify-between text-xs text-emerald-700">
-            <span>{summary.released_count} Beneficiaries Paid</span>
-            <span className="font-bold">{summary.budget_utilization_rate}% Utilized</span>
+            <span>{summary?.released_count ?? 0} Beneficiaries Paid</span>
+            <span className="font-bold">{summary?.budget_utilization_rate ?? 0}% Utilized</span>
           </div>
         </div>
 
@@ -62,10 +70,10 @@ export default function AdminProgramBudgetStatsBar({ summary }: { summary: CashI
               <Coins size={18} />
             </div>
           </div>
-          <p className="mt-2 text-2xl font-black text-cyan-900">{formatPesos(summary.committed_amount)}</p>
+          <p className="mt-2 text-2xl font-black text-cyan-900">{formatPesos(summary?.committed_amount)}</p>
           <div className="mt-2 flex items-center justify-between text-xs text-cyan-700">
-            <span>{summary.approved_beneficiaries_count} Approved Students</span>
-            <span className="font-bold">Pending: {formatPesos(summary.pending_disbursement_amount)}</span>
+            <span>{approvedCount} Approved Students</span>
+            <span className="font-bold">Pending: {formatPesos(pendingDisbursement)}</span>
           </div>
         </div>
 
@@ -79,11 +87,11 @@ export default function AdminProgramBudgetStatsBar({ summary }: { summary: CashI
               <TrendingUp size={18} />
             </div>
           </div>
-          <p className="mt-2 text-2xl font-black text-amber-900">{formatPesos(summary.remaining_balance)}</p>
+          <p className="mt-2 text-2xl font-black text-amber-900">{formatPesos(remainingBudget)}</p>
           <div className="mt-2 flex items-center justify-between text-xs text-amber-800">
             <span>Quota Left:</span>
             <span className="font-bold">
-              {Math.max(0, summary.max_beneficiaries - summary.approved_beneficiaries_count)} slots
+              {Math.max(0, maxQuota - approvedCount)} slots
             </span>
           </div>
         </div>
@@ -100,19 +108,19 @@ export default function AdminProgramBudgetStatsBar({ summary }: { summary: CashI
           </div>
           <div className="flex items-center gap-4 text-xs">
             <span className="text-slate-500">
-              Total Selected: <strong className="text-slate-800">{summary.total_beneficiaries_count}</strong>
+              Total Selected: <strong className="text-slate-800">{totalSelected}</strong>
             </span>
             <span className="text-emerald-700">
-              Approved: <strong>{summary.approved_beneficiaries_count}</strong>
+              Approved: <strong>{approvedCount}</strong>
             </span>
             <span className="text-amber-600">
-              Pending: <strong>{summary.pending_beneficiaries_count}</strong>
+              Pending: <strong>{pendingReview}</strong>
             </span>
             <span className="text-rose-600">
-              Rejected: <strong>{summary.rejected_beneficiaries_count}</strong>
+              Rejected: <strong>{rejectedCount}</strong>
             </span>
             <span className="text-blue-700 font-semibold">
-              Max Quota: <strong>{summary.max_beneficiaries}</strong>
+              Max Quota: <strong>{maxQuota}</strong>
             </span>
           </div>
         </div>
@@ -120,10 +128,10 @@ export default function AdminProgramBudgetStatsBar({ summary }: { summary: CashI
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-slate-500">
             <span>Budget Disbursement Rate</span>
-            <span className="font-bold text-slate-800">{summary.budget_utilization_rate}%</span>
+            <span className="font-bold text-slate-800">{summary?.budget_utilization_rate ?? 0}%</span>
           </div>
           <Progress
-            percent={summary.budget_utilization_rate}
+            percent={summary?.budget_utilization_rate ?? 0}
             status="active"
             strokeColor={{ from: '#10b981', to: '#059669' }}
             showInfo={false}

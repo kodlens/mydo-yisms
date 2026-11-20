@@ -11,8 +11,8 @@ import {
 } from 'lucide-react';
 
 export default function ProgramBudgetStatsBar({ summary }: { summary: CashIncentiveProgramSummary }) {
-  const formatPesos = (val: number) =>
-    '₱' + val.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formatPesos = (val?: number | null) =>
+    '₱' + (Number(val) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
     <div className="space-y-4">

@@ -154,6 +154,7 @@ class ProgramManagementService
 
         $committedAmount = $approvedCount * $amountPerBeneficiary;
         $remainingBudget = max(0, $allocatedBudget - $releasedAmount);
+        $pendingDisbursement = max(0, $committedAmount - $releasedAmount);
         $budgetUtilizationRate = $allocatedBudget > 0 ? round(($releasedAmount / $allocatedBudget) * 100, 1) : 0;
         $releaseRate = $approvedCount > 0 ? round(($releasedCount / $approvedCount) * 100, 1) : 0;
 
@@ -162,13 +163,19 @@ class ProgramManagementService
             'amount_per_beneficiary' => $amountPerBeneficiary,
             'max_beneficiaries' => $maxBeneficiaries,
             'total_selected_count' => $totalSelected,
+            'total_beneficiaries_count' => $totalSelected,
             'pending_review_count' => $pendingReviewCount,
+            'pending_beneficiaries_count' => $pendingReviewCount,
             'approved_count' => $approvedCount,
+            'approved_beneficiaries_count' => $approvedCount,
             'rejected_count' => $rejectedCount,
+            'rejected_beneficiaries_count' => $rejectedCount,
             'committed_amount' => $committedAmount,
             'released_count' => $releasedCount,
             'released_amount' => $releasedAmount,
             'remaining_budget' => $remainingBudget,
+            'remaining_balance' => $remainingBudget,
+            'pending_disbursement_amount' => $pendingDisbursement,
             'pending_release_count' => $pendingReleaseCount,
             'scheduled_release_count' => $scheduledReleaseCount,
             'unclaimed_release_count' => $unclaimedReleaseCount,

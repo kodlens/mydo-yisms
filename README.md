@@ -301,3 +301,21 @@ pila ka students ang nahatagan
 
 nov 03,  2026 Tentative
 
+## Update Nov 20, 2026
+    - reposition steps (welcome page)
+    FAQ remove, e naog ang How to Access Online
+
+    - after register, approve before sign in
+
+    - notifications on the youth side
+
+    - notif for new sign up ?
+    - notif for new application for scholarship
+
+
+    Alert description 'Submitted'
+
+    admin side, error date picker (stick to 2000)
+
+
+

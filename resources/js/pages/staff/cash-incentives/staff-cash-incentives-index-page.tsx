@@ -109,8 +109,8 @@ export default function StaffCashIncentivesIndexPage({
     });
   };
 
-  const formatPesos = (val: number) =>
-    '₱' + val.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formatPesos = (val?: number | null) =>
+    '₱' + (Number(val) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const columns: ColumnsType<CashIncentiveProgram> = [
     {

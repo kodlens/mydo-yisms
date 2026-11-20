@@ -1,10 +1,10 @@
 import AdminProgramCreateEditModal from '@/components/cash-incentives/admin/partials/admin-program-create-edit-modal';
 import AdminAuthLayout from '@/layouts/admin-auth-layout';
+import { User } from '@/types';
 import { CashIncentiveProgram } from '@/types/cash-incentive';
 import { Head, Link, router } from '@inertiajs/react';
 import {
   Button,
-  Card,
   Dropdown,
   Input,
   Modal,
@@ -18,18 +18,15 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   Banknote,
   Coins,
-  DollarSign,
   Edit,
   ExternalLink,
   Eye,
-  Filter,
   MoreVertical,
   Plus,
   Search,
   Trash2,
   TrendingUp,
   UserCheck,
-  Users,
   Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -56,7 +53,7 @@ type Props = {
     total_disbursed_count: number;
   };
   available_years: number[];
-  auth: { user: any };
+  auth: { user: User };
 };
 
 export default function AdminCashIncentivesIndexPage({
@@ -73,7 +70,7 @@ export default function AdminCashIncentivesIndexPage({
   const [yearFilter, setYearFilter] = useState<number | undefined>(filters.funding_year);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(filters.status);
 
-  const applyFilters = (params: Record<string, any>) => {
+  const applyFilters = (params: Record<string, unknown>) => {
     router.get(
       route('admin.cash-incentives.index'),
       {
@@ -109,8 +106,8 @@ export default function AdminCashIncentivesIndexPage({
     });
   };
 
-  const formatPesos = (val: number) =>
-    '₱' + val.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formatPesos = (val?: number | null) =>
+    '₱' + (Number(val) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const columns: ColumnsType<CashIncentiveProgram> = [
     {

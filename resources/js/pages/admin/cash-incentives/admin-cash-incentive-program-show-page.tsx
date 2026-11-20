@@ -228,7 +228,7 @@ export default function AdminCashIncentiveProgramShowPage({
 
   const formattedAmount =
     '₱' +
-    Number(program.amount_per_beneficiary).toLocaleString('en-PH', {
+    Number(program.amount_per_beneficiary || 0).toLocaleString('en-PH', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
