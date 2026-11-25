@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Trash } from 'lucide-react';
 
 import AdminAuthLayout from '@/layouts/admin-auth-layout';
-import ChangePassword from './partials/change-password';
+//import ChangePassword from './partials/change-password';
 import ModalCreateEditUser from './partials/modal-create-edit';
 
 const { Column } = Table;
@@ -256,9 +256,9 @@ const AdminUsersPage = () => {
                       />
                     </Tooltip>
 
-                    <Tooltip title="Change password">
+                    {/* <Tooltip title="Change password">
                       <ChangePassword data={record} onSuccess={() => refetch()} />
-                    </Tooltip>
+                    </Tooltip> */}
 
                     <Popconfirm
                       title="Delete user?"

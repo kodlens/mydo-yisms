@@ -317,23 +317,22 @@ nov 03,  2026 Tentative
 
     admin side, error date picker (stick to 2000)
 
+    (all done)
+
 
 ## Revision Nov 25, 2026
 
     (done)Tangtangon ang Ready to submit your youth scholarship profile? nga greed card sa welcome
 
-
-    registration for youth/registration for sk official
-
-    tocheck/ separate daw ang registration for sk and youth
-
     (done)approving and rejecting sa youth, tangtangon and extra/additional button sa top
 
-    tocheck/ remove password change on admin
+    (done) tocheck/ remove password change on admin
 
-    add year like nov 23, 2026
+    (done)add year like nov 23, 2026
 
+    (done)notif change to red color
 
-    notif change to red color
+    (done )youth kaisa lang maka apply ug scholarship, dili maka apply na ug lain
 
-    youth kaisa lang maka apply ug scholarship, dili maka apply na ug lain
+    registration for youth/registration for sk official
+    tocheck/ separate daw ang registration for sk and youth
