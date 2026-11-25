@@ -30,11 +30,19 @@ class YouthApplyScholarshipController extends Controller
         $acadYear = AcademicYear::where('is_active', 1)->first();
 
         $scholarshipApplication = null;
-        if ($user && $acadYear) {
+        $activeScholarshipApplication = null;
+        if ($user) {
+            $activeScholarshipApplication = ScholarshipApplication::where('youth_profile_id', $user->id)
+                ->whereIn('status', ['pending', 'approved'])
+                ->with(['academicYear', 'scholarshipType'])
+                ->orderByRaw("CASE WHEN status = 'approved' THEN 0 ELSE 1 END")
+                ->latest()
+                ->first();
+
             $scholarshipApplication = ScholarshipApplication::where('youth_profile_id', $user->id)
                 ->where('scholarship_type_id', $scholarshipType->id)
-                ->where('academic_year_id', $acadYear->id)
                 ->with(['academicYear', 'scholarshipType'])
+                ->orderByRaw("CASE WHEN status = 'approved' THEN 0 WHEN status = 'pending' THEN 1 ELSE 2 END")
                 ->latest()
                 ->first();
         }
@@ -43,6 +51,7 @@ class YouthApplyScholarshipController extends Controller
             'xToken' => csrf_token(),
             'scholarshipType' => $scholarshipType,
             'scholarshipApplication' => $scholarshipApplication,
+            'activeScholarshipApplication' => $activeScholarshipApplication,
             'academicYear' => $acadYear,
             'youth' => $user,
         ]);
@@ -85,16 +94,23 @@ class YouthApplyScholarshipController extends Controller
             ], 422);
         }
 
-        // Check if the youth already has an application for this scholarship in the active academic year
-        $existing = ScholarshipApplication::where('youth_profile_id', $user->id)
-            ->where('scholarship_type_id', $validated['scholarship_type_id'])
-            ->where('academic_year_id', $acadYear->id)
+        // Restrict applying if the youth already has any pending or approved scholarship across all academic years
+        $activeApplication = ScholarshipApplication::with('scholarshipType')
+            ->where('youth_profile_id', $user->id)
+            ->whereIn('status', ['pending', 'approved'])
+            ->orderByRaw("CASE WHEN status = 'approved' THEN 0 ELSE 1 END")
+            ->latest()
             ->first();
 
-        if ($existing) {
+        if ($activeApplication) {
+            $scholarshipName = $activeApplication->scholarshipType?->scholarship ?? 'a scholarship program';
+            $message = $activeApplication->status === 'approved'
+                ? "You already have an approved scholarship ({$scholarshipName}) and are no longer eligible to apply for another scholarship."
+                : "You currently have a pending application for {$scholarshipName}. You cannot apply for another scholarship unless your current application is rejected.";
+
             return response()->json([
                 'success' => false,
-                'message' => 'You have already submitted an application for this scholarship program in the current academic year.',
+                'message' => $message,
             ], 422);
         }
 

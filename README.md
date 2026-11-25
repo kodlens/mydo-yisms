@@ -320,14 +320,14 @@ nov 03,  2026 Tentative
 
 ## Revision Nov 25, 2026
 
-    Tangtangon ang Ready to submit your youth scholarship profile? nga greed card sa welcome
+    (done)Tangtangon ang Ready to submit your youth scholarship profile? nga greed card sa welcome
 
 
     registration for youth/registration for sk official
 
     tocheck/ separate daw ang registration for sk and youth
 
-    approving and rejecting sa youth, tangtangon and extra/additional button sa top
+    (done)approving and rejecting sa youth, tangtangon and extra/additional button sa top
 
     tocheck/ remove password change on admin
 

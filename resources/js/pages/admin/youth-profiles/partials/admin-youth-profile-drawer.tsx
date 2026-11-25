@@ -8,6 +8,7 @@ import {
   Descriptions,
   Drawer,
   Empty,
+  Image,
   Input,
   Modal,
   Space,
@@ -53,6 +54,7 @@ export type ExtendedYouth = Youth & {
   suffix?: string | null;
   school_address?: string | null;
   student_id?: string | null;
+  school_id_path?: string | null;
   is_graduated?: boolean;
   scholarship_applications?: ScholarshipApplicationItem[];
 };
@@ -416,6 +418,28 @@ export default function AdminYouthProfileDrawer({ open, onClose, youth, onUpdate
               <Descriptions.Item label="Student ID">{display(youth.student_id) || '—'}</Descriptions.Item>
               <Descriptions.Item label="Previous GWA">
                 {youth.previous_semester_gwa ? Number(youth.previous_semester_gwa).toFixed(2) : '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Uploaded School ID" span={2}>
+                {youth.school_id_path ? (
+                  <div className="flex flex-col gap-2 py-1">
+                    <Image
+                      src={`/storage/${youth.school_id_path.replace(/^\/?storage\//, '')}`}
+                      alt={`${fullName} School ID`}
+                      className="max-h-48 w-auto rounded-lg border border-slate-200 object-contain"
+                      height={140}
+                    />
+                    <a
+                      href={`/storage/${youth.school_id_path.replace(/^\/?storage\//, '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-semibold text-emerald-700 hover:underline"
+                    >
+                      Open full image in new tab ↗
+                    </a>
+                  </div>
+                ) : (
+                  <span className="text-xs italic text-slate-400">No ID image uploaded</span>
+                )}
               </Descriptions.Item>
             </Descriptions>
           </section>

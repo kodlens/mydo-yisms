@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Bell, CheckCheck, GraduationCap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+
 export interface AppNotification {
   id: string;
   read: boolean;
@@ -208,7 +209,7 @@ export default function StaffNotificationBell() {
       trigger="click"
       placement="bottomRight"
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(ow) => setOpen(ow)}
       styles={{ container: { padding: 0 } }}
     >
       <button
@@ -217,7 +218,7 @@ export default function StaffNotificationBell() {
         aria-expanded={open}
         className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition focus-visible:outline-2 focus-visible:outline-emerald-600"
       >
-        <Badge count={unreadCount} size="small" offset={[2, -2]} color="#059669">
+        <Badge count={unreadCount} size="small" offset={[2, -2]} color="red">
           <Bell size={18} />
         </Badge>
       </button>

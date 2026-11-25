@@ -4,8 +4,27 @@ import { ScholarshipType } from '@/types/scholarship';
 import { Head, Link } from '@inertiajs/react';
 import { Alert, Button, Empty, Input, Modal, Pagination, Skeleton } from 'antd';
 import axios from 'axios';
-import { ArrowRight, Gift, GraduationCap, Search, Users, Wallet } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Clock3, Gift, GraduationCap, Lock, Search, Users, Wallet } from 'lucide-react';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
+
+type ActiveApplication = {
+  id: number;
+  scholarship_type_id: number;
+  academic_year_id: number;
+  status: 'pending' | 'approved';
+  reference?: string | null;
+  submitted_at?: string | null;
+  scholarship_type?: {
+    id: number;
+    scholarship: string;
+    amount?: string | number | null;
+  } | null;
+  academic_year?: {
+    id: number;
+    name: string;
+    code: string;
+  } | null;
+};
 
 type Scholarship = ScholarshipType & {
   target_beneficiary?: string | null;
@@ -25,12 +44,16 @@ type PaginatedResponse = {
   total: number;
 };
 
+type PageProps = {
+  activeApplication?: ActiveApplication | null;
+};
+
 const formatAmount = (amount: Scholarship['amount']) =>
   amount !== null && amount !== undefined && amount !== '' && Number.isFinite(Number(amount))
     ? new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(amount))
     : 'Amount not specified';
 
-const YouthScholarshipPage = () => {
+const YouthScholarshipPage = ({ activeApplication }: PageProps) => {
   const [data, setData] = useState<PaginatedResponse>();
   const [selected, setSelected] = useState<Scholarship | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,6 +116,80 @@ const YouthScholarshipPage = () => {
             <GraduationCap size={40} strokeWidth={1.5} />
           </div>
         </header>
+
+        {activeApplication && (
+          <div
+            className={`rounded-2xl border p-5 shadow-xs ${
+              activeApplication.status === 'approved'
+                ? 'border-emerald-200 bg-emerald-50/80 text-emerald-950'
+                : 'border-amber-200 bg-amber-50/80 text-amber-950'
+            }`}
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3.5">
+                <span
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                    activeApplication.status === 'approved'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-amber-500 text-white'
+                  }`}
+                >
+                  {activeApplication.status === 'approved' ? (
+                    <BadgeCheck className="h-6 w-6" />
+                  ) : (
+                    <Clock3 className="h-6 w-6" />
+                  )}
+                </span>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-base font-bold">
+                      {activeApplication.status === 'approved'
+                        ? 'You are already an Approved Scholarship Beneficiary'
+                        : 'You have an Active Scholarship Application Under Review'}
+                    </h2>
+                    {activeApplication.reference && (
+                      <span className="rounded-md bg-white/80 px-2 py-0.5 font-mono text-xs font-semibold ring-1 ring-black/10">
+                        {activeApplication.reference}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed opacity-90">
+                    {activeApplication.status === 'approved' ? (
+                      <>
+                        You are an approved recipient of{' '}
+                        <strong className="font-semibold">
+                          {activeApplication.scholarship_type?.scholarship ?? 'a municipal scholarship'}
+                        </strong>
+                        . Youth beneficiaries with an existing scholarship can no longer apply for any other scholarship program.
+                      </>
+                    ) : (
+                      <>
+                        Your application for{' '}
+                        <strong className="font-semibold">
+                          {activeApplication.scholarship_type?.scholarship ?? 'a municipal scholarship'}
+                        </strong>{' '}
+                        is currently pending staff evaluation. You cannot apply for another scholarship while an application is active.
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href={`/youth/services/apply-scholarship/${activeApplication.scholarship_type_id}`}
+                className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors ${
+                  activeApplication.status === 'approved'
+                    ? 'bg-emerald-700 hover:bg-emerald-800 hover:text-white'
+                    : 'bg-amber-700 hover:bg-amber-800 hover:text-white'
+                }`}
+              >
+                View My Application
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_260px]">
           <section aria-labelledby="scholarship-list-heading">
             <div className="mb-5 rounded-2xl border border-stone-200 bg-white p-4 sm:p-5">
@@ -173,6 +270,8 @@ const YouthScholarshipPage = () => {
                 {data.data.map((scholarship) => {
                   const existingApp = scholarship.applications?.[0];
                   const hasApplied = Boolean(existingApp);
+                  const isBlockedByOtherActive =
+                    Boolean(activeApplication) && activeApplication?.scholarship_type_id !== scholarship.id;
 
                   return (
                     <article
@@ -202,6 +301,11 @@ const YouthScholarshipPage = () => {
                                 Applied · Pending Review
                               </span>
                             )
+                          ) : isBlockedByOtherActive ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
+                              <Lock size={12} aria-hidden="true" />
+                              Application Restricted
+                            </span>
                           ) : (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" aria-hidden="true" />
@@ -242,15 +346,16 @@ const YouthScholarshipPage = () => {
                           </p>
                         </div>
                         <Button
-                          type="primary"
+                          type={isBlockedByOtherActive && !hasApplied ? 'default' : 'primary'}
                           size="large"
                           block
                           onClick={() => setSelected(scholarship)}
-                          aria-label={'View details and apply for ' + scholarship.scholarship}
-                          className={hasApplied ? '!bg-slate-700 hover:!bg-slate-800' : ''}
+                          aria-label={'View details for ' + scholarship.scholarship}
+                          className={hasApplied ? '!bg-slate-700 hover:!bg-slate-800 !text-white' : ''}
                         >
                           <span className="inline-flex items-center gap-2">
-                            {hasApplied ? 'View application' : 'View & apply'} <ArrowRight size={16} aria-hidden="true" />
+                            {hasApplied ? 'View application' : isBlockedByOtherActive ? 'View details' : 'View & apply'}{' '}
+                            <ArrowRight size={16} aria-hidden="true" />
                           </span>
                         </Button>
                       </div>
@@ -321,12 +426,25 @@ const YouthScholarshipPage = () => {
         footer={
           <div className="flex w-full flex-col items-center gap-2 md:flex-row md:justify-end">
             <Button onClick={() => setSelected(null)}>Back to scholarships</Button>
-            <Link
-              href={`/youth/services/apply-scholarship/${selected?.id}`}
-              className="inline-flex h-8 items-center justify-center rounded-md bg-[#047857] px-4 text-sm font-medium text-white transition-colors hover:bg-[#065f46] hover:text-white"
-            >
-              {selected?.applications && selected.applications.length > 0 ? 'View My Application' : 'Apply Now'}
-            </Link>
+            {selected && activeApplication && activeApplication.scholarship_type_id !== selected.id ? (
+              <Link
+                href={`/youth/services/apply-scholarship/${activeApplication.scholarship_type_id}`}
+                className="inline-flex h-8 items-center justify-center rounded-md bg-slate-700 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800 hover:text-white"
+              >
+                View My Active Scholarship
+              </Link>
+            ) : (
+              <Link
+                href={`/youth/services/apply-scholarship/${selected?.id}`}
+                className="inline-flex h-8 items-center justify-center rounded-md bg-[#047857] px-4 text-sm font-medium text-white transition-colors hover:bg-[#065f46] hover:text-white"
+              >
+                {selected?.applications && selected.applications.length > 0
+                  ? selected.applications[0].status === 'rejected'
+                    ? 'View Status & Re-apply'
+                    : 'View My Application'
+                  : 'Apply Now'}
+              </Link>
+            )}
           </div>
         }
         width={600}
@@ -352,7 +470,22 @@ const YouthScholarshipPage = () => {
                 </dd>
               </div>
             </dl>
-            {selected.applications && selected.applications.length > 0 ? (
+            {activeApplication && activeApplication.scholarship_type_id !== selected.id ? (
+              <Alert
+                type="warning"
+                showIcon
+                title={
+                  activeApplication.status === 'approved'
+                    ? 'Ineligible — You Already Have an Approved Scholarship'
+                    : 'Ineligible — You Have a Pending Scholarship Application'
+                }
+                description={
+                  activeApplication.status === 'approved'
+                    ? `You are already an approved beneficiary under "${activeApplication.scholarship_type?.scholarship ?? 'another program'}". Youth who already hold a scholarship cannot apply for any other scholarship.`
+                    : `You currently have a pending application for "${activeApplication.scholarship_type?.scholarship ?? 'another program'}". You cannot apply for another scholarship while your application is pending or approved.`
+                }
+              />
+            ) : selected.applications && selected.applications.length > 0 ? (
               <Alert
                 type={
                   selected.applications[0].status === 'approved'
@@ -366,14 +499,14 @@ const YouthScholarshipPage = () => {
                   selected.applications[0].status === 'approved'
                     ? 'Application Approved'
                     : selected.applications[0].status === 'rejected'
-                    ? 'Application Evaluated'
+                    ? 'Application Not Approved'
                     : 'Application Already Submitted'
                 }
                 description={
                   selected.applications[0].status === 'approved'
                     ? 'Congratulations! You are an approved beneficiary of this scholarship program.'
                     : selected.applications[0].status === 'rejected'
-                    ? 'Your application was evaluated and could not be approved at this time.'
+                    ? 'Your previous application was not approved. You may review the evaluator remarks or submit a new application.'
                     : 'Your application is currently pending evaluation by MYDO staff.'
                 }
               />

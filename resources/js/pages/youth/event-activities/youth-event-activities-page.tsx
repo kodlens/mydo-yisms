@@ -503,17 +503,26 @@ const YouthEventActivitiesPage = ({
                                                     </p>
                                                     <h3 className="mt-2 text-lg leading-6 font-bold text-slate-900">{activity.title}</h3>
                                                 </div>
-                                                <div className="min-w-12 rounded-lg bg-slate-50 px-2 py-1.5 text-center">
+                                                <div className="min-w-14 rounded-lg bg-slate-50 px-2.5 py-1.5 text-center ring-1 ring-slate-200/70">
                                                     <p className="text-[10px] font-bold text-teal-700 uppercase">
                                                         {dateLabel(activity.starts_at, { month: 'short' })}
                                                     </p>
-                                                    <p className="text-xl font-bold">{dateLabel(activity.starts_at, { day: '2-digit' })}</p>
+                                                    <p className="text-xl leading-tight font-bold text-slate-900">
+                                                        {dateLabel(activity.starts_at, { day: '2-digit' })}
+                                                    </p>
+                                                    <p className="text-[10px] font-semibold text-slate-500">
+                                                        {dateLabel(activity.starts_at, { year: 'numeric' })}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">
                                                 {activity.summary ?? activity.description}
                                             </p>
                                             <div className="mt-4 space-y-2 text-xs text-slate-500">
+                                                <p className="flex items-center gap-2">
+                                                    <CalendarDays size={14} className="shrink-0 text-teal-700" />
+                                                    {dateLabel(activity.starts_at, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </p>
                                                 <p className="flex items-center gap-2">
                                                     <Clock3 size={14} className="shrink-0" />
                                                     {activityTime(activity)}

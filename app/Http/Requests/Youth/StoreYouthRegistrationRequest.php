@@ -77,6 +77,7 @@ class StoreYouthRegistrationRequest extends FormRequest
             'school_address' => ['nullable', 'string', 'max:255'],
             'program' => ['required', 'string', 'max:255'],
             'year' => ['required', 'integer', 'between:1,5'],
+            'school_id' => ['required', 'array', 'min:1'],
             'student_id' => ['nullable', 'string', 'max:50'],
             'previous_semester_gwa' => ['nullable', 'numeric', 'between:1,100'],
             'is_graduated' => ['nullable', 'boolean'],
@@ -110,6 +111,23 @@ class StoreYouthRegistrationRequest extends FormRequest
                     $validator->errors()->add('brgyCode', 'The selected barangay does not belong to the selected city / municipality.');
                 }
 
+                $rawFilename = data_get($this->input('school_id'), '0.response.filename');
+                $filename = $rawFilename ? basename((string) $rawFilename) : '';
+                $tempPath = "temp/{$filename}";
+                $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+                if ($filename === '' || ! $disk->exists($tempPath)) {
+                    $validator->errors()->add('school_id', 'Uploading a valid School ID image (PNG, JPG, or JPEG) is required to complete registration.');
+                } else {
+                    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                    $mime = $disk->mimeType($tempPath);
+                    $validExt = in_array($ext, ['png', 'jpg', 'jpeg'], true);
+                    $validMime = in_array($mime, ['image/png', 'image/jpeg'], true);
+
+                    if (! $validExt || ! $validMime) {
+                        $validator->errors()->add('school_id', 'The uploaded School ID must strictly be a PNG, JPG, or JPEG image.');
+                    }
+                }
             },
         ];
     }
@@ -129,6 +147,7 @@ class StoreYouthRegistrationRequest extends FormRequest
             'provCode' => 'province',
             'citymunCode' => 'city / municipality',
             'brgyCode' => 'barangay',
+            'school_id' => 'School ID image',
             'previous_semester_gwa' => 'GWA for previous semester',
         ];
     }
@@ -143,6 +162,8 @@ class StoreYouthRegistrationRequest extends FormRequest
         return [
             'birth_date.before_or_equal' => 'The applicant must be at least 18 years old.',
             'birth_date.after_or_equal' => 'The applicant must not be older than 30 years old.',
+            'school_id.required' => 'Uploading your School ID image (PNG, JPG, or JPEG) is required for registration.',
+            'school_id.min' => 'Uploading your School ID image (PNG, JPG, or JPEG) is required for registration.',
         ];
     }
 }

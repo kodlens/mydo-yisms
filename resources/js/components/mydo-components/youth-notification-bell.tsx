@@ -231,7 +231,7 @@ export default function YouthNotificationBell() {
       trigger="click"
       placement="bottomRight"
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(ow) => setOpen(ow)}
       styles={{ container: { padding: 0 } }}
     >
       <button
@@ -240,7 +240,7 @@ export default function YouthNotificationBell() {
         aria-expanded={open}
         className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition focus-visible:outline-2 focus-visible:outline-teal-700"
       >
-        <Badge count={unreadCount} size="small" offset={[2, -2]} color="#0f766e">
+        <Badge count={unreadCount} size="small" offset={[2, -2]}>
           <Bell size={18} />
         </Badge>
       </button>

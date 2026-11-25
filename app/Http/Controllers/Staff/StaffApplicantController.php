@@ -68,6 +68,22 @@ class StaffApplicantController extends Controller
             'rejection_reason' => ['required_if:registration_status,rejected', 'nullable', 'string', 'max:2000'],
         ]);
 
+        if ($validated['registration_status'] === 'approved') {
+            $alreadyApproved = ScholarshipApplication::with('scholarshipType')
+                ->where('youth_profile_id', $applicant->youth_profile_id)
+                ->where('id', '!=', $applicant->id)
+                ->where('status', 'approved')
+                ->first();
+
+            if ($alreadyApproved) {
+                $existingScholarship = $alreadyApproved->scholarshipType?->scholarship ?? 'another scholarship program';
+
+                return back()->withErrors([
+                    'registration_status' => "This applicant is already an approved beneficiary of {$existingScholarship}.",
+                ]);
+            }
+        }
+
         $oldStatus = $applicant->status;
         $applicant->forceFill([
             'status' => $validated['registration_status'],

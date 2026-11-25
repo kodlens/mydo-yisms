@@ -5,7 +5,7 @@ import SelectBarangay from '@/components/select-barangay';
 import SelectCity from '@/components/select-city';
 import SelectProvince from '@/components/select-province';
 import { Head, Link, router } from '@inertiajs/react';
-import { App, Button, DatePicker, Form, Input, InputNumber, Select, Typography } from 'antd';
+import { App, Button, DatePicker, Form, Input, InputNumber, Select, Typography, Upload, type UploadFile, type UploadProps } from 'antd';
 import axios, { isAxiosError } from 'axios';
 import dayjs, { type Dayjs } from 'dayjs';
 
@@ -22,13 +22,14 @@ import {
   Building2,
   ClipboardList,
   GraduationCap,
-  Hash,
   Home,
+  IdCard,
   LockKeyhole,
   Mail,
   Phone,
   ShieldCheck,
   Sparkles,
+  UploadCloud,
   UserRound,
   Users,
   type LucideIcon,
@@ -54,7 +55,7 @@ type YouthRegistrationForm = {
   brgyCode: string;
   street_address: string;
   zip_code?: string;
-  student_id?: string;
+  school_id: UploadFile[];
   school_name: string;
   school_address?: string;
   program: string;
@@ -86,8 +87,8 @@ const yearLevelOptions = [
   { value: 5, label: '5th Year College' },
 ];
 
-export default function YouthRegisterPage() {
-  const { modal } = App.useApp();
+export default function YouthRegisterPage({ xToken }: { xToken: string }) {
+  const { modal, notification } = App.useApp();
   const [form] = Form.useForm<YouthRegistrationForm>();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [processing, setProcessing] = useState(false);
@@ -112,7 +113,7 @@ export default function YouthRegisterPage() {
     brgyCode: undefined,
     street_address: '',
     zip_code: '',
-    student_id: '',
+    school_id: [],
     school_name: '',
     school_address: '',
     program: '',
@@ -121,6 +122,77 @@ export default function YouthRegisterPage() {
     guardian_name: '',
     guardian_contact_number: '',
     monthly_family_income: 0,
+  };
+
+  const idUploadProps: UploadProps = {
+    name: 'upload',
+    action: '/temp-upload',
+    headers: {
+      'X-CSRF-TOKEN': xToken,
+    },
+    listType: 'picture',
+    maxCount: 1,
+    accept: '.png,.jpg,.jpeg,image/png,image/jpeg',
+    beforeUpload: (file) => {
+      const allowedMimeTypes = ['image/png', 'image/jpeg'];
+      const hasValidExtension = /\.(png|jpe?g)$/i.test(file.name);
+      const isAllowedType = allowedMimeTypes.includes(file.type) && hasValidExtension;
+      const isUnder5MB = file.size / 1024 / 1024 <= 5;
+
+      if (!isAllowedType) {
+        notification.error({
+          message: `${file.name} is not an allowed image format`,
+          placement: 'topRight',
+          description: 'Strictly PNG, JPG, or JPEG image files only. PDFs and other formats are not accepted.',
+        });
+      }
+
+      if (!isUnder5MB) {
+        notification.error({
+          message: `${file.name} is too large`,
+          placement: 'topRight',
+          description: 'Please upload an ID image not greater than 5MB.',
+        });
+      }
+
+      return (isAllowedType && isUnder5MB) || Upload.LIST_IGNORE;
+    },
+    onChange(info) {
+      if (info.file.status === 'done') {
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next.school_id;
+          return next;
+        });
+        notification.success({
+          message: 'School ID uploaded',
+          description: `${info.file.name} uploaded successfully.`,
+          placement: 'topRight',
+        });
+      } else if (info.file.status === 'error') {
+        notification.error({
+          message: `${info.file.name} upload failed`,
+          description: 'Please upload a valid PNG, JPG, or JPEG image (max 5MB).',
+          placement: 'topRight',
+        });
+      }
+    },
+    onRemove(file) {
+      const filename = file.response?.filename;
+      if (filename) {
+        axios
+          .post('/temp-remove/' + filename)
+          .then((res) => {
+            if (res.data.status === 'temp_deleted') {
+              notification.info({
+                message: 'Uploaded ID removed',
+                placement: 'topRight',
+              });
+            }
+          })
+          .catch(() => {});
+      }
+    },
   };
 
   // const sampleData = {
@@ -163,7 +235,7 @@ export default function YouthRegisterPage() {
       school_address: values.school_address?.trim() || null,
       program: values.program.trim(),
       year: values.year,
-      student_id: values.student_id?.trim() || null,
+      school_id: values.school_id,
       is_graduated: false,
     };
 
@@ -617,22 +689,7 @@ export default function YouthRegisterPage() {
                           </Form.Item>
                         </div>
 
-                        <div>
-                          <Form.Item
-                            name="student_id"
-                            label="Student ID Number (Optional)"
-                            validateStatus={errors.student_id ? 'error' : ''}
-                            help={errors.student_id ? errors.student_id[0] : ''}
-                          >
-                            <Input
-                              size="large"
-                              prefix={<Hash className="h-4 w-4 text-slate-400" />}
-                              placeholder="e.g. 2024-00123"
-                            />
-                          </Form.Item>
-                        </div>
-
-                        <div>
+                        <div className="sm:col-span-2">
                           <Form.Item
                             name="school_address"
                             label="College Campus / Address (Optional)"
@@ -644,6 +701,67 @@ export default function YouthRegisterPage() {
                               prefix={<Building2 className="h-4 w-4 text-slate-400" />}
                               placeholder="e.g. Malaybalay City, Bukidnon"
                             />
+                          </Form.Item>
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <Form.Item
+                            name="school_id"
+                            label={
+                              <span className="inline-flex items-center gap-1.5 font-semibold text-slate-800">
+                                <IdCard className="h-4 w-4 text-emerald-700" />
+                                Upload Valid School ID (Required — PNG, JPG, JPEG only)
+                              </span>
+                            }
+                            valuePropName="fileList"
+                            getValueFromEvent={(e) => {
+                              if (Array.isArray(e)) return e;
+                              return e?.fileList;
+                            }}
+                            validateStatus={errors.school_id ? 'error' : undefined}
+                            help={errors.school_id ? errors.school_id[0] : undefined}
+                            rules={[
+                              {
+                                required: true,
+                                validator: async (_, fileList: UploadFile[] | undefined) => {
+                                  if (!fileList || fileList.length === 0) {
+                                    return Promise.reject(
+                                      new Error('School ID upload is required. No ID, no registration.')
+                                    );
+                                  }
+                                  const file = fileList[0];
+                                  if (file.status === 'uploading') {
+                                    return Promise.reject(
+                                      new Error('Please wait for your School ID image to finish uploading.')
+                                    );
+                                  }
+                                  if (file.status === 'error' || !file.response?.filename) {
+                                    return Promise.reject(
+                                      new Error('Please upload a valid School ID image (PNG, JPG, or JPEG).')
+                                    );
+                                  }
+                                  const isAllowedExt = /\.(png|jpe?g)$/i.test(file.name || '');
+                                  if (!isAllowedExt) {
+                                    return Promise.reject(
+                                      new Error('Strictly PNG, JPG, or JPEG image format is required.')
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                },
+                              },
+                            ]}
+                          >
+                            <Upload.Dragger {...idUploadProps}>
+                              <div className="flex flex-col items-center py-4 text-center">
+                                <UploadCloud className="mb-2.5 h-8 w-8 text-emerald-700" />
+                                <p className="text-sm font-semibold text-slate-800">
+                                  Click or drag your School ID image here to upload
+                                </p>
+                                <p className="mt-1 text-xs text-slate-500">
+                                  Strictly <strong>PNG, JPG, or JPEG</strong> only (max 5MB) · Required for registration verification
+                                </p>
+                              </div>
+                            </Upload.Dragger>
                           </Form.Item>
                         </div>
                       </div>

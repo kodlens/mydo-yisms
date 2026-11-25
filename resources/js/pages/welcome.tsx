@@ -922,7 +922,7 @@ export default function Welcome() {
             </div>
 
             {/* Quick Registration Callout Banner */}
-            <div className="mt-12 rounded-2xl bg-emerald-800 p-8 text-white shadow-xl shadow-emerald-950/10 sm:p-10">
+            {/* <div className="mt-12 rounded-2xl bg-emerald-800 p-8 text-white shadow-xl shadow-emerald-950/10 sm:p-10">
               <div className="flex flex-col items-center justify-between gap-6 lg:flex-row">
                 <div className="max-w-2xl text-center lg:text-left">
                   <div className="flex items-center justify-center gap-2 lg:justify-start">
@@ -958,7 +958,7 @@ export default function Welcome() {
                   )}
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Assistance Contact Bar */}
             <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-xs sm:flex-row">

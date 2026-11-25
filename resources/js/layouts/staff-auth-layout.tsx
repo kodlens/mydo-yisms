@@ -23,13 +23,10 @@ import {
   FileSearch,
   Gauge,
   GraduationCap,
-  HandHeart,
   LogOut,
   Menu as MenuIcon,
   PanelLeftClose,
   PanelLeftOpen,
-  ShieldCheck,
-  Sparkles,
   UserRound,
 } from 'lucide-react';
 import { PropsWithChildren, ReactNode, useState } from 'react';

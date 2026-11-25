@@ -20,8 +20,10 @@ import {
   FileText,
   GraduationCap,
   Hash,
+  Lock,
   MapPin,
   Phone,
+  RotateCcw,
   Sparkles,
   UserCheck,
   UserRound,
@@ -31,10 +33,16 @@ import {
 import { ReactElement, ReactNode, useState } from 'react';
 import DocumentUploads from './partials/document-uploads';
 
+type ActiveScholarshipApplication = ScholarshipApplication & {
+  scholarship_type?: ScholarshipType | null;
+  academic_year?: { id: number; name: string; code: string } | null;
+};
+
 type Props = {
   xToken: string;
   scholarshipType: ScholarshipType;
   scholarshipApplication: ScholarshipApplication | null;
+  activeScholarshipApplication?: ActiveScholarshipApplication | null;
   academicYear?: { id: number; name: string; code: string } | null;
   youth?: Youth;
 };
@@ -57,6 +65,7 @@ export default function YouthApplyScholarshipPage({
   xToken,
   scholarshipType,
   scholarshipApplication,
+  activeScholarshipApplication,
   academicYear,
   youth,
 }: Props) {
@@ -64,6 +73,11 @@ export default function YouthApplyScholarshipPage({
   const [form] = Form.useForm();
   const { modal } = App.useApp();
   const [loading, setLoading] = useState<boolean>(false);
+  const [reapplying, setReapplying] = useState<boolean>(false);
+
+  const isRestrictedByOtherScholarship =
+    Boolean(activeScholarshipApplication) &&
+    activeScholarshipApplication?.scholarship_type_id !== scholarshipType.id;
 
   const fullName = [youth?.fname, youth?.mname, youth?.lname, youth?.suffix].filter(Boolean).join(' ') || 'Applicant';
   const location = [youth?.barangay?.brgyDesc, youth?.city?.citymunDesc].filter(Boolean).join(', ');
@@ -187,7 +201,91 @@ export default function YouthApplyScholarshipPage({
         </header>
 
         {/* Status Views */}
-        {!academicYear ? (
+        {isRestrictedByOtherScholarship && activeScholarshipApplication ? (
+          <section className="rounded-2xl border border-amber-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 ring-1 ring-amber-200">
+                <Lock className="h-8 w-8" />
+              </div>
+
+              <Tag
+                color={activeScholarshipApplication.status === 'approved' ? 'success' : 'warning'}
+                className="!rounded-full !px-3 !py-1 text-xs font-semibold"
+              >
+                {activeScholarshipApplication.status === 'approved'
+                  ? 'Already an Approved Scholar'
+                  : 'Active Application Under Review'}
+              </Tag>
+
+              <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
+                Scholarship Application Restricted
+              </h2>
+
+              <p className="mt-2 max-w-lg text-sm leading-relaxed text-slate-600">
+                {activeScholarshipApplication.status === 'approved' ? (
+                  <>
+                    You are already an approved beneficiary of{' '}
+                    <span className="font-semibold text-slate-900">
+                      {activeScholarshipApplication.scholarship_type?.scholarship ?? 'another scholarship program'}
+                    </span>
+                    . Youth who already have an approved scholarship can no longer apply for any other scholarship program.
+                  </>
+                ) : (
+                  <>
+                    You currently have a pending scholarship application for{' '}
+                    <span className="font-semibold text-slate-900">
+                      {activeScholarshipApplication.scholarship_type?.scholarship ?? 'another scholarship program'}
+                    </span>
+                    . You cannot apply for another scholarship while your application is pending review or approved.
+                  </>
+                )}
+              </p>
+
+              <div className="mt-6 w-full max-w-md space-y-2 rounded-xl border border-slate-100 bg-slate-50 p-4 text-left">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500">Current Scholarship</span>
+                  <span className="font-semibold text-slate-900">
+                    {activeScholarshipApplication.scholarship_type?.scholarship ?? 'Municipal Scholarship'}
+                  </span>
+                </div>
+                {activeScholarshipApplication.reference && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Reference Code</span>
+                    <span className="font-mono font-bold text-slate-800">
+                      {activeScholarshipApplication.reference}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500">Status</span>
+                  <span
+                    className={`font-semibold capitalize ${
+                      activeScholarshipApplication.status === 'approved' ? 'text-emerald-700' : 'text-amber-700'
+                    }`}
+                  >
+                    {activeScholarshipApplication.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href={route('youth.services.youth-scholarships.index')}
+                  className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Back to Scholarships List
+                </Link>
+                <Link
+                  href={`/youth/services/apply-scholarship/${activeScholarshipApplication.scholarship_type_id}`}
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 hover:text-white"
+                >
+                  View My Active Application
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </section>
+        ) : !academicYear && (!scholarshipApplication || reapplying) ? (
           <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 text-amber-900">
             <div className="flex items-start gap-3">
               <AlertCircle className="h-6 w-6 shrink-0 text-amber-600" />
@@ -199,7 +297,7 @@ export default function YouthApplyScholarshipPage({
               </div>
             </div>
           </div>
-        ) : !scholarshipApplication ? (
+        ) : !scholarshipApplication || (scholarshipApplication.status === 'rejected' && reapplying) ? (
           /* Application Form View */
           <div className="space-y-6">
             {/* Applicant Profile Snapshot */}
@@ -414,13 +512,24 @@ export default function YouthApplyScholarshipPage({
                 </p>
               )}
 
-              <div className="mt-6 flex gap-3">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href={route('youth.services.youth-scholarships.index')}
                   className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Explore Other Scholarships
                 </Link>
+                {academicYear && !activeScholarshipApplication && (
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<RotateCcw className="h-4 w-4" />}
+                    onClick={() => setReapplying(true)}
+                    className="!h-10 !rounded-xl !bg-emerald-700 !px-5 !text-sm !font-semibold hover:!bg-emerald-800"
+                  >
+                    Re-apply for this Scholarship
+                  </Button>
+                )}
               </div>
             </div>
           </section>

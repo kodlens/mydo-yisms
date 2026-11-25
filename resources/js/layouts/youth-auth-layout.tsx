@@ -19,13 +19,11 @@ import {
   CalendarDays,
   ChevronDown,
   GraduationCap,
-  HandHeart,
   House,
   LogOut,
   Menu as MenuIcon,
   PanelLeftClose,
   PanelLeftOpen,
-  Sparkles,
   UserRound,
   Wallet,
 } from 'lucide-react';

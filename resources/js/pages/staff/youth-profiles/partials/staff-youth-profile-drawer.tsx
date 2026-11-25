@@ -2,23 +2,18 @@ import { Youth } from '@/types';
 import { EyeOutlined } from '@ant-design/icons';
 import { router } from '@inertiajs/react';
 import {
-  Alert,
   App,
   Button,
   Descriptions,
   Drawer,
-  Empty,
+  Image,
   Input,
   Modal,
-  Space,
-  Tag,
-  Typography,
+  Tag
 } from 'antd';
 import axios from 'axios';
 import {
-  AlertCircle,
-  BookOpen,
-  Calendar,
+
   CheckCircle2,
   Clock,
   GraduationCap,
@@ -30,12 +25,10 @@ import {
   UserCheck,
   UserRound,
   Users,
-  Wallet,
   XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 
-const { Text } = Typography;
 
 export type ScholarshipApplicationItem = {
   id: number;
@@ -53,6 +46,7 @@ export type ExtendedYouth = Youth & {
   suffix?: string | null;
   school_address?: string | null;
   student_id?: string | null;
+  school_id_path?: string | null;
   is_graduated?: boolean;
   scholarship_applications?: ScholarshipApplicationItem[];
 };
@@ -95,7 +89,7 @@ function calculateAge(birthDate?: string | null): number | null {
 }
 
 export default function StaffYouthProfileDrawer({ open, onClose, youth, onUpdated }: Props) {
-  const { message, modal, notification } = App.useApp();
+  const { modal, notification } = App.useApp();
   const [actionLoading, setActionLoading] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -125,10 +119,11 @@ export default function StaffYouthProfileDrawer({ open, onClose, youth, onUpdate
             onUpdated?.();
             onClose();
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           notification.error({
             message: 'Approval Failed',
-            description: err?.response?.data?.message || 'Could not approve account. Please try again.',
+            description: axios.isAxiosError(err) ? err?.response?.data?.message || 'Could not approve account. Please try again.'
+              : 'Could not approved. Please try again.',
           });
         } finally {
           setActionLoading(false);
@@ -153,10 +148,11 @@ export default function StaffYouthProfileDrawer({ open, onClose, youth, onUpdate
         onUpdated?.();
         onClose();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       notification.error({
         message: 'Rejection Failed',
-        description: err?.response?.data?.message || 'Could not reject account. Please try again.',
+        description: axios.isAxiosError(err) ? err?.response?.data?.message || 'Could not reject account. Please try again.'
+          : 'Could not reject account. Please try again.',
       });
     } finally {
       setActionLoading(false);
@@ -199,10 +195,10 @@ export default function StaffYouthProfileDrawer({ open, onClose, youth, onUpdate
           </div>
         }
         placement="right"
-        width={640}
+        size={640}
         open={open}
         onClose={onClose}
-        destroyOnClose
+        destroyOnHidden
         footer={
           <div className="flex items-center justify-between gap-3">
             <Button onClick={onClose} disabled={actionLoading}>
@@ -246,7 +242,7 @@ export default function StaffYouthProfileDrawer({ open, onClose, youth, onUpdate
                   <p className="text-xs text-amber-800 mt-0.5">
                     This youth registered on {formatDate(youth.created_at)}. Their account is currently blocked from signing in until a staff member reviews and approves it.
                   </p>
-                  <div className="mt-3 flex items-center gap-2">
+                  {/* <div className="mt-3 flex items-center gap-2">
                     <Button
                       type="primary"
                       size="small"
@@ -266,7 +262,7 @@ export default function StaffYouthProfileDrawer({ open, onClose, youth, onUpdate
                     >
                       Reject
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -391,6 +387,28 @@ export default function StaffYouthProfileDrawer({ open, onClose, youth, onUpdate
               <Descriptions.Item label="Student ID">{display(youth.student_id) || '—'}</Descriptions.Item>
               <Descriptions.Item label="Previous GWA">
                 {youth.previous_semester_gwa ? Number(youth.previous_semester_gwa).toFixed(2) : '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Uploaded School ID" span={2}>
+                {youth.school_id_path ? (
+                  <div className="flex flex-col gap-2 py-1">
+                    <Image
+                      src={`/storage/${youth.school_id_path.replace(/^\/?storage\//, '')}`}
+                      alt={`${fullName} School ID`}
+                      className="max-h-48 w-auto rounded-lg border border-slate-200 object-contain"
+                      height={140}
+                    />
+                    <a
+                      href={`/storage/${youth.school_id_path.replace(/^\/?storage\//, '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-semibold text-teal-700 hover:underline"
+                    >
+                      Open full image in new tab ↗
+                    </a>
+                  </div>
+                ) : (
+                  <span className="text-xs italic text-slate-400">No ID image uploaded</span>
+                )}
               </Descriptions.Item>
             </Descriptions>
           </section>

@@ -110,6 +110,7 @@ function formatDateTime(val?: string | null): string {
     : new Intl.DateTimeFormat('en-PH', {
         month: 'short',
         day: 'numeric',
+        year: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
       }).format(d);
