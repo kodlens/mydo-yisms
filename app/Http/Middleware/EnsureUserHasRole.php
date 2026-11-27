@@ -22,9 +22,6 @@ class EnsureUserHasRole
         );
 
         if (! $user) {
-            if (in_array('sk', $allowedRoles, true)) {
-                return redirect()->route('sk-login.index');
-            }
             if (in_array('youth', $allowedRoles, true)) {
                 return redirect()->route('youth-login.index');
             }

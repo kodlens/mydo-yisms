@@ -168,11 +168,15 @@ export default function Welcome() {
   };
 
   const isYouth = auth.user && auth.user.role === 'youth';
-  //const isAdminOrStaff = auth.user && auth.user.role !== 'youth';
+  const isSk = auth.user && auth.user.role === 'sk';
 
   const dashboardRoute = isYouth
     ? route('youth.youth-dashboard.index')
-    : route('admin.dashboard.index');
+    : isSk
+      ? route('sk.dashboard.index')
+      : auth.user?.role === 'staff'
+        ? route('staff.dashboard.index')
+        : route('admin.dashboard.index');
 
   return (
     <>
@@ -267,13 +271,6 @@ export default function Welcome() {
                 </Link>
               ) : (
                 <>
-                  <Link
-                    href={route('sk-login.index')}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50/70 px-3.5 py-2.5 text-xs font-bold text-indigo-800 shadow-2xs transition hover:bg-indigo-100"
-                  >
-                    <ShieldCheck className="h-4 w-4 text-indigo-700" />
-                    <span>SK Portal</span>
-                  </Link>
                   <Link
                     href={route('youth-login.index')}
                     className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-emerald-800"

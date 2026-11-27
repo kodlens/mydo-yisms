@@ -119,7 +119,7 @@ const SkDashboardPage = ({
                 </div>
 
                 <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                  Welcome, Hon. {profile.fname || fullName}!
+                  Welcome, {profile.fname || fullName}!
                 </h1>
 
                 <p className="text-sm leading-relaxed text-indigo-100/90">

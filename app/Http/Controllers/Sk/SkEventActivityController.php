@@ -16,27 +16,30 @@ class SkEventActivityController extends Controller
 {
     public function index(): Response
     {
-        $user = auth('youth')->user();
+        $youthUser = auth('youth')->user();
+        $webUser = auth('web')->user();
+        $user = $youthUser ?? $webUser;
+        $ownerColumn = $youthUser !== null ? 'youth_profile_id' : 'user_id';
         $disk = Storage::disk('public');
 
         $activities = Activity::with('category:id,name')
             ->where('status', 'published')
             ->where('published_at', '<=', now('UTC'))
             ->whereHas('category', fn ($q) => $q->where('is_active', true))
-            ->with(['skEvidences' => function ($q) use ($user) {
-                $q->where('youth_profile_id', $user->id)->latest();
+            ->with(['skEvidences' => function ($q) use ($ownerColumn, $user) {
+                $q->where($ownerColumn, $user->id)->latest();
             }])
             ->withCount('skEvidences')
             ->orderByDesc('starts_at')
             ->orderByDesc('id')
             ->get()
-            ->map(function (Activity $activity) use ($disk) {
-                $myEvidences = $activity->skEvidences->map(function (SkActivityEvidence $ev) use ($disk) {
+            ->map(function (Activity $activity) {
+                $myEvidences = $activity->skEvidences->map(function (SkActivityEvidence $ev) {
                     return [
                         'id' => $ev->id,
                         'description' => $ev->description,
                         'photos' => collect($ev->photos ?? [])
-                            ->map(fn ($path) => $disk->url($path))
+                            ->map(fn ($path) => '/storage/' . ltrim(preg_replace('/^\/?storage\//', '', (string) $path), '/'))
                             ->values()
                             ->all(),
                         'created_at' => optional($ev->created_at)?->toIso8601String(),
@@ -68,7 +71,10 @@ class SkEventActivityController extends Controller
 
     public function storeEvidence(Request $request, int $activity): JsonResponse
     {
-        $user = auth('youth')->user();
+        $youthUser = auth('youth')->user();
+        $webUser = auth('web')->user();
+        $user = $youthUser ?? $webUser;
+        $isYouthGuard = $youthUser !== null;
         $activityModel = Activity::where('status', 'published')->findOrFail($activity);
 
         $validated = $request->validate([
@@ -108,9 +114,11 @@ class SkEventActivityController extends Controller
             $tempFilenames[] = $filename;
         }
 
-        $evidence = DB::transaction(function () use ($activityModel, $user, $validated, $tempFilenames, $disk) {
+        $evidence = DB::transaction(function () use ($activityModel, $user, $isYouthGuard, $validated, $tempFilenames, $disk) {
             $directory = "upfiles/sk-evidences/activity-{$activityModel->id}/sk-{$user->id}";
-            $disk->makeDirectory($directory);
+            if (! $disk->exists($directory)) {
+                $disk->makeDirectory($directory);
+            }
 
             $storedPaths = [];
             foreach ($tempFilenames as $filename) {
@@ -126,7 +134,8 @@ class SkEventActivityController extends Controller
 
             return SkActivityEvidence::create([
                 'activity_id' => $activityModel->id,
-                'youth_profile_id' => $user->id,
+                'youth_profile_id' => $isYouthGuard ? $user->id : null,
+                'user_id' => $isYouthGuard ? null : $user->id,
                 'description' => trim($validated['description']),
                 'photos' => $storedPaths,
             ]);
@@ -139,7 +148,7 @@ class SkEventActivityController extends Controller
                 'id' => $evidence->id,
                 'description' => $evidence->description,
                 'photos' => collect($evidence->photos ?? [])
-                    ->map(fn ($path) => $disk->url($path))
+                    ->map(fn ($path) => '/storage/' . ltrim(preg_replace('/^\/?storage\//', '', (string) $path), '/'))
                     ->values()
                     ->all(),
                 'created_at' => optional($evidence->created_at)?->toIso8601String(),
@@ -149,10 +158,13 @@ class SkEventActivityController extends Controller
 
     public function destroyEvidence(int $activity, int $evidence): JsonResponse
     {
-        $user = auth('youth')->user();
+        $youthUser = auth('youth')->user();
+        $webUser = auth('web')->user();
+        $user = $youthUser ?? $webUser;
+        $ownerColumn = $youthUser !== null ? 'youth_profile_id' : 'user_id';
 
         $record = SkActivityEvidence::where('activity_id', $activity)
-            ->where('youth_profile_id', $user->id)
+            ->where($ownerColumn, $user->id)
             ->findOrFail($evidence);
 
         $disk = Storage::disk('public');

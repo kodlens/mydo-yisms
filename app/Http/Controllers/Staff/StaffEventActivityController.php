@@ -77,13 +77,11 @@ class StaffEventActivityController extends Controller
     public function skEvidences(int $id): JsonResponse
     {
         $activity = Activity::with(['skEvidences' => function ($query) {
-            $query->with(['skOfficial.barangay', 'skOfficial.city'])->latest();
+            $query->with(['skOfficial.barangay', 'skOfficial.city', 'skUser'])->latest();
         }])->findOrFail($id);
 
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
-
-        $evidences = $activity->skEvidences->map(function (\App\Models\SkActivityEvidence $evidence) use ($disk) {
-            $sk = $evidence->skOfficial;
+        $evidences = $activity->skEvidences->map(function (\App\Models\SkActivityEvidence $evidence) {
+            $sk = $evidence->skOfficial ?? $evidence->skUser;
             $fullName = trim(implode(' ', array_filter([
                 $sk?->fname,
                 $sk?->mname,
@@ -95,19 +93,19 @@ class StaffEventActivityController extends Controller
                 'id' => $evidence->id,
                 'description' => $evidence->description,
                 'photos' => collect($evidence->photos ?? [])
-                    ->map(fn ($path) => $disk->url($path))
+                    ->map(fn ($path) => '/storage/' . ltrim(preg_replace('/^\/?storage\//', '', (string) $path), '/'))
                     ->values()
                     ->all(),
                 'created_at' => optional($evidence->created_at)?->toIso8601String(),
                 'sk_official' => [
                     'id' => $sk?->id,
                     'full_name' => $fullName,
-                    'reference_code' => $sk?->reference_code,
+                    'reference_code' => $sk?->reference_code ?? ($sk?->username ? "USER: {$sk->username}" : null),
                     'sk_position' => $sk?->sk_position ?? 'SK Official',
-                    'barangay' => $sk?->barangay?->brgyDesc ?? $sk?->brgyCode ?? '—',
+                    'barangay' => $sk?->barangay?->brgyDesc ?? $sk?->brgyCode ?? 'Municipal SK',
                     'city' => $sk?->city?->citymunDesc ?? '—',
                     'email' => $sk?->email,
-                    'mobile_number' => $sk?->mobile_number,
+                    'mobile_number' => $sk?->mobile_number ?? null,
                 ],
             ];
         });

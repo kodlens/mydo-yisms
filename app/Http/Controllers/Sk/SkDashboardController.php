@@ -15,38 +15,47 @@ class SkDashboardController extends Controller
 {
     public function index(): Response
     {
-        $user = auth('youth')->user();
+        $youthUser = auth('youth')->user();
+        $webUser = auth('web')->user();
+        $user = $youthUser ?? $webUser;
+        $isYouthGuard = $youthUser !== null;
 
-        if ($user && empty($user->reference_code)) {
-            $user->reference_code = YouthProfile::generateUniqueReferenceCode('SK');
-            $user->save();
+        if ($isYouthGuard && empty($youthUser->reference_code)) {
+            $youthUser->reference_code = YouthProfile::generateUniqueReferenceCode('SK');
+            $youthUser->save();
         }
 
-        $profile = YouthProfile::with(['barangay', 'city', 'province'])->find($user->id);
+        $profile = $isYouthGuard
+            ? YouthProfile::with(['barangay', 'city', 'province'])->find($youthUser->id)
+            : $webUser;
+
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
 
-        $barangayYouthCount = YouthProfile::where('brgyCode', $user->brgyCode)
+        $brgyCode = $isYouthGuard ? $youthUser->brgyCode : null;
+
+        $barangayYouthCount = YouthProfile::when($brgyCode, fn ($q) => $q->where('brgyCode', $brgyCode))
             ->where('role', 'youth')
             ->where('status', 'approved')
             ->count();
 
-        $barangaySkCount = YouthProfile::where('brgyCode', $user->brgyCode)
+        $barangaySkCount = YouthProfile::when($brgyCode, fn ($q) => $q->where('brgyCode', $brgyCode))
             ->where('role', 'sk')
             ->where('status', 'approved')
-            ->count();
+            ->count() + \App\Models\User::where('role', 'sk')->count();
 
         $publishedEventsCount = Activity::where('status', 'published')->count();
-        $myEvidenceCount = SkActivityEvidence::where('youth_profile_id', $user->id)->count();
+
+        $ownerColumn = $isYouthGuard ? 'youth_profile_id' : 'user_id';
+        $myEvidenceCount = SkActivityEvidence::where($ownerColumn, $user->id)->count();
 
         $recentEvidences = SkActivityEvidence::with(['activity.category:id,name'])
-            ->where('youth_profile_id', $user->id)
+            ->where($ownerColumn, $user->id)
             ->latest()
             ->take(4)
             ->get()
             ->map(function (SkActivityEvidence $evidence) {
-                $disk = Storage::disk('public');
                 $photoUrls = collect($evidence->photos ?? [])
-                    ->map(fn ($path) => $disk->url($path))
+                    ->map(fn ($path) => '/storage/' . ltrim(preg_replace('/^\/?storage\//', '', (string) $path), '/'))
                     ->values()
                     ->all();
 
@@ -64,8 +73,8 @@ class SkDashboardController extends Controller
         $upcomingActivities = Activity::with('category:id,name')
             ->where('status', 'published')
             ->where('published_at', '<=', now('UTC'))
-            ->withCount(['skEvidences as my_evidence_count' => function ($q) use ($user) {
-                $q->where('youth_profile_id', $user->id);
+            ->withCount(['skEvidences as my_evidence_count' => function ($q) use ($ownerColumn, $user) {
+                $q->where($ownerColumn, $user->id);
             }])
             ->orderByDesc('starts_at')
             ->take(4)

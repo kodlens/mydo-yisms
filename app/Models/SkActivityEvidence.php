@@ -12,6 +12,7 @@ class SkActivityEvidence extends Model
     protected $fillable = [
         'activity_id',
         'youth_profile_id',
+        'user_id',
         'description',
         'photos',
     ];
@@ -31,5 +32,10 @@ class SkActivityEvidence extends Model
     public function skOfficial(): BelongsTo
     {
         return $this->belongsTo(YouthProfile::class, 'youth_profile_id');
+    }
+
+    public function skUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

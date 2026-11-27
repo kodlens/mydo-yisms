@@ -74,7 +74,7 @@ export default function SkAuthLayout({
   const initials = `${user?.fname?.[0] ?? ''}${user?.lname?.[0] ?? ''}`.toUpperCase();
   const fullName = [user?.fname, user?.lname].filter(Boolean).join(' ') || 'SK Official';
   const skPosition = user?.sk_position || 'SK Official';
-  const logout = () => post(route('sk-logout'));
+  const logout = () => post(route('logout'));
 
   const navigationItems: MenuProps['items'] = destinations.map(({ key, label, icon: Icon }) => {
     const available = route().has(key);

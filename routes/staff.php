@@ -11,6 +11,7 @@ use App\Http\Controllers\Staff\StaffEventActivityController;
 use App\Http\Controllers\Staff\StaffNotificationController;
 use App\Http\Controllers\Staff\StaffReportController;
 use App\Http\Controllers\Staff\StaffScholarshipController;
+use App\Http\Controllers\Staff\StaffSkOfficialController;
 use App\Http\Controllers\Staff\StaffYouthProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,13 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::get('/get-youth-profiles', [StaffYouthProfileController::class, 'getData'])->name('youth-profiles.get-data');
     Route::post('/youth-profiles/{id}/approve', [StaffYouthProfileController::class, 'approve'])->name('youth-profiles.approve');
     Route::post('/youth-profiles/{id}/reject', [StaffYouthProfileController::class, 'reject'])->name('youth-profiles.reject');
+
+    // SK Officials Registration & Management (by MYDO Staff)
+    Route::get('/sk-officials', [StaffSkOfficialController::class, 'index'])->name('sk-officials.index');
+    Route::get('/get-sk-officials', [StaffSkOfficialController::class, 'getData'])->name('sk-officials.get-data');
+    Route::post('/sk-officials', [StaffSkOfficialController::class, 'store'])->name('sk-officials.store');
+    Route::put('/sk-officials/{id}', [StaffSkOfficialController::class, 'update'])->name('sk-officials.update');
+    Route::delete('/sk-officials/{id}', [StaffSkOfficialController::class, 'destroy'])->name('sk-officials.destroy');
 
 
     // Scholarships Management

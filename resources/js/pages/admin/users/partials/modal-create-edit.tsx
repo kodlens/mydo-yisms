@@ -194,6 +194,7 @@ const ModalCreateEditUser = ({ user, modalOpen, onClose, refetch, form }: Props)
                   options={[
                     { value: 'staff', label: 'STAFF' },
                     { value: 'admin', label: 'ADMINISTRATOR' },
+                    { value: 'sk', label: 'SK OFFICIAL' },
                   ]}
                 />
               </Form.Item>
