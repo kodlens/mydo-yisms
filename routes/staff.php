@@ -54,6 +54,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::get('/events-activities/{id}/participants', [StaffEventActivityController::class, 'participantsPage'])->name('events-activities.participants-page');
     Route::get('/events-activities/{id}/participants/list', [StaffEventActivityController::class, 'participants'])->name('events-activities.participants');
     Route::patch('/events-activities/{id}/participants/{registration}', [StaffEventActivityController::class, 'updateParticipant'])->name('events-activities.participants.update');
+    Route::get('/events-activities/{id}/sk-evidences', [StaffEventActivityController::class, 'skEvidences'])->name('events-activities.sk-evidences');
 
     Route::get('/events-activities/{id}/attendance', [StaffActivityAttendanceController::class, 'index'])->name('events-activities.attendance.index');
     Route::get('/events-activities/{id}/attendance/data', [StaffActivityAttendanceController::class, 'data'])->name('events-activities.attendance.data');

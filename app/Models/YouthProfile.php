@@ -52,6 +52,7 @@ class YouthProfile extends Authenticatable
         'psa_path',
         'password',
         'role',
+        'sk_position',
         'status',
         'approved_by',
         'approved_at',
@@ -114,24 +115,32 @@ class YouthProfile extends Authenticatable
         return $this->hasMany(CashIncentiveBeneficiary::class, 'youth_profile_id');
     }
 
+    public function skActivityEvidences(): HasMany
+    {
+        return $this->hasMany(SkActivityEvidence::class, 'youth_profile_id');
+    }
+
     public function dashboardRoute(): string
     {
-        return 'youth.youth-dashboard.index';
+        return $this->role === 'sk'
+            ? 'sk.dashboard.index'
+            : 'youth.youth-dashboard.index';
     }
 
     protected static function booted(): void
     {
         static::creating(function (YouthProfile $profile) {
             if (empty($profile->reference_code)) {
-                $profile->reference_code = static::generateUniqueReferenceCode();
+                $prefix = $profile->role === 'sk' ? 'SK' : 'YD';
+                $profile->reference_code = static::generateUniqueReferenceCode($prefix);
             }
         });
     }
 
-    public static function generateUniqueReferenceCode(): string
+    public static function generateUniqueReferenceCode(string $prefix = 'YD'): string
     {
         do {
-            $code = 'YD-' . strtoupper(Str::random(4)) . '-' . strtoupper(Str::random(4));
+            $code = $prefix . '-' . strtoupper(Str::random(4)) . '-' . strtoupper(Str::random(4));
         } while (static::where('reference_code', $code)->exists());
 
         return $code;

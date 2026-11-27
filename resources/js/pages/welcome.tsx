@@ -268,6 +268,13 @@ export default function Welcome() {
               ) : (
                 <>
                   <Link
+                    href={route('sk-login.index')}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50/70 px-3.5 py-2.5 text-xs font-bold text-indigo-800 shadow-2xs transition hover:bg-indigo-100"
+                  >
+                    <ShieldCheck className="h-4 w-4 text-indigo-700" />
+                    <span>SK Portal</span>
+                  </Link>
+                  <Link
                     href={route('youth-login.index')}
                     className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-emerald-800"
                   >

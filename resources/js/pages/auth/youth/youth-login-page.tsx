@@ -361,17 +361,34 @@ export default function YouthLoginPage() {
               </div>
 
               {/* Register Prompt */}
-              <div className="mt-6 rounded-xl border border-slate-200 bg-[#fbfdfa] p-4 text-center">
-                <p className="text-xs text-slate-600">
-                  Don't have a registered youth profile yet?
-                </p>
-                <Link
-                  href={route('youth-register.index')}
-                  className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900"
-                >
-                  <span>Register your profile in 3 minutes</span>
-                  <ArrowRight className="h-3 w-3" />
-                </Link>
+              <div className="mt-6 space-y-3">
+                <div className="rounded-xl border border-slate-200 bg-[#fbfdfa] p-4 text-center">
+                  <p className="text-xs text-slate-600">
+                    Don't have a registered youth profile yet?
+                  </p>
+                  <Link
+                    href={route('youth-register.index')}
+                    className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900"
+                  >
+                    <span>Register your profile in 3 minutes</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+
+                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/60 p-3.5 text-center">
+                  <p className="text-xs text-indigo-950 font-medium">
+                    Are you a Sangguniang Kabataan (SK) Official?
+                  </p>
+                  <div className="mt-1.5 flex items-center justify-center gap-3 text-xs font-bold">
+                    <Link href={route('sk-login.index')} className="text-indigo-700 hover:underline">
+                      SK Official Sign In
+                    </Link>
+                    <span className="text-indigo-300">•</span>
+                    <Link href={route('sk-register.index')} className="text-indigo-700 hover:underline">
+                      Register as SK Official
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
 

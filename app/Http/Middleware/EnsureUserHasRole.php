@@ -14,16 +14,23 @@ class EnsureUserHasRole
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        $user = $request->user();
-
-        if (! $user) {
-            return redirect()->route('login');
-        }
+        $user = $request->user() ?? $request->user('youth');
 
         $allowedRoles = array_map(
             fn (string $role): string => strtolower(trim($role)),
             $roles
         );
+
+        if (! $user) {
+            if (in_array('sk', $allowedRoles, true)) {
+                return redirect()->route('sk-login.index');
+            }
+            if (in_array('youth', $allowedRoles, true)) {
+                return redirect()->route('youth-login.index');
+            }
+
+            return redirect()->route('login');
+        }
 
         $userRole = strtolower((string) $user->role);
 

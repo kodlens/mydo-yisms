@@ -23,6 +23,7 @@ const statusOptions = [
   { label: 'Approved', value: 'approved' },
   { label: 'Rejected', value: 'rejected' },
   { label: 'College Students', value: 'enrolled' },
+  { label: 'SK Officials', value: 'sk' },
 ];
 
 const StaffYouthProfilesPage = () => {
@@ -178,8 +179,15 @@ const StaffYouthProfilesPage = () => {
                 key="applicant"
                 render={(_, youth) => (
                   <div>
-                    <div className="font-medium text-stone-900">
-                      {youth.lname}, {youth.fname} {youth.mname ?? ''} {youth.suffix ?? ''}
+                    <div className="flex flex-wrap items-center gap-1.5 font-medium text-stone-900">
+                      <span>
+                        {youth.lname}, {youth.fname} {youth.mname ?? ''} {youth.suffix ?? ''}
+                      </span>
+                      {youth.role === 'sk' && (
+                        <Tag color="geekblue" className="m-0 text-[10px] font-bold">
+                          {youth.sk_position || 'SK Official'}
+                        </Tag>
+                      )}
                     </div>
                     <div className="text-xs text-stone-500">{youth.email}</div>
                   </div>

@@ -36,6 +36,7 @@ class AuthenticatedSessionController extends Controller
         $dashboardRoute = match ($request->user()->role) {
             'admin' => 'admin.dashboard.index',
             'staff' => 'staff.dashboard.index',
+            'sk' => 'sk.dashboard.index',
             default => 'staff.dashboard.index',
         };
 

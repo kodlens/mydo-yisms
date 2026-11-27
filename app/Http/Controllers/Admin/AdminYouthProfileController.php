@@ -54,6 +54,8 @@ class AdminYouthProfileController extends Controller
                 });
         } elseif ($status === 'graduated') {
             $query->where('is_graduated', true);
+        } elseif ($status === 'sk') {
+            $query->where('role', 'sk');
         } elseif ($status === 'active') {
             $query->where('is_active', true);
         } elseif ($status === 'inactive') {

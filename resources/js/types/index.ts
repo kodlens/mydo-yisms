@@ -45,6 +45,8 @@ export interface User {
 
 export interface Youth extends User {
     id: number;
+    role?: 'youth' | 'sk' | string | null;
+    sk_position?: string | null;
     reference_code?: string | null;
     birth_date?: string | null;
     civil_status?: string | null;

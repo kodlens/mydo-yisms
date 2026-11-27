@@ -4,10 +4,27 @@ import { Activity, ActivityStatus } from '@/types/activity';
 import { CheckOutlined, CloseCircleOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { Head, router } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, App, Button, Dropdown, Empty, Input, MenuProps, Pagination, Segmented, Space, Table, Tag, Tooltip } from 'antd';
+import { Alert, App, Button, Dropdown, Empty, Image, Input, MenuProps, Modal, Pagination, Segmented, Skeleton, Space, Table, Tag, Tooltip } from 'antd';
 import axios from 'axios';
-import { CalendarDays, Copy, MapPin, MoreHorizontal, Pencil, Plus, QrCode, RefreshCw, SearchX, Star, Trash2, TriangleAlert, Users } from 'lucide-react';
+import { CalendarDays, Camera, Copy, MapPin, MoreHorizontal, Pencil, Plus, QrCode, RefreshCw, SearchX, ShieldCheck, Star, Trash2, TriangleAlert, Users } from 'lucide-react';
 import { ReactElement, ReactNode, useEffect, useMemo, useState } from 'react';
+
+type SkEvidenceSubmission = {
+    id: number;
+    description: string;
+    photos: string[];
+    created_at: string | null;
+    sk_official: {
+        id: number | null;
+        full_name: string;
+        reference_code?: string | null;
+        sk_position: string;
+        barangay: string;
+        city: string;
+        email?: string | null;
+        mobile_number?: string | null;
+    };
+};
 
 const { Column } = Table;
 const { Search } = Input;
@@ -66,6 +83,34 @@ const StaffEventsActivitiesPage = () => {
     // list each have their own route.
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [togglingFeaturedId, setTogglingFeaturedId] = useState<number | null>(null);
+    const [evidenceActivity, setEvidenceActivity] = useState<Activity | null>(null);
+    const [evidenceList, setEvidenceList] = useState<SkEvidenceSubmission[]>([]);
+    const [evidenceLoading, setEvidenceLoading] = useState(false);
+
+    const handleViewSkEvidence = async (row: Activity) => {
+        setEvidenceActivity(row);
+        setEvidenceList([]);
+        setEvidenceLoading(true);
+
+        try {
+            const response = await axios.get<{
+                success: boolean;
+                evidences: SkEvidenceSubmission[];
+            }>(`/staff/events-activities/${row.id}/sk-evidences`);
+
+            if (response.data?.success) {
+                setEvidenceList(response.data.evidences ?? []);
+            }
+        } catch {
+            notification.error({
+                message: 'Could not load SK event evidence',
+                description: 'Please try again.',
+                placement: 'topRight',
+            });
+        } finally {
+            setEvidenceLoading(false);
+        }
+    };
 
     // TanStack Query owns the request: fetching, caching, and error state.
     const { data, isFetching, isError, error, refetch } = useQuery({
@@ -504,6 +549,26 @@ const StaffEventsActivitiesPage = () => {
                             />
 
                             <Column<Activity>
+                                title="SK Evidence"
+                                dataIndex="sk_evidences_count"
+                                key="sk_evidences"
+                                width={160}
+                                render={(_: number | undefined, row) => {
+                                    const count = row.sk_evidences_count ?? 0;
+                                    return (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleViewSkEvidence(row)}
+                                            className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50/70 px-2.5 py-1 text-xs font-semibold text-indigo-800 transition hover:bg-indigo-100"
+                                        >
+                                            <Camera size={13} className="text-indigo-700" />
+                                            <span>{count} {count === 1 ? 'submission' : 'submissions'}</span>
+                                        </button>
+                                    );
+                                }}
+                            />
+
+                            <Column<Activity>
                                 title="Actions"
                                 key="action"
                                 fixed="right"
@@ -517,6 +582,12 @@ const StaffEventsActivitiesPage = () => {
                                             menu={
                                                 {
                                                     items: [
+                                                        {
+                                                            label: `View SK Event Evidence (${row.sk_evidences_count ?? 0})`,
+                                                            key: `staff.events-activities.sk-evidence.${row.id}`,
+                                                            icon: <Camera size={15} />,
+                                                            onClick: () => handleViewSkEvidence(row),
+                                                        },
                                                         {
                                                             label: 'Attendance & Check-in',
                                                             key: `staff.events-activities.attendance.${row.id}`,
@@ -600,6 +671,124 @@ const StaffEventsActivitiesPage = () => {
                     </div>
                 </section>
             </div>
+
+            <Modal
+                centered
+                open={evidenceActivity !== null}
+                onCancel={() => setEvidenceActivity(null)}
+                footer={
+                    <div className="flex justify-end">
+                        <Button onClick={() => setEvidenceActivity(null)}>Close</Button>
+                    </div>
+                }
+                title={
+                    <div className="flex items-center gap-2.5">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700">
+                            <Camera size={18} />
+                        </span>
+                        <div>
+                            <p className="text-sm font-bold text-stone-900">
+                                SK Event Pictures & Evidence — {evidenceActivity?.title}
+                            </p>
+                            <p className="text-xs font-normal text-stone-500">
+                                Photos and descriptions uploaded by Sangguniang Kabataan (SK) Officials
+                            </p>
+                        </div>
+                    </div>
+                }
+                width={760}
+                destroyOnHidden
+            >
+                <div className="max-h-[70vh] space-y-4 overflow-y-auto pt-3 pr-1">
+                    {evidenceLoading ? (
+                        <div className="space-y-3">
+                            <Skeleton active paragraph={{ rows: 3 }} />
+                            <Skeleton active paragraph={{ rows: 3 }} />
+                        </div>
+                    ) : evidenceList.length > 0 ? (
+                        evidenceList.map((ev) => (
+                            <div
+                                key={ev.id}
+                                className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50/70 p-4"
+                            >
+                                <div className="flex flex-wrap items-start justify-between gap-2 border-b border-stone-200/80 pb-3">
+                                    <div>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="text-sm font-bold text-stone-900">
+                                                {ev.sk_official.full_name}
+                                            </span>
+                                            <Tag color="geekblue" className="m-0 text-xs font-semibold">
+                                                <ShieldCheck className="mr-1 inline h-3 w-3" />
+                                                {ev.sk_official.sk_position}
+                                            </Tag>
+                                            <Tag color="cyan" className="m-0 text-xs font-semibold">
+                                                Brgy. {ev.sk_official.barangay}
+                                            </Tag>
+                                            {ev.sk_official.reference_code && (
+                                                <span className="font-mono text-xs text-stone-500">
+                                                    ({ev.sk_official.reference_code})
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="mt-0.5 text-xs text-stone-500">
+                                            {ev.sk_official.email}
+                                            {ev.sk_official.mobile_number ? ` • ${ev.sk_official.mobile_number}` : ''}
+                                        </p>
+                                    </div>
+                                    <span className="text-xs text-stone-400">
+                                        {formatDate(ev.created_at, true) ?? '—'}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <p className="text-xs font-semibold tracking-wider text-stone-500 uppercase">
+                                        Event Description / Narrative
+                                    </p>
+                                    <p className="mt-1 text-sm leading-relaxed whitespace-pre-line text-stone-800">
+                                        {ev.description}
+                                    </p>
+                                </div>
+
+                                {ev.photos.length > 0 && (
+                                    <div>
+                                        <p className="mb-2 text-xs font-semibold tracking-wider text-stone-500 uppercase">
+                                            Uploaded Event Pictures ({ev.photos.length})
+                                        </p>
+                                        <Image.PreviewGroup>
+                                            <div className="flex flex-wrap gap-2.5">
+                                                {ev.photos.map((url, index) => (
+                                                    <Image
+                                                        key={index}
+                                                        src={url}
+                                                        alt={`SK Evidence Photo ${index + 1}`}
+                                                        width={110}
+                                                        height={110}
+                                                        className="rounded-xl border border-stone-200 object-cover shadow-2xs"
+                                                    />
+                                                ))}
+                                            </div>
+                                        </Image.PreviewGroup>
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="rounded-2xl border border-dashed border-stone-200 p-10 text-center">
+                            <Empty
+                                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                description={
+                                    <div>
+                                        <p className="font-semibold text-stone-700">No SK evidence uploaded yet</p>
+                                        <p className="mt-1 text-xs text-stone-500">
+                                            When SK Officials upload pictures and descriptions for this event, they will appear here.
+                                        </p>
+                                    </div>
+                                }
+                            />
+                        </div>
+                    )}
+                </div>
+            </Modal>
         </>
     );
 };

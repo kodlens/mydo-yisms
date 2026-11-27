@@ -60,4 +60,9 @@ class Activity extends Model
     {
         return $this->hasMany(ActivityAttendance::class);
     }
+
+    public function skEvidences(): HasMany
+    {
+        return $this->hasMany(SkActivityEvidence::class);
+    }
 }

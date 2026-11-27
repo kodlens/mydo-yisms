@@ -37,6 +37,7 @@ class StaffEventActivityController extends Controller
                 'registrations',
                 'registrations as approved_registrations_count' => fn ($q) => $q->reservingSlot(),
                 'registrations as pending_registrations_count' => fn ($q) => $q->where('status', 'pending'),
+                'skEvidences as sk_evidences_count',
             ]);
 
         // Search matches the title or the slug so staff can find a row either way.
@@ -67,6 +68,59 @@ class StaffEventActivityController extends Controller
         return response()->json([
             'success' => true,
             'data' => $this->categoryOptions(),
+        ]);
+    }
+
+    /**
+     * All SK Official uploaded photo evidence and descriptions for a specific activity.
+     */
+    public function skEvidences(int $id): JsonResponse
+    {
+        $activity = Activity::with(['skEvidences' => function ($query) {
+            $query->with(['skOfficial.barangay', 'skOfficial.city'])->latest();
+        }])->findOrFail($id);
+
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+        $evidences = $activity->skEvidences->map(function (\App\Models\SkActivityEvidence $evidence) use ($disk) {
+            $sk = $evidence->skOfficial;
+            $fullName = trim(implode(' ', array_filter([
+                $sk?->fname,
+                $sk?->mname,
+                $sk?->lname,
+                $sk?->suffix,
+            ]))) ?: 'SK Official';
+
+            return [
+                'id' => $evidence->id,
+                'description' => $evidence->description,
+                'photos' => collect($evidence->photos ?? [])
+                    ->map(fn ($path) => $disk->url($path))
+                    ->values()
+                    ->all(),
+                'created_at' => optional($evidence->created_at)?->toIso8601String(),
+                'sk_official' => [
+                    'id' => $sk?->id,
+                    'full_name' => $fullName,
+                    'reference_code' => $sk?->reference_code,
+                    'sk_position' => $sk?->sk_position ?? 'SK Official',
+                    'barangay' => $sk?->barangay?->brgyDesc ?? $sk?->brgyCode ?? '—',
+                    'city' => $sk?->city?->citymunDesc ?? '—',
+                    'email' => $sk?->email,
+                    'mobile_number' => $sk?->mobile_number,
+                ],
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'activity' => [
+                'id' => $activity->id,
+                'title' => $activity->title,
+                'venue_name' => $activity->venue_name,
+                'starts_at' => optional($activity->starts_at)?->toIso8601String(),
+            ],
+            'evidences' => $evidences,
         ]);
     }
 

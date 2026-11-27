@@ -39,7 +39,7 @@ class UserSeeder extends Seeder
                 'mname' => 'Reyes',
                 'email' => 'external.encoder@localhost',
                 'password' => Hash::make('a'),
-                'role' => 'staff'
+                'role' => 'sk'
             ],
         ];
 

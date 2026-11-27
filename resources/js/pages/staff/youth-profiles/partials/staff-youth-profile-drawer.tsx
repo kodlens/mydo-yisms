@@ -98,7 +98,7 @@ export default function StaffYouthProfileDrawer({ open, onClose, youth, onUpdate
 
   const fullName = [youth.fname, youth.mname, youth.lname, youth.suffix].map(display).filter(Boolean).join(' ');
   const age = calculateAge(youth.birth_date);
-  const educationalCategory = 'College Student';
+  const educationalCategory = youth.role === 'sk' ? (youth.sk_position || 'SK Official') : 'College Student';
   const regStatus = youth.status || 'pending';
 
   const handleApprove = () => {
@@ -173,6 +173,11 @@ export default function StaffYouthProfileDrawer({ open, onClose, youth, onUpdate
                 {youth.reference_code && (
                   <Tag color="cyan" className="font-mono text-xs font-semibold m-0">
                     {youth.reference_code}
+                  </Tag>
+                )}
+                {youth.role === 'sk' && (
+                  <Tag color="geekblue" className="text-xs m-0 font-semibold">
+                    {youth.sk_position || 'SK Official'}
                   </Tag>
                 )}
                 {regStatus === 'approved' && (

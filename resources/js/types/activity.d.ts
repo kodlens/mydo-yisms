@@ -37,6 +37,8 @@ export type Activity = {
     pending_registrations_count?: number;
     /** Sign-ups that still reserve a slot, i.e. pending + approved. */
     approved_registrations_count?: number;
+    /** Number of SK Official event evidence submissions for this activity. */
+    sk_evidences_count?: number;
 };
 
 export type ActivityPayload = {

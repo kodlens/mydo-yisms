@@ -67,7 +67,7 @@ class YouthAuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'redirect' => route('youth.youth-dashboard.index'),
+                'redirect' => route($youth->dashboardRoute()),
             ]);
         }
 

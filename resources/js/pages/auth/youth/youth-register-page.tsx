@@ -335,14 +335,26 @@ export default function YouthRegisterPage({ xToken }: { xToken: string }) {
               Back to portal home
             </Link>
 
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-slate-500">Already registered?</span>
-              <Link
-                href={route('youth-login.index')}
-                className="font-semibold text-emerald-700 underline-offset-4 hover:text-emerald-800 hover:underline"
-              >
-                Sign in here
-              </Link>
+            <div className="flex flex-wrap items-center gap-4 text-sm">
+              <div>
+                <span className="text-slate-500">Barangay SK Official? </span>
+                <Link
+                  href={route('sk-register.index')}
+                  className="font-semibold text-indigo-700 underline-offset-4 hover:underline"
+                >
+                  Register as SK Official
+                </Link>
+              </div>
+              <span className="text-slate-300">|</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500">Already registered?</span>
+                <Link
+                  href={route('youth-login.index')}
+                  className="font-semibold text-emerald-700 underline-offset-4 hover:text-emerald-800 hover:underline"
+                >
+                  Sign in here
+                </Link>
+              </div>
             </div>
           </div>
 

@@ -28,7 +28,7 @@ Route::middleware('guest:youth')->group(function () {
     Route::post('/youth-register', [YouthRegistrationController::class, 'store'])->name('youth-register.store');
 });
 
-Route::middleware('auth:youth')->group(function () {
+Route::middleware(['auth:youth', 'role:youth'])->group(function () {
 
     Route::get('/youth/services/events-activities', [YouthEventActivitiyController::class, 'index'])
         ->name('youth.youth-services.events-activities.index');
