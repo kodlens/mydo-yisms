@@ -31,6 +31,8 @@ class YouthApplyScholarshipTest extends TestCase
             'lname' => 'Santos ' . Str::random(4),
             'email' => 'maria_' . Str::random(6) . '@example.com',
             'password' => bcrypt('password'),
+            'role' => 'youth',
+            'status' => 'approved',
             'school_name' => 'Bukidnon State University',
             'program' => 'BS Information Technology',
             'year' => 2,

@@ -48,6 +48,7 @@ class ScholarshipNotificationTest extends TestCase
             'lname' => 'Dalisay ' . Str::random(4),
             'email' => 'carlo_' . Str::random(6) . '@example.com',
             'password' => bcrypt('password'),
+            'role' => 'youth',
             'school_name' => 'Bukidnon State University',
             'program' => 'BS Information Technology',
             'year' => 3,

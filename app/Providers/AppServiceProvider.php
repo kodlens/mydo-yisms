@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        ResetPassword::toMailUsing(function ($notifiable, string $token) {
+            $url = url(route('password.reset', [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ], false));
+
+            $count = config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
+
+            return (new MailMessage)
+                ->subject('Reset Your Password - eKabataan MYDO')
+                ->view('emails.password-reset', [
+                    'url' => $url,
+                    'user' => $notifiable,
+                    'count' => $count,
+                ])
+                ->text('emails.password-reset-plain', [
+                    'url' => $url,
+                    'user' => $notifiable,
+                    'count' => $count,
+                ]);
+        });
     }
 }
+
