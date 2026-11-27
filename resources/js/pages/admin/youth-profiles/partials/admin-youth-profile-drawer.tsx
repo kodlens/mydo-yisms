@@ -2,24 +2,19 @@ import { Youth } from '@/types';
 import { EyeOutlined, LockOutlined } from '@ant-design/icons';
 import { router } from '@inertiajs/react';
 import {
-  Alert,
-  App,
+   App,
   Button,
   Descriptions,
   Drawer,
-  Empty,
   Image,
   Input,
   Modal,
   Space,
   Tag,
-  Typography,
 } from 'antd';
 import axios from 'axios';
 import ChangeYouthPassword from './change-youth-password';
 import {
-  BookOpen,
-  Calendar,
   CheckCircle2,
   Clock,
   GraduationCap,
@@ -29,14 +24,10 @@ import {
   ShieldAlert,
   ShieldCheck,
   UserCheck,
-  UserRound,
   Users,
-  Wallet,
   XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
-
-const { Text } = Typography;
 
 export type ScholarshipApplicationItem = {
   id: number;
@@ -108,15 +99,15 @@ export default function AdminYouthProfileDrawer({ open, onClose, youth, onUpdate
   const age = calculateAge(youth.birth_date);
   const regStatus = youth.status || 'pending';
 
-  const fullAddress = [
-    youth.street_address,
-    youth.barangay?.brgyDesc,
-    youth.city?.citymunDesc,
-    youth.province?.provDesc,
-    youth.zip_code,
-  ]
-    .filter(Boolean)
-    .join(', ');
+  // const fullAddress = [
+  //   youth.street_address,
+  //   youth.barangay?.brgyDesc,
+  //   youth.city?.citymunDesc,
+  //   youth.province?.provDesc,
+  //   youth.zip_code,
+  // ]
+  //   .filter(Boolean)
+  //   .join(', ');
 
   const handleApprove = () => {
     modal.confirm({
@@ -269,7 +260,7 @@ export default function AdminYouthProfileDrawer({ open, onClose, youth, onUpdate
                   <p className="text-xs text-amber-800 mt-0.5">
                     This youth registered on {formatDate(youth.created_at)}. Their account is currently blocked from signing in until a staff member reviews and approves it.
                   </p>
-                  <div className="mt-3 flex items-center gap-2">
+                  {/* <div className="mt-3 flex items-center gap-2">
                     <Button
                       type="primary"
                       size="small"
@@ -289,7 +280,7 @@ export default function AdminYouthProfileDrawer({ open, onClose, youth, onUpdate
                     >
                       Reject
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

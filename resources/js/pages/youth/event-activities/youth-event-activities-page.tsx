@@ -503,7 +503,7 @@ const YouthEventActivitiesPage = ({
                                                     </p>
                                                     <h3 className="mt-2 text-lg leading-6 font-bold text-slate-900">{activity.title}</h3>
                                                 </div>
-                                                <div className="min-w-14 rounded-lg bg-slate-50 px-2.5 py-1.5 text-center ring-1 ring-slate-200/70">
+                                                {/* <div className="min-w-14 rounded-lg bg-slate-50 px-2.5 py-1.5 text-center ring-1 ring-slate-200/70">
                                                     <p className="text-[10px] font-bold text-teal-700 uppercase">
                                                         {dateLabel(activity.starts_at, { month: 'short' })}
                                                     </p>
@@ -513,7 +513,7 @@ const YouthEventActivitiesPage = ({
                                                     <p className="text-[10px] font-semibold text-slate-500">
                                                         {dateLabel(activity.starts_at, { year: 'numeric' })}
                                                     </p>
-                                                </div>
+                                                </div> */}
                                             </div>
                                             <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">
                                                 {activity.summary ?? activity.description}
