@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SK Official Role - Sequence Diagrams | eKabataan</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-indigo">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Role View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="./youth-role.html">Youth</a>
+        <a href="./sk-official-role.html" class="active">SK Official</a>
+        <a href="./staff-role.html">Staff</a>
+        <a href="./admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="../modules/auth-and-registration.html">Auth</a>
+        <a href="../modules/profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="../modules/scholarships-and-notifications.html">Scholarships</a>
+        <a href="../modules/events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="../modules/cash-incentives.html">Cash Incentives</a>
+        <a href="../modules/reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role 02 · Sangguniang Kabataan Portal (role:sk)</span>
+      <h1>SK Official — Role Sequence Diagrams</h1>
+      <p>Documents how registered Sangguniang Kabataan (SK) Officials authenticate with their assigned Barangay &amp; SK Position, monitor barangay-level youth counts, and submit photo &amp; narrative evidence for municipal activities.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Model: App\Models\User (role = sk)</span>
+        <span class="meta-chip">Assigned Jurisdiction: sk_position + brgyCode</span>
+        <span class="meta-chip">Evidence Model: SkActivityEvidence</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">SK Flow 01</span>
+        <h2 class="card-title">Portal Sign-In &amp; Barangay-Scoped SK Dashboard</h2>
+        <p class="card-desc">After MYDO Staff or an Administrator registers an SK Official with their Barangay jurisdiction, logging in routes them to <code>/sk/dashboard</code> with metrics scoped to their assigned Barangay.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">AuthenticatedSessionController</span>
+          <span class="tech-tag">HandleInertiaRequests</span>
+          <span class="tech-tag">SkDashboardController@index</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor SK as SK Official
+    participant UI as Portal Login & SK UI
+    participant Auth as Auth & Role Middleware
+    participant Dash as SkDashboardController
+    participant DB as MySQL (users, barangays, youth_profiles)
+
+    Note over SK, DB: Phase 1 - Authentication & Role Redirection
+    SK->>UI: Enter username & password on /login
+    UI->>Auth: POST /login
+    Auth->>DB: Authenticate User (role = sk) on web guard
+    Auth-->>UI: Redirect via User::dashboardRoute() to /sk/dashboard
+
+    Note over SK, DB: Phase 2 - Barangay Context & Scoped Metrics
+    UI->>Auth: GET /sk/dashboard (EnsureUserHasRole: sk)
+    Auth->>DB: HandleInertiaRequests loads barangay, city, province on auth.user
+    Auth->>Dash: Invoke SkDashboardController@index
+    Dash->>DB: Load User with barangay, city, province & read brgyCode
+    Dash->>DB: Count approved Youth & SK Officials in assigned brgyCode
+    Dash->>DB: Fetch SK Official's recent SkActivityEvidence & upcoming published Activities
+    DB-->>Dash: Return barangay stats, active AcademicYear & evidence history
+    Dash-->>UI: Render SK Dashboard with SK Position & Brgy. Name badge
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">SK Flow 02</span>
+        <h2 class="card-title">Uploading &amp; Managing Event Photo and Narrative Evidence</h2>
+        <p class="card-desc">SK Officials document barangay participation in published municipal events by uploading verified photos (1–10 images) and an official narrative report, which immediately becomes visible to MYDO Staff and Administrators.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">SkEventActivityController@index</span>
+          <span class="tech-tag">SkEventActivityController@storeEvidence</span>
+          <span class="tech-tag">SkEventActivityController@destroyEvidence</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor SK as SK Official
+    participant UI as SK Events & Evidence Page
+    participant Temp as UploadFileController
+    participant Ctrl as SkEventActivityController
+    participant Disk as Public Storage Disk
+    participant DB as MySQL (sk_activity_evidences)
+    actor Reviewers as MYDO Staff & Admin
+
+    Note over SK, DB: Phase 1 - Browse Published Events & Stage Photos
+    SK->>UI: Open /sk/events-activities
+    UI->>Ctrl: GET /sk/events-activities
+    Ctrl->>DB: Fetch published Activities + this SK Official's my_evidences
+    Ctrl-->>UI: Render event cards & existing submission history
+    SK->>UI: Select 1 to 10 event pictures (PNG/JPG/JPEG)
+    UI->>Temp: POST /temp-upload for each selected image
+    Temp->>Disk: Save staged image in storage/app/public/temp
+    Temp-->>UI: Return temporary filename
+
+    Note over SK, Reviewers: Phase 2 - Submit Narrative & Commit Evidence
+    SK->>UI: Enter Event Narrative Description & click Submit Evidence
+    UI->>Ctrl: POST /sk/events-activities/{activity}/evidence
+    Ctrl->>Disk: Validate MIME types & move files to upfiles/sk-evidences/activity-{id}/sk-{user_id}
+    Ctrl->>DB: Insert SkActivityEvidence (activity_id, user_id, description, photos JSON)
+    Ctrl-->>UI: Return 200 OK with public photo URLs
+    Reviewers->>DB: Open SK Evidence Modal in Staff or Admin Events Directory
+    DB-->>Reviewers: Display photos + narrative tagged with SK Position & Brgy. Name
+
+    opt Delete Own Evidence Submission
+        SK->>UI: Click Delete on own evidence entry
+        UI->>Ctrl: DELETE /sk/events-activities/{activity}/evidence/{evidence}
+        Ctrl->>Disk: Delete stored evidence image files
+        Ctrl->>DB: Delete SkActivityEvidence row (verified by owner user_id)
+        Ctrl-->>UI: Return deletion confirmation
+    end
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Sangguniang Kabataan (SK) Official Role Sequence Diagrams
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 02: Youth Profiles &amp; SK Barangay Management - Sequence Diagrams</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-indigo">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Module View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../roles/youth-role.html">Youth</a>
+        <a href="../roles/sk-official-role.html">SK Official</a>
+        <a href="../roles/staff-role.html">Staff</a>
+        <a href="../roles/admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="./auth-and-registration.html">Auth</a>
+        <a href="./profiles-and-sk-management.html" class="active">Profiles &amp; SK</a>
+        <a href="./scholarships-and-notifications.html">Scholarships</a>
+        <a href="./events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="./cash-incentives.html">Cash Incentives</a>
+        <a href="./reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Module 02 · Registry &amp; Barangay Governance</span>
+      <h1>Youth Profiles &amp; SK Officials Barangay Management</h1>
+      <p>Illustrates Youth profile lifecycle management across Youth, Staff, and Admin workspaces, alongside SK Official account registration with cascading PSGC Province, City/Municipality, and Barangay assignment.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Tables: youth_profiles, users, provinces, cities, barangays</span>
+        <span class="meta-chip">Components: SelectProvince, SelectCity, SelectBarangay</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 02 · Sequence A</span>
+        <h2 class="card-title">Youth Registry Directory, Drawer Inspection &amp; Profile Updates</h2>
+        <p class="card-desc">Covers how Youth update their own academic/personal data and how MYDO Staff and Administrators search, filter, inspect, moderate, and manage Youth records.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">YouthMyProfileController</span>
+          <span class="tech-tag">StaffYouthProfileController</span>
+          <span class="tech-tag">AdminYouthProfileController</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Youth as Youth Member
+    actor StaffAdmin as MYDO Staff / Admin
+    participant UI as Portal / Workspace UI
+    participant Ctrl as YouthProfile Controllers
+    participant DB as MySQL (youth_profiles, barangays, activity_logs)
+
+    Note over Youth, DB: 1. Youth Self-Service Profile Update
+    Youth->>UI: Open /youth/my-profile & edit personal, address, or school details
+    UI->>Ctrl: PUT /youth/my-profile
+    Ctrl->>DB: Validate & update YouthProfile attributes
+    Ctrl-->>UI: Return updated profile & flash confirmation
+
+    Note over StaffAdmin, DB: 2. Staff & Admin Registry Search and Drawer Moderation
+    StaffAdmin->>UI: Open Youth Profiles page & filter by search, barangay, year, or status
+    UI->>Ctrl: GET /get-youth-profiles
+    Ctrl->>DB: Query YouthProfile with province, city, barangay & approver
+    Ctrl-->>UI: Return paginated Youth registry rows
+    StaffAdmin->>UI: Click row to open Youth Profile Drawer (view School ID & credentials)
+    opt Approve / Reject / Reset Youth Password (Admin)
+        UI->>Ctrl: POST /approve, /reject, or /admin/youth-profiles/{id}/change-password
+        Ctrl->>DB: Persist status or hashed password & write ActivityLog
+        Ctrl-->>UI: Refresh Youth directory state
+    end
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 02 · Sequence B</span>
+        <h2 class="card-title">SK Official Registration with Cascading PSGC Barangay Assignment</h2>
+        <p class="card-desc">Shows how Staff (<code>/staff/sk-officials</code>) and Administrators (<code>/admin/users</code> when <code>role = sk</code>) assign an SK Position and Barangay Leading, and how that jurisdiction propagates across the SK Portal and Event Evidence modals.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">OpenController (PSGC)</span>
+          <span class="tech-tag">StaffSkOfficialController</span>
+          <span class="tech-tag">AdminUserController</span>
+          <span class="tech-tag">SkDashboardController</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Registrar as MYDO Staff / Admin
+    participant Modal as SK Registration / Manage User Modal
+    participant OpenAPI as OpenController (PSGC)
+    participant SkCtrl as StaffSkOfficial / AdminUser Controller
+    participant DB as MySQL (users, provinces, cities, barangays)
+    actor SK as SK Official
+
+    Note over Registrar, DB: 1. Cascading Address Lookup in Registration Modal
+    Registrar->>Modal: Open Register SK Official (or Select Role = SK OFFICIAL)
+    Modal->>OpenAPI: GET /load-provinces
+    OpenAPI->>DB: Query active provinces
+    OpenAPI-->>Modal: Return Province options
+    Registrar->>Modal: Select Province -> triggers City lookup
+    Modal->>OpenAPI: GET /load-cities?provCode=...
+    OpenAPI-->>Modal: Return City / Municipality options
+    Registrar->>Modal: Select City -> triggers Barangay lookup
+    Modal->>OpenAPI: GET /load-barangays?provCode=...&cityCode=...
+    OpenAPI-->>Modal: Return Barangay options
+
+    Note over Registrar, DB: 2. Persist SK Position & Barangay Jurisdiction
+    Registrar->>Modal: Choose SK Position, Barangay Leading, optional Street & submit
+    Modal->>SkCtrl: POST /staff/sk-officials (or POST /admin/users with role=sk)
+    SkCtrl->>DB: Validate exists on provinces, cities, barangays & save User
+    SkCtrl->>DB: ActivityLogger::log(sk_official.created with Position & Brgy. Name)
+    SkCtrl-->>Modal: Return saved status & display Brgy. Name in directory table
+
+    Note over SK, DB: 3. Downstream Barangay Propagation
+    SK->>DB: Sign in & open /sk/dashboard
+    DB-->>SK: HandleInertiaRequests & SkDashboardController load barangay.brgyDesc + scoped youth counts
+    SK->>DB: Submit SkActivityEvidence on /sk/events-activities
+    DB-->>Registrar: Staff/Admin sk-evidences endpoint displays SK Position + Brgy. Name badge
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Module 02: Youth Profiles &amp; SK Officials Barangay Management
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

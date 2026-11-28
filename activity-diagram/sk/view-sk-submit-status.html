@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SK Official: View SK Submit Status - Activity Diagram</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-indigo">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Activity Diagram</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../admin/approve-reject-youth-registration.html">Admin: Youth Reg</a>
+        <a href="../mydo-staff/approve-reject-youth-registration.html">Staff: Youth Reg</a>
+        <a href="../mydo-staff/manage-scholarship-application.html">Staff: Scholarships</a>
+        <a href="../mydo-staff/manage-event-participant.html">Staff: Participants</a>
+        <a href="../youth-scholar/join-activity.html">Youth: Join Activity</a>
+        <a href="./submit-document-report.html">SK: Submit Report</a>
+        <a href="./view-sk-submit-status.html" class="active">SK: Submit Status</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role Folder: sk/ · Activity Diagram 02</span>
+      <h1>SK Official — View SK Submit Status</h1>
+      <p>UML Swimlane Activity Diagram detailing how an SK Official checks submission status across the SK Dashboard and Events &amp; Evidence page, reviews submitted photo galleries and narrative timestamps, and manages existing entries.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Routes: /sk/dashboard &amp; /sk/events-activities</span>
+        <span class="meta-chip">Controllers: SkDashboardController &amp; SkEventActivityController</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Activity Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="legend-bar">
+      <span class="legend-title">UML Notation:</span>
+      <span class="legend-item"><span class="sym-start"></span> Initial Node</span>
+      <span class="legend-item"><span class="sym-action"></span> Action State</span>
+      <span class="legend-item"><span class="sym-decision"></span> Decision / Guard</span>
+      <span class="legend-item"><span class="sym-end"></span> Activity Final Node</span>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">SK Official Activity Diagram 02</span>
+        <h2 class="card-title">Track Submission Status, Inspect Uploaded Reports &amp; Manage Entries</h2>
+        <p class="card-desc">Illustrates how the SK Official views summary submission KPIs (<code>Submitted to MYDO</code>), checks per-event upload indicators, inspects previously submitted reports, or deletes an erroneous submission.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">GET /sk/dashboard</span>
+          <span class="tech-tag">GET /sk/events-activities</span>
+          <span class="tech-tag">DELETE /sk/events-activities/{activity}/evidence/{evidence}</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph SkLane["Swimlane 1: Sangguniang Kabataan (SK) Official"]
+        Start((" ")) --> V1(["Sign in to SK Portal (/sk/dashboard)"])
+        V2(["View 'My Evidence Uploads (Submitted to MYDO)' KPI & Recent Submissions"])
+        V3(["Open Events & Evidence Upload Page (/sk/events-activities) & Select Event"])
+        V4(["View 'No Evidence Uploaded Yet' Indicator on Event Card"])
+        V5(["View Green 'Evidence Uploaded (N Entries)' Status Badge & Open Modal"])
+        V6(["Inspect Submitted Photo Gallery, Narrative Text & Submission Timestamp"])
+        D2{"Follow-up Action?"}
+        V7(["Confirm Delete Erroneous Submission"])
+        EndNode((("◉")))
+    end
+
+    subgraph SysLane["Swimlane 2: eKabataan System (SkDashboard & SkEventActivity Controllers)"]
+        S1(["Load SK Barangay Profile, myEvidenceCount & Per-Activity my_evidences"])
+        D1{"Has SK Submitted Evidence for Selected Event?"}
+        S2(["Render Empty Submission State with Upload Prompt"])
+        S3(["Render Submitted Entries List Shared with MYDO Staff"])
+        S4(["Verify Owner user_id, Delete Photos from Public Disk & Delete SkActivityEvidence"])
+        S5(["Refresh Per-Event Submission Count & Status Badge"])
+    end
+
+    V1 --> S1
+    S1 --> V2
+    V2 --> V3
+    V3 --> D1
+
+    D1 -- "No (0 Entries)" --> S2
+    S2 --> V4
+    V4 --> EndNode
+
+    D1 -- "Yes (1 or More Entries)" --> S3
+    S3 --> V5
+    V5 --> V6
+    V6 --> D2
+
+    D2 -- "Close / Keep As-Is" --> EndNode
+    D2 -- "Delete Entry" --> V7
+    V7 --> S4
+    S4 --> S5
+    S5 --> EndNode
+
+    classDef startNode fill:#0f172a,stroke:#0f172a,color:#ffffff;
+    classDef endNode fill:#ffffff,stroke:#0f172a,stroke-width:3px,color:#0f172a,font-weight:900;
+    classDef actionSk fill:#eef2ff,stroke:#4338ca,color:#0f172a;
+    classDef actionSys fill:#f8fafc,stroke:#64748b,color:#0f172a;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f,font-weight:700;
+    classDef submittedNode fill:#dcfce7,stroke:#16a34a,color:#14532d,font-weight:600;
+    classDef neutralPending fill:#f1f5f9,stroke:#64748b,color:#334155;
+    classDef delNode fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,font-weight:600;
+
+    class Start startNode;
+    class EndNode endNode;
+    class V1,V2,V3,V6 actionSk;
+    class S1,S2,S3,S4,S5 actionSys;
+    class D1,D2 decision;
+    class V5 submittedNode;
+    class V4 neutralPending;
+    class V7 delNode;
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · SK Official Activity Diagram: View SK Submit Status
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eKabataan YIMS - Activity Diagram Process Notes &amp; Wording</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .notes-narrative {
+      background: #f8fafc;
+      border-left: 4px solid var(--primary);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 18px;
+      font-size: 14px;
+      color: #1e293b;
+      margin-bottom: 18px;
+    }
+    .notes-list {
+      padding-left: 22px;
+      font-size: 13.5px;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .notes-list li strong {
+      color: #0f172a;
+    }
+    .sub-branches {
+      margin-top: 6px;
+      padding-left: 18px;
+      list-style-type: disc;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+  </style>
+</head>
+<body class="theme-teal">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="./index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Process Notes</span>
+      </a>
+      <div class="nav-links">
+        <a href="./index.html">Diagram Hub</a>
+        <a href="./activity-diagram-notes.html" class="active">Notes &amp; Wording</a>
+        <div class="nav-divider"></div>
+        <a href="./admin/approve-reject-youth-registration.html">Admin: Youth Reg</a>
+        <a href="./mydo-staff/approve-reject-youth-registration.html">Staff: Youth Reg</a>
+        <a href="./mydo-staff/manage-scholarship-application.html">Staff: Scholarships</a>
+        <a href="./mydo-staff/manage-event-participant.html">Staff: Participants</a>
+        <a href="./youth-scholar/join-activity.html">Youth: Join Activity</a>
+        <a href="./sk/submit-document-report.html">SK: Submit Report</a>
+        <a href="./sk/view-sk-submit-status.html">SK: Submit Status</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">MYDO · Documentation &amp; Thesis Reference</span>
+      <h1>Activity Diagrams — Process Sequence Notes &amp; Narrative Wording</h1>
+      <p>Ready-to-use figure descriptions and step-by-step sequence notes for all 7 UML Activity Diagrams, aligned directly with the eKabataan Youth Information Management System (YIMS) implementation.</p>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="./index.html">← Back to Activity Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save Notes as PDF</button>
+    </div>
+
+    <!-- 1. ADMIN -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">1. Admin Role (admin/approve-reject-youth-registration.html)</span>
+        <h2 class="card-title">Admin — Approve / Reject Youth Registration</h2>
+      </div>
+      <div class="notes-narrative">
+        <strong>Narrative Description:</strong> This activity diagram illustrates the administrative verification process performed by the System Administrator before a newly registered youth member is granted login access to the eKabataan Youth Portal. Upon registration, every youth account starts in a locked <code>pending</code> state. The Administrator inspects the applicant's personal profile, barangay residency, educational credentials, and uploaded School ID image, then either activates the account or rejects the registration with documented remarks—recording an immutable entry in the system audit log in both cases.
+      </div>
+      <ol class="notes-list">
+        <li><strong>Start &amp; Navigation:</strong> The System Administrator signs in to the Executive Console and opens the <em>Youth Profiles Directory</em> (<code>/admin/youth-profiles</code>).</li>
+        <li><strong>Queue Filtering:</strong> The Administrator filters the list by <code>Pending</code> status or searches by the applicant's name/email, prompting the system to retrieve matching <code>YouthProfile</code> records along with their PSGC address and School ID attachment path.</li>
+        <li><strong>Credential &amp; ID Inspection:</strong> The Administrator opens the <em>Youth Profile Drawer</em> and reviews the applicant's personal details, barangay address, school information, and uploaded School ID photo.</li>
+        <li><strong>Decision — Registration Valid &amp; Complete?</strong>
+          <ul class="sub-branches">
+            <li><strong>If Valid (Approve):</strong> The Administrator clicks <em>Approve</em>. The system updates the record to <code>status = approved</code> and <code>is_active = true</code>, stamps <code>approved_by</code> and <code>approved_at</code>, logs <code>youth_profile.approved</code> in <code>activity_logs</code>, and unlocks the account so the youth can sign in at <code>/youth-login</code>.</li>
+            <li><strong>If Invalid / Incomplete (Reject):</strong> The Administrator clicks <em>Reject</em> and encodes an optional rejection reason (up to 500 characters). The system sets <code>status = rejected</code> and <code>is_active = false</code>, stores the <code>rejection_reason</code>, logs <code>youth_profile.rejected</code> in <code>activity_logs</code>, and keeps portal login blocked while displaying the rejection notice to the applicant.</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <!-- 2. STAFF YOUTH REG -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">2. MYDO Staff Role (mydo-staff/approve-reject-youth-registration.html)</span>
+        <h2 class="card-title">MYDO Staff — Approve / Reject Youth Registration</h2>
+      </div>
+      <div class="notes-narrative">
+        <strong>Narrative Description:</strong> This activity diagram depicts the day-to-day registration screening workflow carried out by MYDO Staff Officers. Staff verify whether youth registrants meet municipal age, barangay residency, and enrollment authenticity requirements using their uploaded School ID before enabling their Youth Portal account and unique <code>YD-XXXX-XXXX</code> reference code.
+      </div>
+      <ol class="notes-list">
+        <li><strong>Start &amp; Queue Access:</strong> The MYDO Staff Officer signs in to the Staff Workspace and navigates to <em>Youth Profiles</em> (<code>/staff/youth-profiles</code>).</li>
+        <li><strong>Filter Pending Sign-Ups:</strong> Staff filter the directory to display <code>Pending</code> registrations, loading paginated youth profiles from <code>StaffYouthProfileController</code>.</li>
+        <li><strong>Drawer Verification:</strong> Staff open the <em>StaffYouthProfileDrawer</em> to examine the registrant's birth date/age, barangay residency, school/program details, and uploaded School ID image.</li>
+        <li><strong>Decision — Meets MYDO Eligibility &amp; Valid ID?</strong>
+          <ul class="sub-branches">
+            <li><strong>If Approved:</strong> Staff confirm approval (<code>POST /staff/youth-profiles/{id}/approve</code>). The system sets <code>status = approved</code> and <code>is_active = true</code>, records the approving Staff ID and timestamp, writes a <code>youth_profile.approved</code> audit log, and enables the youth member to sign in with their <code>YD-XXXX-XXXX</code> reference code.</li>
+            <li><strong>If Rejected:</strong> Staff select <em>Reject</em> and enter a clear explanation (<code>POST /staff/youth-profiles/{id}/reject</code>). The system updates <code>status = rejected</code> and <code>is_active = false</code>, saves the rejection reason, logs <code>youth_profile.rejected</code>, and prevents portal access until resolved.</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <!-- 3. STAFF SCHOLARSHIP -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">3. MYDO Staff Role (mydo-staff/manage-scholarship-application.html)</span>
+        <h2 class="card-title">MYDO Staff — Manage Scholarship Application</h2>
+      </div>
+      <div class="notes-narrative">
+        <strong>Narrative Description:</strong> This activity diagram models the end-to-end evaluation of online tertiary scholarship applications by MYDO Staff. It incorporates real-time Pusher alerts, digital verification of five academic/residency documents, a server-side guard preventing duplicate scholarship grants across programs, audit logging, and real-time WebSocket status notifications back to the Youth Scholar.
+      </div>
+      <ol class="notes-list">
+        <li><strong>Notification / Queue Entry:</strong> MYDO Staff either click an incoming real-time alert on the <em>Staff Notification Bell</em> or open <em>Scholarship Applicants</em> (<code>/staff/applicants</code>) and filter by status.</li>
+        <li><strong>Dossier Inspection:</strong> Staff open the applicant's dossier (<code>/staff/applicants/{applicant}</code>) and examine the student's previous-semester GWA, monthly family income, and uploaded digital requirements (<em>Certificate of Enrollment, Certificate of Grades, School ID, Cedula, and PSA Birth Certificate</em>).</li>
+        <li><strong>Decision — Evaluation Outcome:</strong>
+          <ul class="sub-branches">
+            <li><strong>Approve Path &amp; Duplicate-Beneficiary Guard:</strong> Staff submit <code>Approved</code>. The system first checks whether the youth is already an <code>approved</code> beneficiary of another scholarship program. If a conflict exists, the system halts approval and displays a warning banner; otherwise, it updates <code>status = approved</code>, stamps <code>reviewed_by</code> and <code>reviewed_at</code>, and proceeds to notification.</li>
+            <li><strong>Reject Path &amp; Reason Validation:</strong> Staff select <code>Rejected</code> and encode a mandatory <code>rejection_reason</code>. If the reason is missing, the system prompts a validation error; once provided, it updates <code>status = rejected</code> along with the remarks and reviewer metadata.</li>
+          </ul>
+        </li>
+        <li><strong>Audit &amp; Real-Time Youth Notification:</strong> The system logs <code>applicant_status_update</code> in <code>activity_logs</code>, stores a <code>ScholarshipApplicationStatusNotification</code> in the database, and broadcasts <code>ScholarshipApplicationStatusEvent</code> via Pusher so the Youth Scholar immediately receives the decision on their live Notification Bell.</li>
+      </ol>
+    </div>
+
+    <!-- 4. STAFF EVENT PARTICIPANT -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">4. MYDO Staff Role (mydo-staff/manage-event-participant.html)</span>
+        <h2 class="card-title">MYDO Staff — Manage Event Participant</h2>
+      </div>
+      <div class="notes-narrative">
+        <strong>Narrative Description:</strong> This activity diagram describes how MYDO Staff manage youth sign-ups for municipal events and activities, enforce venue capacity limits, release slots when rejecting or withdrawing participants, and transition confirmed participants into on-site QR or manual attendance verification.
+      </div>
+      <ol class="notes-list">
+        <li><strong>Open Participant Roster:</strong> Staff navigate to <em>Events &amp; Activities</em> (<code>/staff/events-activities</code>) and click <em>Manage Sign-ups</em> for a target activity, loading the participant queue ordered with <code>pending</code> sign-ups first alongside live slot counters.</li>
+        <li><strong>Filter &amp; Select Action:</strong> Staff filter sign-ups (<em>All, Needs Review, Approved, Rejected, Cancelled</em>) and choose an action for a participant:
+          <ul class="sub-branches">
+            <li><strong>Approve Pending Sign-up:</strong> The system checks whether confirmed reservations have already reached the activity's <code>capacity</code>. If full, approval is blocked with a <code>422</code> capacity alert; if slots remain, the registration is updated to <code>status = approved</code>, confirming the youth's slot and enabling their QR Event Pass (<code>YD-XXXX-XXXX</code>).</li>
+            <li><strong>Reject Pending or Withdraw Approved Sign-up:</strong> Staff enter a mandatory actionable reason (minimum 5 characters). Once validated, the system sets <code>status = rejected</code>, saves the reason for the youth to view, and releases the reserved slot back to the activity's available capacity.</li>
+          </ul>
+        </li>
+        <li><strong>Event-Day Check-In Continuation (Optional):</strong> From the roster, Staff can click <em>Open Attendance Check-in</em> (<code>/attendance</code>) to scan the participant's QR Event Pass or enter their reference code, invoking row-locked verification in <code>ActivityAttendanceService</code> to record verified attendance.</li>
+      </ol>
+    </div>
+
+    <!-- 5. YOUTH JOIN ACTIVITY -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">5. Youth Scholar Role (youth-scholar/join-activity.html)</span>
+        <h2 class="card-title">Youth Scholar — Join Activity</h2>
+      </div>
+      <div class="notes-narrative">
+        <strong>Narrative Description:</strong> This activity diagram outlines the concurrency-safe registration flow when an approved Youth Scholar joins a municipal event or workshop. Using database row locking (<code>lockForUpdate()</code>), the system prevents overbooking of the last available seat and automatically routes the registration to either instant confirmation (with a QR Event Pass) or the MYDO Staff approval queue depending on the event's configuration.
+      </div>
+      <ol class="notes-list">
+        <li><strong>Browse Events Feed:</strong> The Youth Scholar signs in, opens <em>Events &amp; Activities</em> (<code>/youth/services/events-activities</code>), and browses published upcoming events (while the system ensures the youth profile holds a unique <code>YD-XXXX-XXXX</code> reference code).</li>
+        <li><strong>Initiate Join &amp; Concurrency Lock:</strong> The Youth clicks <em>Join Activity</em> (<code>POST /join</code>). Inside a database transaction, the system locks the <code>Activity</code> row via <code>lockForUpdate()</code> and checks if the youth already holds an active <code>pending</code> or <code>approved</code> registration.</li>
+        <li><strong>Sequential Eligibility &amp; Capacity Guards:</strong>
+          <ul class="sub-branches">
+            <li><strong>Schedule &amp; Publication Check:</strong> Verifies the activity is <code>published</code>, belongs to an active category, requires registration, has opened for registration, and has not yet closed or started.</li>
+            <li><strong>Prior Rejection Check:</strong> Verifies the youth was not previously rejected for the same activity (otherwise instructing them to contact the MYDO office).</li>
+            <li><strong>Capacity Check:</strong> Counts active slot-reserving registrations (<code>pending</code> + <code>approved</code>) against <code>capacity</code>. If any guard fails, the system returns a validation error banner.</li>
+          </ul>
+        </li>
+        <li><strong>Decision — Requires Staff Approval?</strong>
+          <ul class="sub-branches">
+            <li><strong>If <code>requires_approval = true</code>:</strong> The system saves <code>ActivityRegistration</code> with <code>status = pending</code>, reserving the slot while displaying a <em>Pending Review</em> badge until Staff review.</li>
+            <li><strong>If <code>requires_approval = false</code> (Auto-Confirm):</strong> The system saves <code>ActivityRegistration</code> with <code>status = approved</code> and immediately unlocks the Youth Scholar's <em>QR Event Pass</em> (<code>YD-XXXX-XXXX</code>) for venue check-in.</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <!-- 6. SK SUBMIT REPORT -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">6. SK Official Role (sk/submit-document-report.html)</span>
+        <h2 class="card-title">SK Official — Submit Document / Event Evidence Report</h2>
+      </div>
+      <div class="notes-narrative">
+        <strong>Narrative Description:</strong> This activity diagram captures how Sangguniang Kabataan (SK) Officials submit post-event photo documentation and narrative reports for published municipal activities. Submissions are validated for image authenticity and file size, atomically stored on disk, and linked to the SK Official's position and assigned Barangay for MYDO Staff and Admin monitoring.
+      </div>
+      <ol class="notes-list">
+        <li><strong>Select Published Event:</strong> The SK Official signs in to the SK Portal, opens <em>Events &amp; Evidence Upload</em> (<code>/sk/events-activities</code>), searches or filters by category, and clicks <em>Upload Event Evidence</em> on the target event.</li>
+        <li><strong>Photo Selection &amp; Format/Size Guard:</strong> The SK Official selects 1 to 10 event photos. Client and server checks enforce strictly <code>PNG</code>, <code>JPG</code>, or <code>JPEG</code> images up to <code>5MB</code> per file. Invalid or oversized files are rejected with an error prompt; valid images are staged in <code>storage/app/public/temp</code> via <code>POST /temp-upload</code>.</li>
+        <li><strong>Narrative Entry &amp; Server Verification:</strong> The SK Official writes the official event description/narrative (up to 2,000 characters) and clicks <em>Submit</em> (<code>POST /sk/events-activities/{activity}/evidence</code>). The controller verifies that all staged files exist on disk with valid image MIME types and that the narrative is non-empty.</li>
+        <li><strong>Atomic Storage &amp; MYDO Visibility:</strong> Within a database transaction, staged images are moved to <code>upfiles/sk-evidences/activity-{id}/sk-{user_id}</code> and an <code>SkActivityEvidence</code> record is created. The submission is marked <em>Submitted to MYDO</em> and becomes immediately viewable in the Staff and Admin <em>SK Evidence Modal</em> tagged with the official's SK Position and Barangay.</li>
+      </ol>
+    </div>
+
+    <!-- 7. SK VIEW SUBMIT STATUS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">7. SK Official Role (sk/view-sk-submit-status.html)</span>
+        <h2 class="card-title">SK Official — View SK Submit Status</h2>
+      </div>
+      <div class="notes-narrative">
+        <strong>Narrative Description:</strong> This activity diagram shows how an SK Official tracks their barangay's documentation compliance across municipal events—checking overall submission KPIs on the SK Dashboard, inspecting per-event submission badges, reviewing previously uploaded photo galleries and narrative timestamps, or removing an erroneous entry.
+      </div>
+      <ol class="notes-list">
+        <li><strong>Dashboard KPI &amp; Recent Submissions Overview:</strong> Upon signing in to <code>/sk/dashboard</code>, the system loads the SK Official's assigned Barangay profile, total <em>My Evidence Uploads (Submitted to MYDO)</em> count, and recent submission cards.</li>
+        <li><strong>Per-Activity Submission Status Check:</strong> Navigating to <code>/sk/events-activities</code>, the SK Official selects or inspects an activity card where the system evaluates <code>my_evidences</code> count:
+          <ul class="sub-branches">
+            <li><strong>If 0 Entries Uploaded:</strong> The card displays <em>No evidence uploaded yet</em> alongside a prompt button to upload event evidence.</li>
+            <li><strong>If 1 or More Entries Uploaded:</strong> The card displays a green <em>Evidence Uploaded (N Entries)</em> status badge confirming the report is shared with MYDO Staff.</li>
+          </ul>
+        </li>
+        <li><strong>Inspect Gallery &amp; Follow-Up Action:</strong> Clicking <em>View / Upload More Evidence</em> opens the modal displaying the submitted photo gallery, narrative text, and exact submission timestamp. From here, the SK Official can either close the modal (keeping the report as-is) or confirm <em>Delete</em> on an erroneous entry (<code>DELETE /sk/events-activities/{activity}/evidence/{evidence}</code>), which verifies ownership, deletes the image files from storage, removes the database row, and refreshes the event's submission badge.</li>
+      </ol>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Activity Diagram Process Sequence Notes &amp; Wording
+    </footer>
+  </div>
+</body>
+</html>

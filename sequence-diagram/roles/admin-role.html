@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Administrator Role - Sequence Diagrams | eKabataan</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-amber">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Role View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="./youth-role.html">Youth</a>
+        <a href="./sk-official-role.html">SK Official</a>
+        <a href="./staff-role.html">Staff</a>
+        <a href="./admin-role.html" class="active">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="../modules/auth-and-registration.html">Auth</a>
+        <a href="../modules/profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="../modules/scholarships-and-notifications.html">Scholarships</a>
+        <a href="../modules/events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="../modules/cash-incentives.html">Cash Incentives</a>
+        <a href="../modules/reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role 04 · Executive Console (role:admin)</span>
+      <h1>System Administrator — Role Sequence Diagrams</h1>
+      <p>Captures full executive governance across system taxonomy (Activity Categories &amp; Scholarship Types), User &amp; SK Official role administration, Scholarships, Cash Incentives, Events &amp; Live QR Attendance Management, and System Activity Logs.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Model: App\Models\User (role = admin)</span>
+        <span class="meta-chip">Prefix: /admin/*</span>
+        <span class="meta-chip">Full Audit Oversight: AdminActivityLogController</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Admin Flow 01</span>
+        <h2 class="card-title">System Taxonomy &amp; User / SK Role Governance</h2>
+        <p class="card-desc">Administrators configure global Activity Categories and Scholarship Types, and manage Staff, Admin, and SK Official accounts (with conditional Barangay assignment and credential resets).</p>
+        <div class="tech-tags">
+          <span class="tech-tag">AdminActivityCategoryController</span>
+          <span class="tech-tag">AdminScholarshipTypeController</span>
+          <span class="tech-tag">AdminUserController</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Admin as System Administrator
+    participant UI as Admin Executive Console
+    participant ConfigCtrl as Category & ScholarshipType Controllers
+    participant UserCtrl as AdminUserController
+    participant DB as MySQL (categories, scholarship_types, users, logs)
+
+    Note over Admin, DB: 1. Master Taxonomy Configuration
+    Admin->>UI: Manage /admin/activity-categories & /admin/scholarship-types
+    UI->>ConfigCtrl: POST / PUT / Toggle Active status
+    ConfigCtrl->>DB: Persist ActivityCategory / ScholarshipType changes
+    ConfigCtrl-->>UI: Return updated master records
+
+    Note over Admin, DB: 2. User Account & Conditional SK Barangay Management
+    Admin->>UI: Open /admin/users & click Add User or Edit User
+    alt Selected Role is Staff or Admin
+        UI->>UserCtrl: POST /admin/users (username, email, password, role=staff|admin)
+        UserCtrl->>DB: Save User (SK address fields set to null)
+    else Selected Role is SK Official (role=sk)
+        UI->>UI: Reveal SK Position + Province, City & Barangay Leading selects
+        UI->>UserCtrl: POST /admin/users (role=sk, sk_position, provCode, citymunCode, brgyCode)
+        UserCtrl->>DB: Validate PSGC codes & save User with Barangay jurisdiction
+    end
+    UserCtrl-->>UI: Refresh User directory showing Role, Position & Brgy. badge
+
+    opt Administrative Password Override
+        Admin->>UI: Submit new password for User or Youth Profile
+        UI->>UserCtrl: POST /admin/users/{id}/change-password
+        UserCtrl->>DB: Hash new password & write ActivityLog (password_change)
+        UserCtrl-->>UI: Confirm password updated
+    end
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Admin Flow 02</span>
+        <h2 class="card-title">Executive Oversight: Youth Profiles, Scholarships &amp; Cash Incentives</h2>
+        <p class="card-desc">Administrators hold full review and disbursement authority over Youth Profiles, Scholarship Applications, and Municipal Cash Incentive Programs.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">AdminYouthProfileController</span>
+          <span class="tech-tag">AdminApplicantController</span>
+          <span class="tech-tag">AdminCashIncentive*Controllers</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Admin as System Administrator
+    participant UI as Admin Executive Console
+    participant App as Admin Controllers & Services
+    participant DB as MySQL Database
+    participant Pusher as Pusher WebSockets
+
+    Note over Admin, DB: 1. Youth Profile Approval & Password Control
+    Admin->>UI: Open /admin/youth-profiles & inspect Youth Drawer
+    UI->>App: POST /admin/youth-profiles/{id}/approve or /reject
+    App->>DB: Update YouthProfile status, is_active & write ActivityLog
+
+    Note over Admin, Pusher: 2. Executive Scholarship Application Decision
+    Admin->>UI: Open /admin/applicants/{id} & verify uploaded academic files
+    UI->>App: PATCH /admin/applicants/{applicant}/status
+    App->>DB: Update ScholarshipApplication + write ActivityLog + Youth Notification
+    App-->>Pusher: Broadcast ScholarshipApplicationStatusEvent to Youth
+
+    Note over Admin, DB: 3. Cash Incentive Budgeting, Payouts & CSV Export
+    Admin->>UI: Create/Edit Program at /admin/cash-incentives
+    UI->>App: POST /admin/cash-incentives (ProgramManagementService)
+    App->>DB: Create CashIncentiveProgram & log action
+    Admin->>UI: Select eligible youth, approve nominations & record batch payouts
+    UI->>App: POST /beneficiaries/select, /review & /releases/batch
+    App->>DB: Commit beneficiary snapshots, releases & status histories
+    Admin->>UI: Export Program Summary or CSV (/reports/export-csv)
+    App-->>Admin: Stream CSV / printable beneficiary disbursement report
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 3 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Admin Flow 03</span>
+        <h2 class="card-title">Admin Events, Live QR Attendance Terminal &amp; Audit Trail Inspection</h2>
+        <p class="card-desc">Administrators manage Events &amp; Activities, operate the 1-click QR/Manual Attendance Check-in Terminal, perform audited attendance removals, and inspect system-wide Activity Logs.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">AdminEventActivityController</span>
+          <span class="tech-tag">AdminActivityAttendanceController</span>
+          <span class="tech-tag">ActivityAttendanceService</span>
+          <span class="tech-tag">AdminActivityLogController</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Admin as System Administrator
+    participant UI as Admin Events, Attendance & Logs UI
+    participant EventCtrl as AdminEvent & Attendance Controllers
+    participant Svc as ActivityAttendanceService
+    participant LogCtrl as AdminActivityLogController
+    participant DB as MySQL (activities, attendances, activity_logs)
+
+    Note over Admin, DB: 1. Event Management & 1-Click Attendance Access
+    Admin->>UI: Open /admin/events-activities (loads attendances_count per row)
+    Admin->>UI: Create/Update/Feature Activity or review SK Evidence & Sign-ups
+    UI->>EventCtrl: POST/PUT /admin/events-activities
+    EventCtrl->>DB: Save Activity & write ActivityLog (actor_role=admin)
+
+    Note over Admin, DB: 2. Admin QR / Manual Check-in & Audited Removal
+    Admin->>UI: Click Attendance badge -> /admin/events-activities/{id}/attendance
+    UI->>EventCtrl: POST /admin/events-activities/{id}/attendance (QR or Manual code)
+    EventCtrl->>Svc: recordAttendance(activity, code, method, adminUser)
+    Svc->>DB: Lock rows, verify approved registration & insert ActivityAttendance
+    Svc-->>UI: Return confirmed check-in card & updated turnout rate
+    Admin->>UI: Remove erroneous check-in with mandatory reason (min 5 chars)
+    UI->>EventCtrl: DELETE /admin/events-activities/{id}/attendance/{attendanceId}
+    EventCtrl->>Svc: removeAttendanceWithAudit(activity, id, adminUser, reason)
+    Svc->>DB: Write ActivityLog (activity_attendance.removed, old_values) & delete row
+
+    Note over Admin, DB: 3. System-Wide Activity Log Audit
+    Admin->>UI: Open /admin/activity-logs & filter by role, action, or keyword
+    UI->>LogCtrl: GET /admin/get-activity-logs & GET /admin/activity-logs/{id}
+    LogCtrl->>DB: Query ActivityLog with actor details, IP, user_agent & JSON diffs
+    LogCtrl-->>UI: Display chronological audit table & old/new payload inspector
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · System Administrator Role Sequence Diagrams
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

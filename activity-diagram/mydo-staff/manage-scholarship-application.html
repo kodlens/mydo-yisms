@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MYDO Staff: Manage Scholarship Application - Activity Diagram</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-emerald">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Activity Diagram</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../admin/approve-reject-youth-registration.html">Admin: Youth Reg</a>
+        <a href="./approve-reject-youth-registration.html">Staff: Youth Reg</a>
+        <a href="./manage-scholarship-application.html" class="active">Staff: Scholarships</a>
+        <a href="./manage-event-participant.html">Staff: Participants</a>
+        <a href="../youth-scholar/join-activity.html">Youth: Join Activity</a>
+        <a href="../sk/submit-document-report.html">SK: Submit Report</a>
+        <a href="../sk/view-sk-submit-status.html">SK: Submit Status</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role Folder: mydo-staff/ · Activity Diagram 02</span>
+      <h1>MYDO Staff — Manage Scholarship Application</h1>
+      <p>UML Swimlane Activity Diagram detailing how MYDO Staff receive real-time application notifications, evaluate uploaded academic documents, enforce single-scholarship beneficiary rules, and broadcast decisions to Youth applicants.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Routes: /staff/applicants &amp; /staff/applicants/{applicant}</span>
+        <span class="meta-chip">Controller: StaffApplicantController@updateStatus</span>
+        <span class="meta-chip">Real-time: Pusher ScholarshipApplicationStatusEvent</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Activity Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="legend-bar">
+      <span class="legend-title">UML Notation:</span>
+      <span class="legend-item"><span class="sym-start"></span> Initial Node</span>
+      <span class="legend-item"><span class="sym-action"></span> Action State</span>
+      <span class="legend-item"><span class="sym-decision"></span> Decision / Guard</span>
+      <span class="legend-item"><span class="sym-end"></span> Activity Final Node</span>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">MYDO Staff Activity Diagram 02</span>
+        <h2 class="card-title">Scholarship Dossier Evaluation, Approval Guard &amp; Real-Time Notification</h2>
+        <p class="card-desc">Covers applicant filtering, digital document verification (COE, COG, School ID, Cedula, PSA), duplicate-beneficiary guard checks, audit logging, and real-time Youth notification.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">GET /staff/get-applicants</span>
+          <span class="tech-tag">GET /staff/applicants/{applicant}</span>
+          <span class="tech-tag">PATCH /staff/applicants/{applicant}/status</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph StaffLane["Swimlane 1: MYDO Staff Officer"]
+        Start((" ")) --> M1(["Click Real-Time Bell Notification or Open /staff/applicants"])
+        M1 --> M2(["Filter / Search Scholarship Applications (Pending, Approved, Rejected)"])
+        M3(["Open Applicant Dossier & Examine GWA, Income, COE, COG, School ID, Cedula & PSA"])
+        D1{"Evaluation Decision?"}
+        M4(["Submit Status = Approved"])
+        M5(["Enter Rejection Reason & Submit Status = Rejected"])
+        M6(["Display Duplicate Beneficiary Warning Banner"])
+    end
+
+    subgraph SysLane["Swimlane 2: eKabataan System (StaffApplicantController & Pusher)"]
+        S1(["Load ScholarshipApplication + YouthProfile + Document Storage URLs"])
+        D2{"Already an Approved Beneficiary of Another Scholarship?"}
+        D3{"Rejection Reason Provided?"}
+        S2(["Prompt Validation Error: Rejection Reason Required"])
+        S3(["Update status = approved, reviewed_by = staff.id, reviewed_at = now"])
+        S4(["Update status = rejected, save rejection_reason, reviewed_by, reviewed_at"])
+        S5(["Write ActivityLog (applicant_status_update) & Save Youth DB Notification"])
+        S6(["Broadcast ScholarshipApplicationStatusEvent via Pusher"])
+    end
+
+    subgraph YouthLane["Swimlane 3: Youth Scholar Applicant"]
+        Y1(["Receive Real-Time Notification on Youth Bell & View Updated Scholarship Status"])
+        EndNode((("◉")))
+    end
+
+    M2 --> S1
+    S1 --> M3
+    M3 --> D1
+
+    D1 -- "Approve" --> M4
+    M4 --> D2
+    D2 -- "Yes (Conflict)" --> M6
+    M6 --> EndNode
+    D2 -- "No (Eligible)" --> S3
+    S3 --> S5
+
+    D1 -- "Reject" --> M5
+    M5 --> D3
+    D3 -- "Missing" --> S2
+    S2 --> M5
+    D3 -- "Provided" --> S4
+    S4 --> S5
+
+    S5 --> S6
+    S6 --> Y1
+    Y1 --> EndNode
+
+    classDef startNode fill:#0f172a,stroke:#0f172a,color:#ffffff;
+    classDef endNode fill:#ffffff,stroke:#0f172a,stroke-width:3px,color:#0f172a,font-weight:900;
+    classDef actionStaff fill:#ecfdf5,stroke:#059669,color:#0f172a;
+    classDef actionSys fill:#f8fafc,stroke:#64748b,color:#0f172a;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f,font-weight:700;
+    classDef warnNode fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,font-weight:600;
+    classDef youthOut fill:#ecfeff,stroke:#0284c7,color:#0c4a6e,font-weight:600;
+
+    class Start startNode;
+    class EndNode endNode;
+    class M1,M2,M3,M4,M5 actionStaff;
+    class S1,S3,S4,S5,S6 actionSys;
+    class D1,D2,D3 decision;
+    class M6,S2 warnNode;
+    class Y1 youthOut;
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · MYDO Staff Activity Diagram: Manage Scholarship Application
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

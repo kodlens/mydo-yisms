@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SK Official: Submit Document Report - Activity Diagram</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-indigo">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Activity Diagram</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../admin/approve-reject-youth-registration.html">Admin: Youth Reg</a>
+        <a href="../mydo-staff/approve-reject-youth-registration.html">Staff: Youth Reg</a>
+        <a href="../mydo-staff/manage-scholarship-application.html">Staff: Scholarships</a>
+        <a href="../mydo-staff/manage-event-participant.html">Staff: Participants</a>
+        <a href="../youth-scholar/join-activity.html">Youth: Join Activity</a>
+        <a href="./submit-document-report.html" class="active">SK: Submit Report</a>
+        <a href="./view-sk-submit-status.html">SK: Submit Status</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role Folder: sk/ · Activity Diagram 01</span>
+      <h1>SK Official — Submit Document / Event Evidence Report</h1>
+      <p>UML Swimlane Activity Diagram illustrating how a Sangguniang Kabataan (SK) Official selects a published municipal activity, validates and uploads 1–10 event pictures, composes the official narrative report, and submits barangay documentation to MYDO.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Route: /sk/events-activities/{activity}/evidence</span>
+        <span class="meta-chip">Controller: SkEventActivityController@storeEvidence</span>
+        <span class="meta-chip">Storage: upfiles/sk-evidences/activity-{id}/sk-{user_id}</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Activity Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="legend-bar">
+      <span class="legend-title">UML Notation:</span>
+      <span class="legend-item"><span class="sym-start"></span> Initial Node</span>
+      <span class="legend-item"><span class="sym-action"></span> Action State</span>
+      <span class="legend-item"><span class="sym-decision"></span> Decision / Guard</span>
+      <span class="legend-item"><span class="sym-end"></span> Activity Final Node</span>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">SK Official Activity Diagram 01</span>
+        <h2 class="card-title">Event Photo &amp; Narrative Documentation Report Submission</h2>
+        <p class="card-desc">Covers client/server image format &amp; size validation, temporary staging via <code>/temp-upload</code>, atomic promotion to permanent public storage, and instant visibility in MYDO Staff &amp; Admin monitoring.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">POST /temp-upload</span>
+          <span class="tech-tag">POST /sk/events-activities/{activity}/evidence</span>
+          <span class="tech-tag">Model: SkActivityEvidence</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph SkLane["Swimlane 1: Sangguniang Kabataan (SK) Official"]
+        Start((" ")) --> K1(["Sign in to SK Portal & Open Events & Evidence Upload (/sk/events-activities)"])
+        K2(["Search / Filter Published Events & Click Upload Event Evidence"])
+        K3(["Select 1 to 10 Event Photos (PNG, JPG, or JPEG)"])
+        K4(["Show File Format / 5MB Limit Error & Re-select Photos"])
+        K5(["Enter Official Event Narrative / Description (max 2000 chars) & Click Submit"])
+        K6(["Fix Form Validation Errors"])
+    end
+
+    subgraph SysLane["Swimlane 2: eKabataan System (UploadFile & SkEventActivity Controllers)"]
+        S1(["Load Published Activities & Existing SK Submission Counts"])
+        D1{"Valid PNG/JPG Format & Max 5MB Each?"}
+        S2(["Stage Image Files in storage/app/public/temp via POST /temp-upload"])
+        D2{"1-10 Staged Photos Verified & Narrative Non-Empty?"}
+        S3(["Return 422 Validation Errors"])
+        S4(["DB Transaction: Move Photos to upfiles/sk-evidences/activity-{id}/sk-{user_id}"])
+        S5(["Create SkActivityEvidence Record Linked to SK Official & Assigned Barangay"])
+    end
+
+    subgraph MydoLane["Swimlane 3: MYDO Staff & Admin Monitoring"]
+        M1(["Submission Marked 'Submitted to MYDO' & Visible in Staff/Admin SK Evidence Modal"])
+        EndNode((("◉")))
+    end
+
+    K1 --> S1
+    S1 --> K2
+    K2 --> K3
+    K3 --> D1
+
+    D1 -- "Invalid Type or Over 5MB" --> K4
+    K4 --> K3
+    D1 -- "Valid" --> S2
+
+    S2 --> K5
+    K5 --> D2
+
+    D2 -- "Invalid / Missing" --> S3
+    S3 --> K6
+    K6 --> K5
+
+    D2 -- "Verified" --> S4
+    S4 --> S5
+    S5 --> M1
+    M1 --> EndNode
+
+    classDef startNode fill:#0f172a,stroke:#0f172a,color:#ffffff;
+    classDef endNode fill:#ffffff,stroke:#0f172a,stroke-width:3px,color:#0f172a,font-weight:900;
+    classDef actionSk fill:#eef2ff,stroke:#4338ca,color:#0f172a;
+    classDef actionSys fill:#f8fafc,stroke:#64748b,color:#0f172a;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f,font-weight:700;
+    classDef successNode fill:#dcfce7,stroke:#16a34a,color:#14532d,font-weight:600;
+    classDef errNode fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,font-weight:600;
+
+    class Start startNode;
+    class EndNode endNode;
+    class K1,K2,K3,K5 actionSk;
+    class S1,S2,S4,S5 actionSys;
+    class D1,D2 decision;
+    class M1 successNode;
+    class K4,K6,S3 errNode;
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · SK Official Activity Diagram: Submit Document / Event Evidence Report
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

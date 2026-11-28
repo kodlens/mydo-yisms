@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MYDO Staff Officer Role - Sequence Diagrams | eKabataan</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-emerald">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Role View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="./youth-role.html">Youth</a>
+        <a href="./sk-official-role.html">SK Official</a>
+        <a href="./staff-role.html" class="active">Staff</a>
+        <a href="./admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="../modules/auth-and-registration.html">Auth</a>
+        <a href="../modules/profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="../modules/scholarships-and-notifications.html">Scholarships</a>
+        <a href="../modules/events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="../modules/cash-incentives.html">Cash Incentives</a>
+        <a href="../modules/reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role 03 · MYDO Staff Workspace (role:staff)</span>
+      <h1>MYDO Staff Officer — Role Sequence Diagrams</h1>
+      <p>Details the daily operational responsibilities of MYDO Staff Officers across youth registration vetting, SK Official barangay registration, real-time scholarship evaluation, event attendance scanning, cash incentive disbursements, and municipal analytics exports.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Model: App\Models\User (role = staff)</span>
+        <span class="meta-chip">Prefix: /staff/*</span>
+        <span class="meta-chip">Real-time Bell: StaffNotificationBell + Echo</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Staff Flow 01</span>
+        <h2 class="card-title">Youth Registration Vetting &amp; SK Official Barangay Registration</h2>
+        <p class="card-desc">Staff inspect newly registered Youth profiles (including uploaded School IDs) to approve or reject portal access, and register SK Official accounts assigned to specific Barangays.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">StaffYouthProfileController</span>
+          <span class="tech-tag">StaffSkOfficialController</span>
+          <span class="tech-tag">ActivityLogger</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Staff as MYDO Staff Officer
+    participant UI as Staff Workspace UI
+    participant YouthCtrl as StaffYouthProfileController
+    participant SkCtrl as StaffSkOfficialController
+    participant DB as MySQL (youth_profiles, users, activity_logs)
+
+    Note over Staff, DB: 1. Youth Profile Review & Account Activation
+    Staff->>UI: Open /staff/youth-profiles & filter status=pending
+    UI->>YouthCtrl: GET /staff/get-youth-profiles
+    YouthCtrl->>DB: Query YouthProfile with province, city, barangay & approver
+    YouthCtrl-->>UI: Return paginated youth profiles + School ID preview path
+    Staff->>UI: Inspect Youth Profile Drawer & click Approve or Reject
+    alt Approve Youth Account
+        UI->>YouthCtrl: POST /staff/youth-profiles/{id}/approve
+        YouthCtrl->>DB: Update status=approved, is_active=true, approved_by=staff.id
+        YouthCtrl->>DB: Write ActivityLog (youth_profile_approved)
+        YouthCtrl-->>UI: Confirm account activated for portal login
+    else Reject Youth Account
+        UI->>YouthCtrl: POST /staff/youth-profiles/{id}/reject (rejection_reason)
+        YouthCtrl->>DB: Update status=rejected, is_active=false, rejection_reason
+        YouthCtrl->>DB: Write ActivityLog (youth_profile_rejected)
+        YouthCtrl-->>UI: Confirm rejection saved
+    end
+
+    Note over Staff, DB: 2. SK Official Registration with Barangay Jurisdiction
+    Staff->>UI: Open /staff/sk-officials & click Register SK Official
+    UI->>UI: Select SK Position + cascading Province, City, Barangay
+    UI->>SkCtrl: POST /staff/sk-officials (username, password, sk_position, provCode, citymunCode, brgyCode)
+    SkCtrl->>DB: Insert User (role=sk, sk_position, provCode, citymunCode, brgyCode, street_address)
+    SkCtrl->>DB: Write ActivityLog (sk_official.created with Brgy. Name)
+    SkCtrl-->>UI: Return success & refresh SK Official directory
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Staff Flow 02</span>
+        <h2 class="card-title">Scholarships Management, Real-Time Pusher Alerts &amp; Applicant Evaluation</h2>
+        <p class="card-desc">Staff manage scholarship offerings, receive instant WebSocket notifications whenever a student submits an application, examine uploaded documents, and issue decisions that broadcast back to the student.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">StaffScholarshipController</span>
+          <span class="tech-tag">StaffApplicantController</span>
+          <span class="tech-tag">StaffNotificationController</span>
+          <span class="tech-tag">Pusher / Laravel Echo</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Staff as MYDO Staff Officer
+    participant Bell as Staff UI + Notification Bell
+    participant Ctrl as StaffScholarship & Applicant Controllers
+    participant DB as MySQL (scholarships, applications, notifications)
+    participant Pusher as Pusher WebSockets
+    actor Youth as Youth Applicant
+
+    Note over Staff, DB: 1. Scholarship Program Publishing
+    Staff->>Bell: Create or toggle active status on /staff/scholarships
+    Bell->>Ctrl: POST /staff/scholarships or /toggle-status
+    Ctrl->>DB: Save ScholarshipType & log action
+
+    Note over Youth, Bell: 2. Real-Time Incoming Application Notification
+    Youth->>DB: Submit Scholarship Application
+    Pusher-->>Bell: Push NewScholarshipApplicationEvent to private-staff.{id}
+    Bell-->>Staff: Increment unread badge & append live notification item
+    Staff->>Bell: Click notification item
+    Bell->>Ctrl: POST /staff/notifications/{id}/read & navigate to /staff/applicants/{id}
+
+    Note over Staff, Youth: 3. Dossier Verification & Status Broadcast
+    Ctrl->>DB: Load ScholarshipApplication + YouthProfile + COE, COG, ID, Cedula, PSA
+    Ctrl-->>Bell: Render Applicant Review Page
+    Staff->>Bell: Verify GWA & documents, then click Approve or Reject
+    Bell->>Ctrl: PATCH /staff/applicants/{applicant}/status
+    Ctrl->>DB: Update status, reviewed_by, remarks & write ActivityLog
+    Ctrl->>DB: Save ScholarshipApplicationStatusNotification for Youth
+    Ctrl-->>Pusher: Broadcast ScholarshipApplicationStatusEvent to Youth channel
+    Pusher-->>Youth: Real-time status alert delivered to Youth Bell
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 3 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Staff Flow 03</span>
+        <h2 class="card-title">Events, Live QR Check-In, Cash Incentives &amp; CSV Analytics Reports</h2>
+        <p class="card-desc">End-to-end operational execution for municipal events, venue QR attendance scanning, cash incentive disbursements, and multi-filter CSV report exports.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">StaffEventActivityController</span>
+          <span class="tech-tag">StaffActivityAttendanceController</span>
+          <span class="tech-tag">StaffCashIncentive*Controllers</span>
+          <span class="tech-tag">StaffReportController</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Staff as MYDO Staff Officer
+    participant UI as Staff Workspace UI
+    participant EventAtt as Event & Attendance Controllers
+    participant CashRep as Cash Incentive & Report Controllers
+    participant DB as MySQL Database
+
+    Note over Staff, DB: 1. Events, Sign-ups, SK Evidence & Live QR Check-In
+    Staff->>UI: Create/Publish Activity & approve pending sign-ups
+    UI->>EventAtt: POST /staff/events-activities & PATCH /participants/{reg}
+    EventAtt->>DB: Save Activity & update ActivityRegistration status
+    Staff->>UI: Open /staff/events-activities/{id}/attendance (Check-in Terminal)
+    UI->>EventAtt: POST /attendance (scan QR or enter YD-XXXX-XXXX)
+    EventAtt->>DB: ActivityAttendanceService locks rows & records check-in
+    EventAtt-->>UI: Play confirmation chime & refresh live turnout metrics
+    Staff->>UI: Open SK Evidence Modal on Events table
+    UI->>EventAtt: GET /staff/events-activities/{id}/sk-evidences
+    EventAtt-->>UI: Display SK Official photos, narrative & Brgy. badge
+
+    Note over Staff, DB: 2. Cash Incentives Selection & Payout Recording
+    Staff->>UI: Create Cash Incentive Program & select eligible youth
+    UI->>CashRep: POST /staff/cash-incentives/{program}/beneficiaries/select
+    CashRep->>DB: Snapshot youth academic/barangay data into beneficiaries
+    Staff->>UI: Review beneficiaries & record individual or batch payouts
+    UI->>CashRep: POST /releases/{beneficiary}/record or /releases/batch
+    CashRep->>DB: Insert/Update CashIncentiveRelease (status=released) + history
+
+    Note over Staff, DB: 3. Comprehensive MYDO Staff Reports & CSV Export
+    Staff->>UI: Open /staff/reports, filter by Program & Year, click Export CSV
+    UI->>CashRep: GET /staff/reports/export?type=barangay&year=...
+    CashRep->>DB: Aggregate barangay, scholarship, event & incentive metrics
+    CashRep-->>Staff: Stream downloadable CSV report file
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · MYDO Staff Officer Role Sequence Diagrams
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

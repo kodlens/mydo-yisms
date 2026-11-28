@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eKabataan YIMS - UML Activity Diagrams Hub</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="theme-teal">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="./index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Activity Diagrams</span>
+      </a>
+      <div class="nav-links">
+        <a href="./index.html" class="active">All Activity Diagrams</a>
+        <a href="./activity-diagram-notes.html">Notes &amp; Wording</a>
+        <div class="nav-divider"></div>
+        <a href="./admin/approve-reject-youth-registration.html">Admin: Youth Reg</a>
+        <a href="./mydo-staff/approve-reject-youth-registration.html">Staff: Youth Reg</a>
+        <a href="./mydo-staff/manage-scholarship-application.html">Staff: Scholarships</a>
+        <a href="./mydo-staff/manage-event-participant.html">Staff: Participants</a>
+        <a href="./youth-scholar/join-activity.html">Youth: Join Activity</a>
+        <a href="./sk/submit-document-report.html">SK: Submit Report</a>
+        <a href="./sk/view-sk-submit-status.html">SK: Submit Status</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">MYDO · Municipality of Dumingag · UML Activity Specifications</span>
+      <h1>eKabataan YIMS — Activity Diagrams by Role</h1>
+      <p>Complete UML Swimlane Activity Diagrams organized into dedicated folders per user role (<code>admin/</code>, <code>mydo-staff/</code>, <code>youth-scholar/</code>, and <code>sk/</code>), illustrating start/final states, action nodes, guard decisions, and swimlane responsibilities.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">4 Role Subfolders</span>
+        <span class="meta-chip">7 Swimlane Activity Diagrams</span>
+        <span class="meta-chip">Print / Save as PDF Ready</span>
+      </div>
+    </header>
+
+    <div class="legend-bar">
+      <span class="legend-title">UML Notation Legend:</span>
+      <span class="legend-item"><span class="sym-start"></span> Initial Node (Start)</span>
+      <span class="legend-item"><span class="sym-action"></span> Action / Activity State</span>
+      <span class="legend-item"><span class="sym-decision"></span> Decision / Guard Branch</span>
+      <span class="legend-item"><span class="sym-end"></span> Activity Final Node (End)</span>
+    </div>
+
+    <!-- 1. ADMIN -->
+    <section class="role-section">
+      <div class="role-section-header">
+        <span class="role-folder-badge">activity-diagram/admin/</span>
+        <h2>System Administrator</h2>
+      </div>
+      <div class="hub-grid">
+        <a class="hub-card" href="./admin/approve-reject-youth-registration.html">
+          <div>
+            <span class="hub-card-tag tag-admin">Admin · 01</span>
+            <h3>Approve / Reject Youth Registration</h3>
+            <p>Admin executive review of pending Youth accounts, School ID verification in the profile drawer, account activation or rejection with remarks, and audit logging.</p>
+          </div>
+          <div class="hub-card-footer">
+            <span>admin/approve-reject-youth-registration.html</span>
+            <span>Open →</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 2. MYDO STAFF -->
+    <section class="role-section">
+      <div class="role-section-header">
+        <span class="role-folder-badge">activity-diagram/mydo-staff/</span>
+        <h2>MYDO Staff Officer</h2>
+      </div>
+      <div class="hub-grid">
+        <a class="hub-card" href="./mydo-staff/approve-reject-youth-registration.html">
+          <div>
+            <span class="hub-card-tag tag-staff">MYDO Staff · 01</span>
+            <h3>Approve / Reject Youth Registration</h3>
+            <p>Staff vetting workflow for newly registered youth profiles, verifying residency, age/academic credentials, and School ID before unlocking Youth Portal login.</p>
+          </div>
+          <div class="hub-card-footer">
+            <span>mydo-staff/approve-reject-youth-registration.html</span>
+            <span>Open →</span>
+          </div>
+        </a>
+
+        <a class="hub-card" href="./mydo-staff/manage-scholarship-application.html">
+          <div>
+            <span class="hub-card-tag tag-staff">MYDO Staff · 02</span>
+            <h3>Manage Scholarship Application</h3>
+            <p>End-to-end applicant dossier evaluation (COE, COG, ID, Cedula, PSA), duplicate-grant check, approval or reasoned rejection, audit logging, and real-time Pusher alert to Youth.</p>
+          </div>
+          <div class="hub-card-footer">
+            <span>mydo-staff/manage-scholarship-application.html</span>
+            <span>Open →</span>
+          </div>
+        </a>
+
+        <a class="hub-card" href="./mydo-staff/manage-event-participant.html">
+          <div>
+            <span class="hub-card-tag tag-staff">MYDO Staff · 03</span>
+            <h3>Manage Event Participant</h3>
+            <p>Moderation of youth event sign-ups (capacity guard, approve pending, reject or withdraw slot with reason) and live QR/Manual venue attendance check-in.</p>
+          </div>
+          <div class="hub-card-footer">
+            <span>mydo-staff/manage-event-participant.html</span>
+            <span>Open →</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 3. YOUTH SCHOLAR -->
+    <section class="role-section">
+      <div class="role-section-header">
+        <span class="role-folder-badge">activity-diagram/youth-scholar/</span>
+        <h2>Youth Scholar</h2>
+      </div>
+      <div class="hub-grid">
+        <a class="hub-card" href="./youth-scholar/join-activity.html">
+          <div>
+            <span class="hub-card-tag tag-youth">Youth Scholar · 01</span>
+            <h3>Join Activity</h3>
+            <p>Youth activity sign-up pipeline covering publication &amp; registration window checks, row-locked slot capacity verification, auto-approval vs pending review, and QR Event Pass access.</p>
+          </div>
+          <div class="hub-card-footer">
+            <span>youth-scholar/join-activity.html</span>
+            <span>Open →</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 4. SK OFFICIAL -->
+    <section class="role-section">
+      <div class="role-section-header">
+        <span class="role-folder-badge">activity-diagram/sk/</span>
+        <h2>Sangguniang Kabataan (SK) Official</h2>
+      </div>
+      <div class="hub-grid">
+        <a class="hub-card" href="./sk/submit-document-report.html">
+          <div>
+            <span class="hub-card-tag tag-sk">SK Official · 01</span>
+            <h3>Submit Document / Event Evidence Report</h3>
+            <p>SK Official workflow for selecting a published municipal event, validating &amp; staging 1–10 event photos, writing the narrative report, and submitting barangay evidence to MYDO.</p>
+          </div>
+          <div class="hub-card-footer">
+            <span>sk/submit-document-report.html</span>
+            <span>Open →</span>
+          </div>
+        </a>
+
+        <a class="hub-card" href="./sk/view-sk-submit-status.html">
+          <div>
+            <span class="hub-card-tag tag-sk">SK Official · 02</span>
+            <h3>View SK Submit Status</h3>
+            <p>Monitoring submitted vs pending event reports on the SK Dashboard &amp; Events page, inspecting uploaded photo galleries &amp; timestamps, and adding or removing submissions.</p>
+          </div>
+          <div class="hub-card-footer">
+            <span>sk/view-sk-submit-status.html</span>
+            <span>Open →</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <footer class="doc-footer">
+      Municipal Youth Development Office (MYDO) · Municipality of Dumingag, Zamboanga del Sur · eKabataan UML Activity Diagrams
+    </footer>
+  </div>
+</body>
+</html>

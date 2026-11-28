@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Youth Scholar: Join Activity - Activity Diagram</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-sky">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Activity Diagram</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../admin/approve-reject-youth-registration.html">Admin: Youth Reg</a>
+        <a href="../mydo-staff/approve-reject-youth-registration.html">Staff: Youth Reg</a>
+        <a href="../mydo-staff/manage-scholarship-application.html">Staff: Scholarships</a>
+        <a href="../mydo-staff/manage-event-participant.html">Staff: Participants</a>
+        <a href="./join-activity.html" class="active">Youth: Join Activity</a>
+        <a href="../sk/submit-document-report.html">SK: Submit Report</a>
+        <a href="../sk/view-sk-submit-status.html">SK: Submit Status</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role Folder: youth-scholar/ · Activity Diagram</span>
+      <h1>Youth Scholar — Join Activity</h1>
+      <p>UML Swimlane Activity Diagram tracing how an approved Youth Scholar browses published municipal activities, passes row-locked eligibility and capacity guards, reserves a slot, and accesses their QR Event Pass.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Route: /youth/services/events-activities/{activity}/join</span>
+        <span class="meta-chip">Controller: YouthEventActivitiyController@join</span>
+        <span class="meta-chip">Concurrency Guard: Activity::lockForUpdate()</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Activity Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="legend-bar">
+      <span class="legend-title">UML Notation:</span>
+      <span class="legend-item"><span class="sym-start"></span> Initial Node</span>
+      <span class="legend-item"><span class="sym-action"></span> Action State</span>
+      <span class="legend-item"><span class="sym-decision"></span> Decision / Guard</span>
+      <span class="legend-item"><span class="sym-end"></span> Activity Final Node</span>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Youth Scholar Activity Diagram 01</span>
+        <h2 class="card-title">Browse Published Events, Join Activity &amp; Obtain QR Event Pass</h2>
+        <p class="card-desc">Models every server-side validation gate in <code>YouthEventActivitiyController@join</code>, including schedule window checks, prior-rejection guard, slot reservation counting, and approval-mode branching.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">GET /youth/services/events-activities</span>
+          <span class="tech-tag">POST /youth/services/events-activities/{activity}/join</span>
+          <span class="tech-tag">YouthEventPassModal (YD-XXXX-XXXX)</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph YouthLane["Swimlane 1: Youth Scholar"]
+        Start((" ")) --> Y1(["Sign in to Youth Portal & Open Events & Activities"])
+        Y2(["Browse Upcoming Activities, Filter Category & Inspect Details"])
+        Y3(["Click Join Activity"])
+        Y4(["View Registration Error Banner"])
+        Y5(["See Pending Review Status (Slot Reserved Awaiting Staff)"])
+        Y6(["See Confirmed Status & Open QR Event Pass (YD-XXXX-XXXX)"])
+        EndNode((("◉")))
+    end
+
+    subgraph SysLane["Swimlane 2: eKabataan System (YouthEventActivitiyController)"]
+        S1(["Ensure Youth Has Unique Reference Code & Load Published Activities"])
+        S2(["Begin DB Transaction & Lock Activity Row (lockForUpdate)"])
+        D1{"Already Pending or Approved?"}
+        D2{"Published, Active Category & Within Registration Window?"}
+        D3{"Previously Rejected for This Activity?"}
+        D4{"Slots Available (Under Capacity Limit)?"}
+        S3(["Return Validation Error (Closed / Contact MYDO / Activity Full)"])
+        D5{"Activity Requires Staff Approval?"}
+        S4(["Save ActivityRegistration: status = pending, registered_at = now"])
+        S5(["Save ActivityRegistration: status = approved, registered_at = now"])
+    end
+
+    Y1 --> S1
+    S1 --> Y2
+    Y2 --> Y3
+    Y3 --> S2
+    S2 --> D1
+
+    D1 -- "Yes (Idempotent)" --> EndNode
+    D1 -- "No" --> D2
+
+    D2 -- "No (Closed / Not Open)" --> S3
+    D2 -- "Yes" --> D3
+
+    D3 -- "Yes (Rejected)" --> S3
+    D3 -- "No" --> D4
+
+    D4 -- "No (Full)" --> S3
+    S3 --> Y4
+    Y4 --> EndNode
+
+    D4 -- "Yes (Slot Available)" --> D5
+    D5 -- "Yes (requires_approval = true)" --> S4
+    S4 --> Y5
+    Y5 --> EndNode
+
+    D5 -- "No (Auto-Approve)" --> S5
+    S5 --> Y6
+    Y6 --> EndNode
+
+    classDef startNode fill:#0f172a,stroke:#0f172a,color:#ffffff;
+    classDef endNode fill:#ffffff,stroke:#0f172a,stroke-width:3px,color:#0f172a,font-weight:900;
+    classDef actionYouth fill:#e0f2fe,stroke:#0284c7,color:#0f172a;
+    classDef actionSys fill:#f8fafc,stroke:#64748b,color:#0f172a;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f,font-weight:700;
+    classDef pendingNode fill:#fef9c3,stroke:#ca8a04,color:#713f12,font-weight:600;
+    classDef successNode fill:#dcfce7,stroke:#16a34a,color:#14532d,font-weight:600;
+    classDef errNode fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,font-weight:600;
+
+    class Start startNode;
+    class EndNode endNode;
+    class Y1,Y2,Y3 actionYouth;
+    class S1,S2,S4,S5 actionSys;
+    class D1,D2,D3,D4,D5 decision;
+    class Y5 pendingNode;
+    class Y6 successNode;
+    class S3,Y4 errNode;
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Youth Scholar Activity Diagram: Join Activity
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

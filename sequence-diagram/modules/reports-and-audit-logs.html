@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 06: Analytics Reports &amp; System Audit Logs - Sequence Diagrams</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-amber">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Module View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../roles/youth-role.html">Youth</a>
+        <a href="../roles/sk-official-role.html">SK Official</a>
+        <a href="../roles/staff-role.html">Staff</a>
+        <a href="../roles/admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="./auth-and-registration.html">Auth</a>
+        <a href="./profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="./scholarships-and-notifications.html">Scholarships</a>
+        <a href="./events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="./cash-incentives.html">Cash Incentives</a>
+        <a href="./reports-and-audit-logs.html" class="active">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Module 06 · Analytics, Compliance &amp; Auditability</span>
+      <h1>Analytics Reports &amp; System Audit Logs</h1>
+      <p>Technical sequences detailing MYDO Staff multi-dimensional barangay/program analytics and streamed CSV exports, paired with centralized ActivityLogger capture and Executive Activity Log inspection.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Services: StaffReportService &amp; ActivityLogger</span>
+        <span class="meta-chip">Audit Table: activity_logs (immutable append-only)</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 06 · Sequence A</span>
+        <h2 class="card-title">MYDO Staff Multi-Dimensional Analytics &amp; Streamed CSV Export</h2>
+        <p class="card-desc">Shows how Staff query municipal youth distribution, scholarship statistics, event turnout, and cash incentive disbursements by Barangay, Program, and Year, and export streamed CSV files.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">StaffReportController@index</span>
+          <span class="tech-tag">StaffReportController@data</span>
+          <span class="tech-tag">StaffReportController@export</span>
+          <span class="tech-tag">StaffReportService</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Staff as MYDO Staff Officer
+    participant RepUI as Staff Reports Page
+    participant RepCtrl as StaffReportController
+    participant RepSvc as StaffReportService
+    participant DB as MySQL (youth_profiles, barangays, scholarships, activities, incentives)
+
+    Staff->>RepUI: Open /staff/reports
+    RepUI->>RepCtrl: GET /staff/reports (initial filters)
+    RepCtrl->>RepSvc: getReportsData(filters)
+    RepSvc->>DB: Aggregate Youth per Barangay, Scholarship approvals, Event attendance & Cash disbursements
+    DB-->>RepSvc: Return structured summary KPIs & tabular datasets
+    RepSvc-->>RepUI: Render charts & breakdown tables
+
+    Staff->>RepUI: Change Year or Program filter
+    RepUI->>RepCtrl: GET /staff/reports/data?program_id=...&year=...
+    RepCtrl->>RepSvc: getReportsData(filters)
+    RepSvc-->>RepUI: Return updated JSON analytics without full page reload
+
+    Staff->>RepUI: Click Export CSV (select report type: barangay / scholarships / incentives / events)
+    RepUI->>RepCtrl: GET /staff/reports/export?type=...&year=...
+    RepCtrl->>RepSvc: exportCsv(filters, type)
+    RepSvc->>DB: Query filtered records for selected report type
+    RepSvc-->>Staff: Return StreamedResponse (text/csv attachment download)
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 06 · Sequence B</span>
+        <h2 class="card-title">Centralized ActivityLogger Capture &amp; Admin Audit Trail Inspection</h2>
+        <p class="card-desc">Illustrates how sensitive Staff and Admin mutations write structured records (with actor role, IP, user agent, and before/after JSON snapshots) to <code>activity_logs</code>, and how Administrators audit them.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">ActivityLogger::log</span>
+          <span class="tech-tag">ActivityAttendanceService::removeAttendanceWithAudit</span>
+          <span class="tech-tag">AdminActivityLogController</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Actor as Staff / Admin Actor
+    participant Controllers as Domain Controllers & Services
+    participant Logger as ActivityLogger / ActivityLog Model
+    participant DB as MySQL (activity_logs)
+    actor Admin as System Administrator
+    participant LogUI as Admin Activity Logs Page
+
+    Note over Actor, DB: 1. Immutable Audit Capture on Sensitive Mutations
+    Actor->>Controllers: Execute mutation (Approve/Reject Youth or Scholar, Register SK, Create/Delete Event, Remove Attendance, Record Release, Change Password)
+    Controllers->>Logger: Record action, description, subject_type, subject_id, old_values, new_values, metadata
+    Logger->>DB: Insert append-only ActivityLog (actor_name, actor_role, ip_address, user_agent, created_at)
+
+    Note over Admin, LogUI: 2. Executive Audit Trail Search & Payload Inspection
+    Admin->>LogUI: Open /admin/activity-logs (loads total_logs, logs_today, availableRoles, availableActions)
+    Admin->>LogUI: Filter by Actor Role (admin | staff), Action type, Date range, or Keyword
+    LogUI->>DB: GET /admin/get-activity-logs (AdminActivityLogController@getData)
+    DB-->>LogUI: Return paginated ActivityLog entries
+    Admin->>LogUI: Click View Details on a specific audit row
+    LogUI->>DB: GET /admin/activity-logs/{id} (AdminActivityLogController@show)
+    DB-->>LogUI: Return full old_values, new_values, metadata, IP & user_agent JSON
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Module 06: Analytics Reports &amp; System Audit Logs
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

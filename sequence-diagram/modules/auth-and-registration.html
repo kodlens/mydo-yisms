@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 01: Auth, Registration &amp; Password Reset - Sequence Diagrams</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-teal">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Module View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../roles/youth-role.html">Youth</a>
+        <a href="../roles/sk-official-role.html">SK Official</a>
+        <a href="../roles/staff-role.html">Staff</a>
+        <a href="../roles/admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="./auth-and-registration.html" class="active">Auth</a>
+        <a href="./profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="./scholarships-and-notifications.html">Scholarships</a>
+        <a href="./events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="./cash-incentives.html">Cash Incentives</a>
+        <a href="./reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Module 01 · Security &amp; Identity</span>
+      <h1>Authentication, Registration Approval &amp; Password Reset</h1>
+      <p>Technical sequence diagrams covering Youth registration with School ID verification, the Staff/Admin account approval gate, dual-guard authentication (<code>web</code> vs <code>youth</code>), and dynamic multi-broker Gmail SMTP password recovery.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Guards: web (users) &amp; youth (youth_profiles)</span>
+        <span class="meta-chip">Brokers: users &amp; youths</span>
+        <span class="meta-chip">Middleware: EnsureUserHasRole</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 01 · Sequence A</span>
+        <h2 class="card-title">Youth Registration Pipeline &amp; Staff/Admin Approval Gate</h2>
+        <p class="card-desc">Traces temporary School ID upload, PSGC hierarchy validation in <code>StoreYouthRegistrationRequest</code>, atomic file promotion, and approval-gated login enforcement.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">UploadFileController@tempUpload</span>
+          <span class="tech-tag">StoreYouthRegistrationRequest</span>
+          <span class="tech-tag">YouthRegistrationController@store</span>
+          <span class="tech-tag">Staff/AdminYouthProfileController@approve</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Youth as Youth Applicant
+    participant RegUI as Youth Register / Login UI
+    participant Upload as UploadFileController
+    participant RegCtrl as YouthRegistrationController
+    participant StaffCtrl as Staff / Admin YouthProfileController
+    participant DB as MySQL (youth_profiles)
+    actor Reviewer as MYDO Staff / Admin
+
+    Youth->>RegUI: Fill registration steps & upload School ID (PNG/JPG)
+    RegUI->>Upload: POST /temp-upload
+    Upload-->>RegUI: Store in public/temp & return filename
+    Youth->>RegUI: Submit complete registration payload
+    RegUI->>RegCtrl: POST /youth-register
+    RegCtrl->>DB: Validate age (15-30), phone format & PSGC city/barangay hierarchy
+    RegCtrl->>DB: DB::transaction -> Create YouthProfile (status=pending, is_active=false, ref=YD-XXXX-XXXX)
+    RegCtrl->>Upload: Move temp School ID to upfiles/youth-profiles/{id}_{slug}
+    RegCtrl-->>RegUI: 200 OK (success=true, account pending MYDO review)
+
+    Reviewer->>StaffCtrl: Inspect pending profile & School ID attachment
+    alt Approved
+        Reviewer->>StaffCtrl: POST /youth-profiles/{id}/approve
+        StaffCtrl->>DB: Set status=approved, is_active=true, approved_by, approved_at
+        Youth->>RegUI: Sign in at /youth-login
+        RegUI->>DB: YouthAuthController verifies status == approved & is_active == true
+        DB-->>RegUI: Authenticate guard('youth') & redirect to /youth/youth-dashboard
+    else Rejected
+        Reviewer->>StaffCtrl: POST /youth-profiles/{id}/reject (rejection_reason)
+        StaffCtrl->>DB: Set status=rejected, is_active=false, rejection_reason
+        Youth->>RegUI: Attempt sign in at /youth-login
+        RegUI-->>Youth: Deny login & display rejection reason
+    end
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 01 · Sequence B</span>
+        <h2 class="card-title">Dual-Guard Login Routing &amp; Dynamic Multi-Broker Password Reset</h2>
+        <p class="card-desc">Shows role-aware login redirection for Admin, Staff, and SK Officials alongside dynamic broker selection (<code>youths</code> vs <code>users</code>) and CID-embedded logo emails on <code>/forgot-password</code>.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">AuthenticatedSessionController</span>
+          <span class="tech-tag">EnsureUserHasRole</span>
+          <span class="tech-tag">PasswordResetLinkController</span>
+          <span class="tech-tag">NewPasswordController</span>
+          <span class="tech-tag">emails.password-reset (CID Logos)</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor UserActor as User (Youth / Staff / Admin / SK)
+    participant AuthUI as Login & Password Reset UI
+    participant PwdCtrl as PasswordResetLink & NewPassword Controllers
+    participant Broker as Password Broker (youths | users)
+    participant SMTP as Gmail SMTP Server
+    participant DB as MySQL (users, youth_profiles, password_reset_tokens)
+
+    Note over UserActor, DB: 1. Staff / Admin / SK Portal Login (/login)
+    UserActor->>AuthUI: Submit username/email & password at /login
+    AuthUI->>DB: Authenticate on web guard (users table)
+    DB-->>AuthUI: Resolve User::dashboardRoute() (admin | staff | sk.dashboard.index)
+    AuthUI-->>UserActor: Redirect to role workspace protected by EnsureUserHasRole
+
+    Note over UserActor, DB: 2. Dynamic Multi-Broker Forgot Password (/forgot-password)
+    UserActor->>AuthUI: Submit email address on /forgot-password
+    AuthUI->>PwdCtrl: POST /forgot-password
+    PwdCtrl->>DB: Check YouthProfile::where(email) else User::where(email)
+    alt Email belongs to YouthProfile
+        PwdCtrl->>Broker: Password::broker('youths')->sendResetLink()
+    else Email belongs to Admin/Staff/SK User
+        PwdCtrl->>Broker: Password::broker('users')->sendResetLink()
+    end
+    Broker->>DB: Store hashed token in password_reset_tokens
+    Broker->>SMTP: Render emails.password-reset with $message->embed() CID logos
+    SMTP-->>UserActor: Deliver branded eKabataan Reset Password email
+
+    Note over UserActor, DB: 3. Password Reset Completion (/reset-password)
+    UserActor->>AuthUI: Open /reset-password/{token} & submit new password
+    AuthUI->>PwdCtrl: POST /reset-password
+    PwdCtrl->>Broker: Reset via matching broker ('youths' or 'users')
+    Broker->>DB: Save hashed password, update remember_token & delete reset token
+    alt Youth Account
+        PwdCtrl-->>AuthUI: Redirect to route('youth-login.index')
+    else Staff / Admin / SK Account
+        PwdCtrl-->>AuthUI: Redirect to route('login')
+    end
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Module 01: Authentication, Registration &amp; Password Reset
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

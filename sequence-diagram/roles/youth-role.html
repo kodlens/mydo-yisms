@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Youth / College Student Role - Sequence Diagrams | eKabataan</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-sky">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Role View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="./youth-role.html" class="active">Youth</a>
+        <a href="./sk-official-role.html">SK Official</a>
+        <a href="./staff-role.html">Staff</a>
+        <a href="./admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="../modules/auth-and-registration.html">Auth</a>
+        <a href="../modules/profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="../modules/scholarships-and-notifications.html">Scholarships</a>
+        <a href="../modules/events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="../modules/cash-incentives.html">Cash Incentives</a>
+        <a href="../modules/reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role 01 · Youth Guard (auth:youth)</span>
+      <h1>Youth / College Student — Role Sequence Diagrams</h1>
+      <p>Traces every interaction of a registered Youth / College Student in eKabataan, from initial account registration and approval verification to scholarship applications, event QR passes, real-time notifications, and cash incentive tracking.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Model: App\Models\YouthProfile</span>
+        <span class="meta-chip">Guard: youth</span>
+        <span class="meta-chip">Reference Prefix: YD-XXXX-XXXX</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Youth Flow 01</span>
+        <h2 class="card-title">Online Registration, Approval Gate &amp; Youth Portal Login</h2>
+        <p class="card-desc">Youth applicants upload their School ID and complete registration. Accounts remain locked in <code>pending</code> status until approved by MYDO Staff or an Administrator.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">YouthRegistrationController</span>
+          <span class="tech-tag">UploadFileController@tempUpload</span>
+          <span class="tech-tag">YouthAuthController@login</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Youth as Youth / College Student
+    participant UI as Youth Auth UI (Inertia)
+    participant Ctrl as YouthAuth & Registration Controllers
+    participant Storage as Public Disk Storage
+    participant DB as MySQL (youth_profiles)
+    actor Staff as MYDO Staff / Admin
+
+    Note over Youth, DB: Phase 1 - Self-Registration with School ID
+    Youth->>UI: Open /youth-register & select Province, City, Barangay
+    UI->>Ctrl: GET /load-provinces, /load-cities, /load-barangays
+    Ctrl-->>UI: Return active PSGC address options
+    Youth->>UI: Attach School ID image (PNG/JPG)
+    UI->>Ctrl: POST /temp-upload (multipart file)
+    Ctrl->>Storage: Store temporary file in storage/app/public/temp
+    Ctrl-->>UI: Return temp filename token
+    Youth->>UI: Submit Personal, Education & Guardian Form
+    UI->>Ctrl: POST /youth-register (StoreYouthRegistrationRequest)
+    Ctrl->>DB: Create YouthProfile (status=pending, is_active=false, code=YD-XXXX-XXXX)
+    Ctrl->>Storage: Move School ID to upfiles/youth-profiles/{id}_{slug}
+    Ctrl-->>UI: Return registration submitted confirmation
+
+    Note over Youth, Staff: Phase 2 - Login Gate Enforcement
+    Youth->>UI: Attempt sign-in at /youth-login before approval
+    UI->>Ctrl: POST /youth-login
+    Ctrl->>DB: Check YouthProfile status & is_active
+    alt Status is Pending or Rejected
+        Ctrl-->>UI: Block login & show Pending Review / Rejection notice
+    else Approved by Staff or Admin
+        Staff->>DB: Approve YouthProfile (status=approved, is_active=true)
+        Youth->>UI: Submit credentials at /youth-login
+        UI->>Ctrl: POST /youth-login
+        Ctrl->>DB: Authenticate on guard('youth') & regenerate session
+        Ctrl-->>UI: Redirect to /youth/youth-dashboard
+    end
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Youth Flow 02</span>
+        <h2 class="card-title">Profile Maintenance &amp; Password Recovery</h2>
+        <p class="card-desc">Authenticated youth can update their academic/personal profile and recover forgotten passwords via the dedicated <code>youths</code> password broker and Gmail SMTP.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">YouthMyProfileController</span>
+          <span class="tech-tag">PasswordResetLinkController</span>
+          <span class="tech-tag">NewPasswordController</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Youth as Youth / College Student
+    participant UI as Youth Portal / Auth UI
+    participant Broker as Laravel Auth Broker (youths)
+    participant Mail as Gmail SMTP (CID Logo Email)
+    participant DB as MySQL (youth_profiles & tokens)
+
+    Note over Youth, DB: Flow A - Self-Service Profile Update
+    Youth->>UI: Open /youth/my-profile & edit contact, school, year, or GWA
+    UI->>DB: PUT /youth/my-profile (YouthMyProfileController@update)
+    DB-->>UI: Persist updated YouthProfile attributes
+    UI-->>Youth: Show profile updated notification
+
+    Note over Youth, DB: Flow B - Forgot Password via Youth Broker
+    Youth->>UI: Open /forgot-password & enter registered email
+    UI->>Broker: POST /forgot-password (detect YouthProfile email)
+    Broker->>DB: Insert hashed token in password_reset_tokens
+    Broker->>Mail: Send custom eKabataan HTML email with CID-embedded logos
+    Mail-->>Youth: Deliver Reset Password link to inbox
+    Youth->>UI: Click /reset-password/{token} & submit new password
+    UI->>Broker: POST /reset-password (Password::broker('youths')->reset)
+    Broker->>DB: Update YouthProfile password hash & delete token
+    UI-->>Youth: Redirect to /youth-login with status message
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 3 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Youth Flow 03</span>
+        <h2 class="card-title">Scholarships, Events QR Pass, Notifications &amp; Cash Incentives</h2>
+        <p class="card-desc">Core service consumption flow for an approved Youth member across Scholarships, Events &amp; Activities, Real-time Notifications, and the Cash Incentives ledger.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">YouthApplyScholarshipController</span>
+          <span class="tech-tag">YouthEventActivitiyController</span>
+          <span class="tech-tag">YouthCashIncentiveController</span>
+          <span class="tech-tag">YouthNotificationController</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Youth as Youth / College Student
+    participant Portal as Youth Portal UI + Echo
+    participant App as Youth Controllers
+    participant DB as MySQL Database
+    participant Pusher as Pusher WebSockets
+
+    Note over Youth, Pusher: 1. Scholarship Application & Real-Time Status Alert
+    Youth->>Portal: Browse /youth/services/youth-scholarships & click Apply
+    Youth->>Portal: Upload COE, COG, School ID, Cedula, PSA via /temp-upload
+    Portal->>App: POST /youth/services/apply-scholarship/{id}
+    App->>DB: Save ScholarshipApplication (SCH-XXXX, status=pending)
+    App-->>Pusher: Notify all MYDO Staff in real time
+    Pusher-->>Portal: Later - Receive ScholarshipApplicationStatusEvent (Approved/Rejected)
+    Youth->>Portal: Click Notification Bell (/youth/notifications/{id}/read)
+    Portal->>App: Mark notification read & display decision remarks
+
+    Note over Youth, DB: 2. Joining an Activity & Presenting QR Event Pass
+    Youth->>Portal: Open /youth/services/events-activities & click Join
+    Portal->>App: POST /youth/services/events-activities/{activity}/join
+    App->>DB: Lock activity row, verify slot capacity & create ActivityRegistration
+    App-->>Portal: Confirm registration (Approved or Pending Approval)
+    Youth->>Portal: Open QR Event Pass Modal (displays QR for YD-XXXX-XXXX)
+    Note right of Youth: Presents QR at venue for Staff/Admin check-in
+
+    Note over Youth, DB: 3. Viewing Cash Incentives Ledger
+    Youth->>Portal: Open /youth/cash-incentives (filter by funding year)
+    Portal->>App: GET /youth/cash-incentives
+    App->>DB: Fetch CashIncentiveBeneficiary & CashIncentiveRelease records
+    App-->>Portal: Render grant amounts, approval status & payout ACK details
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Youth / College Student Role Sequence Diagrams
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

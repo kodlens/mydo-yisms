@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 04: Events, Live QR Attendance &amp; SK Evidence - Sequence Diagrams</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-indigo">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Module View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../roles/youth-role.html">Youth</a>
+        <a href="../roles/sk-official-role.html">SK Official</a>
+        <a href="../roles/staff-role.html">Staff</a>
+        <a href="../roles/admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="./auth-and-registration.html">Auth</a>
+        <a href="./profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="./scholarships-and-notifications.html">Scholarships</a>
+        <a href="./events-attendance-and-sk-evidence.html" class="active">Events &amp; Attendance</a>
+        <a href="./cash-incentives.html">Cash Incentives</a>
+        <a href="./reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Module 04 · Events, Check-In &amp; Field Evidence</span>
+      <h1>Events, Live QR Attendance &amp; SK Evidence</h1>
+      <p>Complete sequence specifications for activity publishing, slot-reserving Youth sign-ups, Staff/Admin participant moderation, row-locked QR &amp; manual attendance check-in, audited attendance removal, and SK Official event photo evidence.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Tables: activities, activity_registrations, activity_attendances, sk_activity_evidences</span>
+        <span class="meta-chip">Service: ActivityAttendanceService (lockForUpdate)</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 04 · Sequence A</span>
+        <h2 class="card-title">Event Publication, Youth Slot Registration &amp; Participant Moderation</h2>
+        <p class="card-desc">Covers how Staff and Administrators create/publish activities, how Youth join or cancel registrations under capacity constraints, and how Staff/Admin approve or withdraw sign-ups.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">Staff / AdminEventActivityController</span>
+          <span class="tech-tag">YouthEventActivitiyController@join</span>
+          <span class="tech-tag">ActivityRegistration::scopeReservingSlot</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Organizer as MYDO Staff / Admin
+    participant OrgUI as Staff / Admin Events UI
+    participant EventCtrl as EventActivity Controllers
+    participant YouthCtrl as YouthEventActivitiyController
+    participant DB as MySQL (activities, activity_registrations)
+    actor Youth as Youth Member
+
+    Note over Organizer, DB: 1. Activity Creation & Featured Toggle
+    Organizer->>OrgUI: Create Activity (Category, Venue, Schedule, Capacity, requires_approval)
+    OrgUI->>EventCtrl: POST /events-activities (staff or admin prefix)
+    EventCtrl->>DB: Generate unique slug, stamp published_at & insert Activity
+    EventCtrl-->>OrgUI: Return 201 Created
+
+    Note over Youth, DB: 2. Youth Registration with Capacity Protection
+    Youth->>YouthCtrl: POST /youth/services/events-activities/{activity}/join
+    YouthCtrl->>DB: Lock Activity row & count reservingSlot() registrations
+    alt Activity is Full
+        YouthCtrl-->>Youth: Reject join (Activity capacity reached)
+    else Slot Available
+        alt requires_approval == true
+            YouthCtrl->>DB: Insert ActivityRegistration (status=pending)
+        else Auto-Confirm (requires_approval == false)
+            YouthCtrl->>DB: Insert ActivityRegistration (status=approved)
+        end
+        YouthCtrl-->>Youth: Confirm registration & unlock QR Event Pass if approved
+    end
+
+    Note over Organizer, DB: 3. Participant Review (Approve / Reject / Withdraw)
+    Organizer->>OrgUI: Open /events-activities/{id}/participants
+    OrgUI->>EventCtrl: PATCH /events-activities/{id}/participants/{registration}
+    EventCtrl->>DB: Verify capacity & update status (approved or rejected + reason)
+    EventCtrl-->>OrgUI: Return refreshed participant row & slots_left summary
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 04 · Sequence B</span>
+        <h2 class="card-title">Live QR Scanner &amp; Manual Check-In + Audited Attendance Removal</h2>
+        <p class="card-desc">Available in both <strong>Staff</strong> (<code>/staff/events-activities/{id}/attendance</code>) and <strong>Admin</strong> (<code>/admin/events-activities/{id}/attendance</code>), backed by row-level locking in <code>ActivityAttendanceService</code> and 12-second TanStack Query background polling.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">Staff / AdminActivityAttendanceController</span>
+          <span class="tech-tag">ActivityAttendanceService</span>
+          <span class="tech-tag">QrScanner.tsx + ManualCodeEntry.tsx</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Youth as Youth Participant
+    actor Operator as MYDO Staff / Admin
+    participant TermUI as Attendance Check-in Terminal
+    participant AttCtrl as ActivityAttendanceController
+    participant Svc as ActivityAttendanceService
+    participant DB as MySQL (attendances, registrations, activity_logs)
+
+    Youth->>Operator: Present QR Event Pass (YD-XXXX-XXXX) or Student ID at venue
+    Operator->>TermUI: Scan QR via BarcodeDetector camera or submit Manual Code
+    TermUI->>AttCtrl: POST /events-activities/{id}/attendance (reference_code, method, remarks)
+    AttCtrl->>Svc: recordAttendance(activity, code, method, operatorUser, remarks)
+
+    Svc->>DB: Begin Transaction & lockForUpdate() on Activity + YouthProfile + Registration
+    alt Invalid Code / Unapproved Registration / Duplicate Check-In
+        Svc-->>AttCtrl: Throw ValidationException (duplicate / reference_code / activity)
+        AttCtrl-->>TermUI: Return 422 JSON error
+        TermUI-->>Operator: Show red Attendance Not Recorded alert card
+    else Verified Approved Participant
+        Svc->>DB: Insert ActivityAttendance (method=qr|manual, recorded_by=operator.id, attended_at=now)
+        Svc-->>AttCtrl: Return attendance record + recomputed getSummary()
+        AttCtrl-->>TermUI: Return 201 Created
+        TermUI-->>Operator: Play audio chime, display Confirmed Check-in card & update Turnout %
+    end
+
+    opt Administrative Attendance Correction / Removal
+        Operator->>TermUI: Click Remove on attendance row & enter required reason (min 5 chars)
+        TermUI->>AttCtrl: DELETE /events-activities/{id}/attendance/{attendanceId} (reason)
+        AttCtrl->>Svc: removeAttendanceWithAudit(activity, attendanceId, operatorUser, reason)
+        Svc->>DB: Insert ActivityLog (action=activity_attendance.removed, old_values, reason)
+        Svc->>DB: Delete ActivityAttendance row
+        AttCtrl-->>TermUI: Return 200 OK + updated summary
+    end
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 3 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 04 · Sequence C</span>
+        <h2 class="card-title">SK Official Event Photo &amp; Narrative Evidence Pipeline</h2>
+        <p class="card-desc">Traces how Sangguniang Kabataan Officials upload post-activity photo documentation and how Staff and Administrators inspect submissions tagged with the SK Official's Position and Barangay.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">SkEventActivityController@storeEvidence</span>
+          <span class="tech-tag">Staff / AdminEventActivityController@skEvidences</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor SK as SK Official
+    participant SkUI as SK Events & Evidence Page
+    participant SkCtrl as SkEventActivityController
+    participant Disk as Public Storage Disk
+    participant DB as MySQL (sk_activity_evidences, users, barangays)
+    actor Reviewer as MYDO Staff / Admin
+
+    SK->>SkUI: Select published Activity, upload 1-10 photos (/temp-upload) & enter narrative
+    SkUI->>SkCtrl: POST /sk/events-activities/{activity}/evidence
+    SkCtrl->>Disk: Verify PNG/JPG MIME & move to upfiles/sk-evidences/activity-{id}/sk-{user_id}
+    SkCtrl->>DB: Create SkActivityEvidence (activity_id, user_id, description, photos)
+    SkCtrl-->>SkUI: Return 200 OK & update my_evidences list
+
+    Reviewer->>DB: Click SK Evidence button in Staff or Admin Events Directory
+    DB-->>Reviewer: Eager-load skUser.barangay & return photos, narrative, SK Position & Brgy. Name
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Module 04: Events, Live QR Attendance &amp; SK Evidence
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

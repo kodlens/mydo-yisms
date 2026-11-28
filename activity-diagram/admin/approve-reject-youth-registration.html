@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin: Approve / Reject Youth Registration - Activity Diagram</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-amber">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Activity Diagram</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Hub</a>
+        <div class="nav-divider"></div>
+        <a href="./approve-reject-youth-registration.html" class="active">Admin: Youth Reg</a>
+        <a href="../mydo-staff/approve-reject-youth-registration.html">Staff: Youth Reg</a>
+        <a href="../mydo-staff/manage-scholarship-application.html">Staff: Scholarships</a>
+        <a href="../mydo-staff/manage-event-participant.html">Staff: Participants</a>
+        <a href="../youth-scholar/join-activity.html">Youth: Join Activity</a>
+        <a href="../sk/submit-document-report.html">SK: Submit Report</a>
+        <a href="../sk/view-sk-submit-status.html">SK: Submit Status</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role Folder: admin/ · Activity Diagram</span>
+      <h1>Admin — Approve / Reject Youth Registration</h1>
+      <p>UML Swimlane Activity Diagram showing how a System Administrator reviews pending Youth registrations, inspects the uploaded School ID and personal/academic credentials, and approves or rejects portal login access with immutable audit logging.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Route: /admin/youth-profiles</span>
+        <span class="meta-chip">Controller: AdminYouthProfileController@approve | @reject</span>
+        <span class="meta-chip">Audit: ActivityLogger (youth_profile.approved / rejected)</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Activity Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="legend-bar">
+      <span class="legend-title">UML Notation:</span>
+      <span class="legend-item"><span class="sym-start"></span> Initial Node</span>
+      <span class="legend-item"><span class="sym-action"></span> Action State</span>
+      <span class="legend-item"><span class="sym-decision"></span> Decision / Guard</span>
+      <span class="legend-item"><span class="sym-end"></span> Activity Final Node</span>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Admin Activity Diagram 01</span>
+        <h2 class="card-title">Approve or Reject Pending Youth Account Registration</h2>
+        <p class="card-desc">Swimlanes partition responsibilities across the System Administrator, the eKabataan Backend &amp; Audit Logger, and the Youth Applicant Login Gate.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">GET /admin/get-youth-profiles</span>
+          <span class="tech-tag">POST /admin/youth-profiles/{id}/approve</span>
+          <span class="tech-tag">POST /admin/youth-profiles/{id}/reject</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph AdminLane["Swimlane 1: System Administrator"]
+        Start((" ")) --> A1(["Sign in to Admin Executive Console"])
+        A1 --> A2(["Open Youth Profiles Directory (/admin/youth-profiles)"])
+        A2 --> A3(["Filter by Status: Pending or Search Applicant"])
+        A4(["Open AdminYouthProfileDrawer & Inspect Personal, Barangay, School & School ID Image"])
+        D1{"Registration Valid & Complete?"}
+        A5(["Click Approve Registration"])
+        A6(["Click Reject & Encode Optional Rejection Reason (max 500 chars)"])
+    end
+
+    subgraph SystemLane["Swimlane 2: eKabataan System (AdminYouthProfileController & MySQL)"]
+        S1(["Query youth_profiles with province, city, barangay & School ID URL"])
+        S2(["Update YouthProfile: status = approved, is_active = true, approved_by = admin.id, approved_at = now"])
+        S3(["Write ActivityLog: action = youth_profile.approved"])
+        S4(["Update YouthProfile: status = rejected, is_active = false, save rejection_reason"])
+        S5(["Write ActivityLog: action = youth_profile.rejected"])
+    end
+
+    subgraph YouthLane["Swimlane 3: Youth Applicant (Portal Access Outcome)"]
+        Y1(["Youth Account Activated: Can Sign In at /youth-login"])
+        Y2(["Youth Account Remains Locked: Rejection Notice Shown on Login Attempt"])
+        EndNode((("◉")))
+    end
+
+    A3 --> S1
+    S1 --> A4
+    A4 --> D1
+    D1 -- "Valid / Qualified" --> A5
+    D1 -- "Invalid / Incomplete ID" --> A6
+
+    A5 --> S2
+    S2 --> S3
+    S3 --> Y1
+    Y1 --> EndNode
+
+    A6 --> S4
+    S4 --> S5
+    S5 --> Y2
+    Y2 --> EndNode
+
+    classDef startNode fill:#0f172a,stroke:#0f172a,color:#ffffff;
+    classDef endNode fill:#ffffff,stroke:#0f172a,stroke-width:3px,color:#0f172a,font-weight:900;
+    classDef actionAdmin fill:#fffbeb,stroke:#d97706,color:#0f172a;
+    classDef actionSys fill:#f8fafc,stroke:#64748b,color:#0f172a;
+    classDef decision fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#78350f,font-weight:700;
+    classDef approvedOut fill:#dcfce7,stroke:#16a34a,color:#14532d,font-weight:600;
+    classDef rejectedOut fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,font-weight:600;
+
+    class Start startNode;
+    class EndNode endNode;
+    class A1,A2,A3,A4,A5,A6 actionAdmin;
+    class S1,S2,S3,S4,S5 actionSys;
+    class D1 decision;
+    class Y1 approvedOut;
+    class Y2 rejectedOut;
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Admin Activity Diagram: Approve / Reject Youth Registration
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

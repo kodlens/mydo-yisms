@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 05: Cash Incentives &amp; Disbursements - Sequence Diagrams</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-teal">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Module View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../roles/youth-role.html">Youth</a>
+        <a href="../roles/sk-official-role.html">SK Official</a>
+        <a href="../roles/staff-role.html">Staff</a>
+        <a href="../roles/admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="./auth-and-registration.html">Auth</a>
+        <a href="./profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="./scholarships-and-notifications.html">Scholarships</a>
+        <a href="./events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="./cash-incentives.html" class="active">Cash Incentives</a>
+        <a href="./reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Module 05 · Financial Assistance &amp; Treasury Tracking</span>
+      <h1>Cash Incentives &amp; Disbursement Management</h1>
+      <p>Documents municipal cash incentive program budgeting, eligible college youth filtering, historical snapshot nomination, approval review, individual/batch payout release recording, CSV/printable reporting, and the Youth read-only ledger.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Tables: cash_incentive_programs, beneficiaries, releases, status_histories</span>
+        <span class="meta-chip">Shared Parity: Staff &amp; Admin Workspaces</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 05 · Sequence A</span>
+        <h2 class="card-title">Program Budgeting, Snapshot Nomination &amp; Beneficiary Review</h2>
+        <p class="card-desc">Shows how Staff or Administrators create a Cash Incentive Program, filter eligible youth, capture a historical academic/barangay snapshot upon selection, and review nominations.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">Staff / AdminCashIncentiveProgramController</span>
+          <span class="tech-tag">Staff / AdminCashIncentiveBeneficiaryController</span>
+          <span class="tech-tag">ProgramManagementService</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Officer as MYDO Staff / Admin
+    participant ProgUI as Cash Incentives UI
+    participant ProgCtrl as CashIncentiveProgramController
+    participant BenCtrl as CashIncentiveBeneficiaryController
+    participant DB as MySQL (programs, beneficiaries, status_histories)
+
+    Officer->>ProgUI: Create Cash Incentive Program (Title, Funding Year, Per-Beneficiary Amount, Budget)
+    ProgUI->>ProgCtrl: POST /cash-incentives
+    ProgCtrl->>DB: Generate CIP-YYYY-XXXX code, insert Program & write ActivityLog
+    ProgCtrl-->>ProgUI: Redirect to Program Show Page
+
+    Officer->>ProgUI: Open Add Beneficiaries Modal & filter by Barangay / Year Level / Search
+    ProgUI->>BenCtrl: GET /cash-incentives/{program}/eligible-youth
+    BenCtrl->>DB: Query active approved YouthProfiles not yet nominated in this program
+    BenCtrl-->>ProgUI: Return eligible youth candidates
+
+    Officer->>ProgUI: Select youth IDs & confirm nomination
+    ProgUI->>BenCtrl: POST /cash-incentives/{program}/beneficiaries/select
+    BenCtrl->>DB: Snapshot school_name, program, year, brgyCode into CashIncentiveBeneficiary (status=pending)
+    BenCtrl->>DB: Insert CashIncentiveStatusHistory & ActivityLog
+    BenCtrl-->>ProgUI: Refresh beneficiary roster & quota counters
+
+    Officer->>ProgUI: Review nominated beneficiary (Approve or Reject with remarks)
+    ProgUI->>BenCtrl: POST /cash-incentives/{program}/beneficiaries/{beneficiary}/review
+    BenCtrl->>DB: Validate max_beneficiaries / budget cap, update status & append StatusHistory
+    BenCtrl-->>ProgUI: Update approved beneficiary count & budget utilization bar
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 05 · Sequence B</span>
+        <h2 class="card-title">Individual / Batch Cash Release, Reversion, Reports &amp; Youth Ledger</h2>
+        <p class="card-desc">Covers payout disbursement recording (single or batch), administrative release reversion, printable/CSV beneficiary reports, and read-only verification in the Youth Portal.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">Staff / AdminCashIncentiveReleaseController</span>
+          <span class="tech-tag">Staff / AdminCashIncentiveReportController</span>
+          <span class="tech-tag">YouthCashIncentiveController</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Officer as MYDO Staff / Admin
+    participant RelCtrl as CashIncentiveReleaseController
+    participant RepCtrl as CashIncentiveReportController
+    participant DB as MySQL (releases, beneficiaries, activity_logs)
+    actor Youth as Youth Beneficiary
+
+    Note over Officer, DB: 1. Individual or Batch Payout Recording
+    Officer->>RelCtrl: POST /releases/{beneficiary}/record OR POST /releases/batch
+    RelCtrl->>DB: Verify beneficiary status == approved & remaining program budget
+    RelCtrl->>DB: Create/Update CashIncentiveRelease (status=released, ack_number, released_at, released_by)
+    RelCtrl->>DB: Record CashIncentiveStatusHistory & ActivityLog
+    RelCtrl-->>Officer: Return updated released amount & remaining budget
+
+    opt Revert Accidental Release
+        Officer->>RelCtrl: POST /releases/{beneficiary}/revert (reason)
+        RelCtrl->>DB: Revert release status, log audit reason & restore program balance
+    end
+
+    Note over Officer, DB: 2. Financial Summary & CSV / Individual Voucher Export
+    Officer->>RepCtrl: GET /reports/summary, /reports/export-csv, or /beneficiaries/{id}/report
+    RepCtrl->>DB: Aggregate program totals, barangay breakdown & payout records
+    RepCtrl-->>Officer: Render printable voucher/summary or stream CSV download
+
+    Note over Youth, DB: 3. Youth Portal Read-Only Cash Incentives Ledger
+    Youth->>DB: GET /youth/cash-incentives (YouthCashIncentiveController@index)
+    DB-->>Youth: Return personal grant history, funding year filter, payout status & ACK number
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Module 05: Cash Incentives &amp; Disbursement Management
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

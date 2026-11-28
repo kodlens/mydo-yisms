@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eKabataan YIMS - Sequence Diagram Architecture Hub</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-teal">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="./index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Sequence Diagrams</span>
+      </a>
+      <div class="nav-links">
+        <a href="./index.html" class="active">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="./roles/youth-role.html">Youth</a>
+        <a href="./roles/sk-official-role.html">SK Official</a>
+        <a href="./roles/staff-role.html">Staff</a>
+        <a href="./roles/admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="./modules/auth-and-registration.html">Auth</a>
+        <a href="./modules/profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="./modules/scholarships-and-notifications.html">Scholarships</a>
+        <a href="./modules/events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="./modules/cash-incentives.html">Cash Incentives</a>
+        <a href="./modules/reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">MYDO · Municipality of Dumingag · Official System Architecture</span>
+      <h1>eKabataan YIMS — Sequence Diagrams Suite</h1>
+      <p>Comprehensive UML Sequence Diagrams organized both <strong>Per Role (4 Actors)</strong> and <strong>Per Module (6 Core Subsystems)</strong>, documenting real-time WebSockets, multi-guard authentication, QR check-in transactions, scholarship workflows, cash incentives, and administrative audit trails.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">4 System Roles: Youth · SK Official · MYDO Staff · Administrator</span>
+        <span class="meta-chip">6 Core Modules</span>
+        <span class="meta-chip">Laravel 12 + Inertia React + MySQL + Pusher + Gmail SMTP</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <button onclick="window.print()">🖨️ Print / Save Overview as PDF</button>
+      <button class="secondary" onclick="navigator.clipboard.writeText(window.location.href); alert('Hub URL copied to clipboard!')">🔗 Copy File Path</button>
+    </div>
+
+    <!-- SYSTEM-WIDE CONTEXT SEQUENCE DIAGRAM -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Master System Context</span>
+        <h2 class="card-title">Cross-Role Ecosystem Interaction Sequence</h2>
+        <p class="card-desc">High-level chronological overview illustrating how Youth Members, SK Officials, MYDO Staff Officers, and System Administrators collaborate through the eKabataan platform.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">guard: youth (youth_profiles)</span>
+          <span class="tech-tag">guard: web (users: admin | staff | sk)</span>
+          <span class="tech-tag">Pusher Broadcasts</span>
+          <span class="tech-tag">ActivityLogger Audit</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Admin as Administrator
+    actor Staff as MYDO Staff
+    actor SK as SK Official
+    actor Youth as Youth / Student
+    participant App as eKabataan Application
+    participant DB as MySQL Database
+    participant Services as Pusher & Gmail SMTP
+
+    Note over Admin, DB: 1. Governance, Categories, Programs & Role Setup
+    Admin->>App: Configure Activity Categories, Scholarship Types & Programs
+    App->>DB: Persist foundational records & write ActivityLog
+    Staff->>App: Register SK Official with Position & Barangay Jurisdiction
+    App->>DB: Create User (role=sk, sk_position, provCode, citymunCode, brgyCode)
+
+    Note over Youth, Staff: 2. Youth Registration & Staff Vetting Gate
+    Youth->>App: Submit Online Registration + School ID upload
+    App->>DB: Save YouthProfile (status=pending, is_active=false, ref=YD-XXXX-XXXX)
+    Staff->>App: Review & Approve Youth Registration
+    App->>DB: Update YouthProfile (status=approved, is_active=true)
+
+    Note over Youth, Services: 3. Youth Services & Real-Time Notifications
+    Youth->>App: Apply for Scholarship (COE, COG, ID, Cedula, PSA)
+    App->>DB: Create ScholarshipApplication (SCH-XXXX) + Staff DB Notifications
+    App-->>Services: Broadcast NewScholarshipApplicationEvent to Staff Bell
+    Staff->>App: Evaluate Dossier & Approve / Reject Application
+    App->>DB: Update status + write ActivityLog + Youth DB Notification
+    App-->>Services: Broadcast ScholarshipApplicationStatusEvent to Youth Bell
+
+    Note over Admin, Youth: 4. Events, QR Check-In, SK Evidence & Cash Incentives
+    Youth->>App: Join Published Activity & generate QR Event Pass
+    Staff->>App: Scan Youth QR / Manual Code at Venue Check-in Terminal
+    App->>DB: Lock rows & create ActivityAttendance
+    SK->>App: Upload Barangay Event Pictures & Narrative Evidence
+    App->>DB: Store SkActivityEvidence linked to SK Official & Barangay
+    Admin->>App: Audit Attendance, Cash Incentive Releases & Activity Logs
+        </pre>
+      </div>
+    </div>
+
+    <!-- PER ROLE GRID -->
+    <h2 class="section-heading">1. Sequence Diagrams by Role (4 Roles)</h2>
+    <p class="section-sub">Inspect every end-to-end interaction from the perspective of each authenticated user role in eKabataan.</p>
+    <div class="hub-grid">
+      <a class="hub-card" href="./roles/youth-role.html">
+        <div>
+          <span class="hub-card-tag tag-youth">Role 01 · Youth Guard</span>
+          <h3>Youth / College Student</h3>
+          <p>Self-registration &amp; approval gate, profile updates, password reset, scholarship applications, real-time notifications, event QR passes, and cash incentive ledger.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>3 Sequence Diagrams</span>
+          <span>Open Diagram →</span>
+        </div>
+      </a>
+
+      <a class="hub-card" href="./roles/sk-official-role.html">
+        <div>
+          <span class="hub-card-tag tag-sk">Role 02 · SK Portal</span>
+          <h3>Sangguniang Kabataan (SK) Official</h3>
+          <p>SK portal authentication, barangay-scoped dashboard metrics, uploading event photo &amp; narrative evidence, and managing barangay submissions.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>2 Sequence Diagrams</span>
+          <span>Open Diagram →</span>
+        </div>
+      </a>
+
+      <a class="hub-card" href="./roles/staff-role.html">
+        <div>
+          <span class="hub-card-tag tag-staff">Role 03 · Staff Workspace</span>
+          <h3>MYDO Staff Officer</h3>
+          <p>Youth registration approval, SK official barangay registration, scholarship review, real-time Pusher alerts, QR attendance check-in, cash releases, and CSV reports.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>3 Sequence Diagrams</span>
+          <span>Open Diagram →</span>
+        </div>
+      </a>
+
+      <a class="hub-card" href="./roles/admin-role.html">
+        <div>
+          <span class="hub-card-tag tag-admin">Role 04 · Executive Console</span>
+          <h3>System Administrator</h3>
+          <p>System categories &amp; scholarship types, user/SK role administration, executive scholarship &amp; cash incentive control, Admin QR attendance terminal, and audit logs.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>3 Sequence Diagrams</span>
+          <span>Open Diagram →</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- PER MODULE GRID -->
+    <h2 class="section-heading">2. Sequence Diagrams by Module (6 Modules)</h2>
+    <p class="section-sub">Deep-dive technical sequence diagrams tracing controllers, form requests, services, database transactions, and external integrations per module.</p>
+    <div class="hub-grid">
+      <a class="hub-card" href="./modules/auth-and-registration.html">
+        <div>
+          <span class="hub-card-tag tag-module">Module 01</span>
+          <h3>Authentication, Registration &amp; Password Reset</h3>
+          <p>Youth registration with School ID upload, Staff/Admin approval gate, dual-guard login routing, and dynamic multi-broker Gmail SMTP password reset.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>2 Sequence Diagrams</span>
+          <span>Open Module →</span>
+        </div>
+      </a>
+
+      <a class="hub-card" href="./modules/profiles-and-sk-management.html">
+        <div>
+          <span class="hub-card-tag tag-module">Module 02</span>
+          <h3>Youth Profiles &amp; SK Barangay Management</h3>
+          <p>Youth profile maintenance, Staff/Admin profile drawer moderation, and SK Official registration with PSGC Province/City/Barangay cascading lookup.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>2 Sequence Diagrams</span>
+          <span>Open Module →</span>
+        </div>
+      </a>
+
+      <a class="hub-card" href="./modules/scholarships-and-notifications.html">
+        <div>
+          <span class="hub-card-tag tag-module">Module 03</span>
+          <h3>Scholarships &amp; Real-Time Notifications</h3>
+          <p>Scholarship setup, online multi-document application, Pusher real-time alerts to MYDO Staff, dossier review, and instant status notifications to Youth.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>2 Sequence Diagrams</span>
+          <span>Open Module →</span>
+        </div>
+      </a>
+
+      <a class="hub-card" href="./modules/events-attendance-and-sk-evidence.html">
+        <div>
+          <span class="hub-card-tag tag-module">Module 04</span>
+          <h3>Events, Live QR Attendance &amp; SK Evidence</h3>
+          <p>Event publishing, slot-reserving registration, row-locked QR &amp; manual check-in terminal, audited attendance removal, and SK Official photo evidence.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>3 Sequence Diagrams</span>
+          <span>Open Module →</span>
+        </div>
+      </a>
+
+      <a class="hub-card" href="./modules/cash-incentives.html">
+        <div>
+          <span class="hub-card-tag tag-module">Module 05</span>
+          <h3>Cash Incentives &amp; Disbursements</h3>
+          <p>Program budgeting, eligible youth filtering, historical snapshot nomination, approval review, individual/batch cash payout recording, and CSV reports.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>2 Sequence Diagrams</span>
+          <span>Open Module →</span>
+        </div>
+      </a>
+
+      <a class="hub-card" href="./modules/reports-and-audit-logs.html">
+        <div>
+          <span class="hub-card-tag tag-module">Module 06</span>
+          <h3>Analytics Reports &amp; System Audit Logs</h3>
+          <p>MYDO Staff multi-dimensional analytics &amp; streamed CSV exports, plus centralized ActivityLogger capture and Admin audit trail inspection.</p>
+        </div>
+        <div class="hub-card-footer">
+          <span>2 Sequence Diagrams</span>
+          <span>Open Module →</span>
+        </div>
+      </a>
+    </div>
+
+    <footer class="doc-footer">
+      Municipal Youth Development Office (MYDO) · Municipality of Dumingag, Zamboanga del Sur · eKabataan Youth Information Management System
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: {
+        diagramMarginX: 24,
+        diagramMarginY: 16,
+        actorMargin: 55,
+        messageMargin: 36,
+        mirrorActors: true,
+        useMaxWidth: true
+      }
+    });
+  </script>
+</body>
+</html>

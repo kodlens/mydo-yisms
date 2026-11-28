@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MYDO Staff: Manage Event Participant - Activity Diagram</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-emerald">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Activity Diagram</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../admin/approve-reject-youth-registration.html">Admin: Youth Reg</a>
+        <a href="./approve-reject-youth-registration.html">Staff: Youth Reg</a>
+        <a href="./manage-scholarship-application.html">Staff: Scholarships</a>
+        <a href="./manage-event-participant.html" class="active">Staff: Participants</a>
+        <a href="../youth-scholar/join-activity.html">Youth: Join Activity</a>
+        <a href="../sk/submit-document-report.html">SK: Submit Report</a>
+        <a href="../sk/view-sk-submit-status.html">SK: Submit Status</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role Folder: mydo-staff/ · Activity Diagram 03</span>
+      <h1>MYDO Staff — Manage Event Participant</h1>
+      <p>UML Swimlane Activity Diagram showing how MYDO Staff review youth activity sign-ups, enforce slot capacity limits when approving, withdraw or reject sign-ups with actionable reasons, and verify on-site attendance.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Routes: /staff/events-activities/{id}/participants &amp; /attendance</span>
+        <span class="meta-chip">Controllers: StaffEventActivityController &amp; StaffActivityAttendanceController</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Activity Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="legend-bar">
+      <span class="legend-title">UML Notation:</span>
+      <span class="legend-item"><span class="sym-start"></span> Initial Node</span>
+      <span class="legend-item"><span class="sym-action"></span> Action State</span>
+      <span class="legend-item"><span class="sym-decision"></span> Decision / Guard</span>
+      <span class="legend-item"><span class="sym-end"></span> Activity Final Node</span>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">MYDO Staff Activity Diagram 03</span>
+        <h2 class="card-title">Event Sign-Up Moderation, Slot Capacity Control &amp; Venue Check-In</h2>
+        <p class="card-desc">Illustrates how Staff moderate the sign-up queue (Approve, Reject, Withdraw) and optionally transition into Live QR / Manual Attendance Check-in on event day.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">GET /staff/events-activities/{id}/participants/list</span>
+          <span class="tech-tag">PATCH /staff/events-activities/{id}/participants/{registration}</span>
+          <span class="tech-tag">POST /staff/events-activities/{id}/attendance</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph StaffLane["Swimlane 1: MYDO Staff Officer"]
+        Start((" ")) --> P1(["Open Events & Activities Directory (/staff/events-activities)"])
+        P1 --> P2(["Select Activity & Click Manage Sign-ups (/participants)"])
+        P3(["Filter Sign-ups (All, Needs Review, Approved, Rejected, Cancelled)"])
+        D1{"Select Participant Action?"}
+        P4(["Confirm Approve Sign-up"])
+        P5(["Click Reject or Withdraw & Encode Reason (min 5 chars)"])
+        P6(["Open Attendance Check-in Terminal & Scan QR / Enter Ref Code"])
+    end
+
+    subgraph SysLane["Swimlane 2: eKabataan System (StaffEventActivity & Attendance Controllers)"]
+        S1(["Load Participant Roster (Pending First) + Capacity & Slots Left Summary"])
+        D2{"Capacity Reached (Confirmed Slots Full)?"}
+        S2(["Block Approval (422): Activity Already at Capacity"])
+        S3(["Update ActivityRegistration: status = approved, reviewed_by = staff.id, reviewed_at = now"])
+        D3{"Valid Reason (Min 5 Chars)?"}
+        S4(["Prompt Validation Error: Reason Required"])
+        S5(["Update ActivityRegistration: status = rejected, save rejection_reason & Release Slot"])
+        S6(["ActivityAttendanceService Locks Rows & Records Verified Attendance"])
+    end
+
+    subgraph YouthLane["Swimlane 3: Youth Participant"]
+        Y1(["Slot Confirmed & QR Event Pass (YD-XXXX-XXXX) Ready"])
+        D4{"Proceed to Event-Day Check-In?"}
+        Y2(["Attendance Verified Badge Displayed on Youth Profile"])
+        Y3(["Youth Sees Rejected / Withdrawn Status & Staff Reason"])
+        EndNode((("◉")))
+    end
+
+    P2 --> S1
+    S1 --> P3
+    P3 --> D1
+
+    D1 -- "Approve Pending" --> P4
+    P4 --> D2
+    D2 -- "Yes (Full)" --> S2
+    S2 --> EndNode
+    D2 -- "No (Slot Open)" --> S3
+    S3 --> Y1
+    Y1 --> D4
+    D4 -- "Check-In Now" --> P6
+    P6 --> S6
+    S6 --> Y2
+    Y2 --> EndNode
+    D4 -- "Done for Now" --> EndNode
+
+    D1 -- "Reject Pending / Withdraw Approved" --> P5
+    P5 --> D3
+    D3 -- "No" --> S4
+    S4 --> P5
+    D3 -- "Yes" --> S5
+    S5 --> Y3
+    Y3 --> EndNode
+
+    classDef startNode fill:#0f172a,stroke:#0f172a,color:#ffffff;
+    classDef endNode fill:#ffffff,stroke:#0f172a,stroke-width:3px,color:#0f172a,font-weight:900;
+    classDef actionStaff fill:#ecfdf5,stroke:#059669,color:#0f172a;
+    classDef actionSys fill:#f8fafc,stroke:#64748b,color:#0f172a;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f,font-weight:700;
+    classDef successNode fill:#dcfce7,stroke:#16a34a,color:#14532d,font-weight:600;
+    classDef warnNode fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,font-weight:600;
+
+    class Start startNode;
+    class EndNode endNode;
+    class P1,P2,P3,P4,P5,P6 actionStaff;
+    class S1,S3,S5,S6 actionSys;
+    class D1,D2,D3,D4 decision;
+    class Y1,Y2 successNode;
+    class S2,S4,Y3 warnNode;
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · MYDO Staff Activity Diagram: Manage Event Participant
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

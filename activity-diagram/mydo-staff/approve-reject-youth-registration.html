@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MYDO Staff: Approve / Reject Youth Registration - Activity Diagram</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-emerald">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Activity Diagram</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../admin/approve-reject-youth-registration.html">Admin: Youth Reg</a>
+        <a href="./approve-reject-youth-registration.html" class="active">Staff: Youth Reg</a>
+        <a href="./manage-scholarship-application.html">Staff: Scholarships</a>
+        <a href="./manage-event-participant.html">Staff: Participants</a>
+        <a href="../youth-scholar/join-activity.html">Youth: Join Activity</a>
+        <a href="../sk/submit-document-report.html">SK: Submit Report</a>
+        <a href="../sk/view-sk-submit-status.html">SK: Submit Status</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Role Folder: mydo-staff/ · Activity Diagram 01</span>
+      <h1>MYDO Staff — Approve / Reject Youth Registration</h1>
+      <p>UML Swimlane Activity Diagram illustrating how MYDO Staff Officers vet newly submitted Youth registrations, examine uploaded School IDs and residency details, and approve or reject account activation.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Route: /staff/youth-profiles</span>
+        <span class="meta-chip">Controller: StaffYouthProfileController@approve | @reject</span>
+        <span class="meta-chip">Audit: ActivityLogger (youth_profile.approved / rejected)</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Activity Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="legend-bar">
+      <span class="legend-title">UML Notation:</span>
+      <span class="legend-item"><span class="sym-start"></span> Initial Node</span>
+      <span class="legend-item"><span class="sym-action"></span> Action State</span>
+      <span class="legend-item"><span class="sym-decision"></span> Decision / Guard</span>
+      <span class="legend-item"><span class="sym-end"></span> Activity Final Node</span>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">MYDO Staff Activity Diagram 01</span>
+        <h2 class="card-title">Youth Registration Verification &amp; Approval Workflow</h2>
+        <p class="card-desc">Shows the operational vetting flow performed by MYDO Staff before a newly registered youth member is allowed to log in and apply for services.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">GET /staff/get-youth-profiles</span>
+          <span class="tech-tag">POST /staff/youth-profiles/{id}/approve</span>
+          <span class="tech-tag">POST /staff/youth-profiles/{id}/reject</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph StaffLane["Swimlane 1: MYDO Staff Officer"]
+        Start((" ")) --> ST1(["Sign in to MYDO Staff Workspace"])
+        ST1 --> ST2(["Navigate to Youth Profiles (/staff/youth-profiles)"])
+        ST2 --> ST3(["Filter Registration Status = Pending"])
+        ST4(["Open StaffYouthProfileDrawer & Verify Age, Barangay, School & School ID Photo"])
+        D1{"Meets MYDO Eligibility & Valid ID?"}
+        ST5(["Confirm Approve Registration"])
+        ST6(["Select Reject & Enter Rejection Reason (max 500 chars)"])
+    end
+
+    subgraph SysLane["Swimlane 2: eKabataan System (StaffYouthProfileController)"]
+        SY1(["Fetch Paginated Pending YouthProfile Records & Document Paths"])
+        SY2(["Set status = approved, is_active = true, approved_by = staff.id, approved_at = now"])
+        SY3(["Record Audit Trail: youth_profile.approved in activity_logs"])
+        SY4(["Set status = rejected, is_active = false, store rejection_reason"])
+        SY5(["Record Audit Trail: youth_profile.rejected in activity_logs"])
+    end
+
+    subgraph YouthLane["Swimlane 3: Youth Applicant (Portal Login Gate)"]
+        YO1(["Portal Login Unlocked (/youth-login) with Reference Code YD-XXXX-XXXX"])
+        YO2(["Portal Login Blocked with Rejection Feedback"])
+        EndNode((("◉")))
+    end
+
+    ST3 --> SY1
+    SY1 --> ST4
+    ST4 --> D1
+    D1 -- "Approve" --> ST5
+    D1 -- "Reject" --> ST6
+
+    ST5 --> SY2
+    SY2 --> SY3
+    SY3 --> YO1
+    YO1 --> EndNode
+
+    ST6 --> SY4
+    SY4 --> SY5
+    SY5 --> YO2
+    YO2 --> EndNode
+
+    classDef startNode fill:#0f172a,stroke:#0f172a,color:#ffffff;
+    classDef endNode fill:#ffffff,stroke:#0f172a,stroke-width:3px,color:#0f172a,font-weight:900;
+    classDef actionStaff fill:#ecfdf5,stroke:#059669,color:#0f172a;
+    classDef actionSys fill:#f8fafc,stroke:#64748b,color:#0f172a;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f,font-weight:700;
+    classDef approvedOut fill:#dcfce7,stroke:#16a34a,color:#14532d,font-weight:600;
+    classDef rejectedOut fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,font-weight:600;
+
+    class Start startNode;
+    class EndNode endNode;
+    class ST1,ST2,ST3,ST4,ST5,ST6 actionStaff;
+    class SY1,SY2,SY3,SY4,SY5 actionSys;
+    class D1 decision;
+    class YO1 approvedOut;
+    class YO2 rejectedOut;
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · MYDO Staff Activity Diagram: Approve / Reject Youth Registration
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 03: Scholarships &amp; Real-Time Notifications - Sequence Diagrams</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="theme-emerald">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="../index.html" class="top-nav-brand">
+        <span>eKabataan · MYDO YIMS</span>
+        <span class="pill">Module View</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview Hub</a>
+        <div class="nav-divider"></div>
+        <a href="../roles/youth-role.html">Youth</a>
+        <a href="../roles/sk-official-role.html">SK Official</a>
+        <a href="../roles/staff-role.html">Staff</a>
+        <a href="../roles/admin-role.html">Admin</a>
+        <div class="nav-divider"></div>
+        <a href="./auth-and-registration.html">Auth</a>
+        <a href="./profiles-and-sk-management.html">Profiles &amp; SK</a>
+        <a href="./scholarships-and-notifications.html" class="active">Scholarships</a>
+        <a href="./events-attendance-and-sk-evidence.html">Events &amp; Attendance</a>
+        <a href="./cash-incentives.html">Cash Incentives</a>
+        <a href="./reports-and-audit-logs.html">Reports &amp; Logs</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">Module 03 · Grants &amp; Real-Time Broadcasting</span>
+      <h1>Scholarships &amp; Real-Time Pusher Notifications</h1>
+      <p>End-to-end technical sequence for municipal tertiary scholarship configuration, multi-document online submission, real-time Pusher notifications to MYDO Staff, dossier evaluation, and live status notifications back to Youth applicants.</p>
+      <div class="meta-strip">
+        <span class="meta-chip">Tables: scholarship_types, scholarship_applications, notifications</span>
+        <span class="meta-chip">Broadcast: Laravel Echo + Pusher</span>
+      </div>
+    </header>
+
+    <div class="actions">
+      <a class="btn secondary" href="../index.html">← Back to Hub</a>
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <!-- DIAGRAM 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 03 · Sequence A</span>
+        <h2 class="card-title">Online Scholarship Application &amp; Real-Time Staff Broadcast</h2>
+        <p class="card-desc">Traces requirement uploads (COE, COG, School ID, Cedula, PSA), duplicate/active-application guards, transactional file promotion, database notification persistence, and live Pusher delivery to all MYDO Staff.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">YouthApplyScholarshipController@store</span>
+          <span class="tech-tag">NewScholarshipApplicationNotification</span>
+          <span class="tech-tag">StaffNotificationBell.tsx</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Youth as Youth Applicant
+    participant YouthUI as Apply Scholarship Page
+    participant ApplyCtrl as YouthApplyScholarshipController
+    participant Disk as Public Storage Disk
+    participant DB as MySQL (applications, notifications)
+    participant Pusher as Pusher WebSockets
+    actor Staff as All MYDO Staff (Live Bell)
+
+    Youth->>YouthUI: Open /youth/services/apply-scholarship/{id}
+    Youth->>YouthUI: Upload COE, COG, School ID, Cedula & PSA via /temp-upload
+    YouthUI->>Disk: Stage verified files in storage/app/public/temp
+    Youth->>YouthUI: Enter previous semester GWA & submit application
+    YouthUI->>ApplyCtrl: POST /youth/services/apply-scholarship/{id}
+
+    ApplyCtrl->>DB: Check active AcademicYear & ensure no existing pending/approved application
+    alt Duplicate or Active Application Exists
+        ApplyCtrl-->>YouthUI: Return 422 JSON error message
+    else Eligible to Submit
+        ApplyCtrl->>Disk: Move 5 documents to upfiles/scholarships/{youth_id}/{ref}
+        ApplyCtrl->>DB: Create ScholarshipApplication (reference=SCH-XXXX, status=pending)
+        ApplyCtrl->>DB: Query all Users where role = staff
+        ApplyCtrl->>DB: Insert NewScholarshipApplicationNotification in notifications table
+        ApplyCtrl-->>Pusher: Broadcast notification payload on private-App.Models.User.{staffId}
+        Pusher-->>Staff: Append notification to StaffNotificationBell without page reload
+        ApplyCtrl-->>YouthUI: Return 200 OK (reference=SCH-XXXX) & show Submitted modal
+    end
+        </pre>
+      </div>
+    </div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-step">Module 03 · Sequence B</span>
+        <h2 class="card-title">Staff / Admin Dossier Review &amp; Real-Time Youth Status Notification</h2>
+        <p class="card-desc">Documents how MYDO Staff or Administrators inspect an applicant's uploaded requirements, approve or reject the scholarship with remarks, record an audit log, and push an instant notification to the Youth's bell.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">StaffApplicantController@updateStatus</span>
+          <span class="tech-tag">AdminApplicantController@updateStatus</span>
+          <span class="tech-tag">ScholarshipApplicationStatusNotification</span>
+          <span class="tech-tag">YouthNotificationBell.tsx</span>
+        </div>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Reviewer as MYDO Staff / Admin
+    participant RevUI as Applicant Show Page
+    participant AppCtrl as Staff / Admin ApplicantController
+    participant DB as MySQL (applications, activity_logs, notifications)
+    participant Pusher as Pusher WebSockets
+    actor Youth as Youth Applicant (Live Bell)
+
+    Reviewer->>RevUI: Open /staff/applicants/{id} or /admin/applicants/{id}
+    RevUI->>AppCtrl: GET applicant dossier
+    AppCtrl->>DB: Load ScholarshipApplication + YouthProfile + academicYear + document URLs
+    AppCtrl-->>RevUI: Render document viewer & academic profile
+
+    Reviewer->>RevUI: Choose Approve or Reject (encode reason if rejecting)
+    RevUI->>AppCtrl: PATCH /applicants/{applicant}/status (status, rejection_reason)
+    AppCtrl->>DB: Update status, reviewed_by, reviewed_at, rejection_reason
+    AppCtrl->>DB: ActivityLogger::log(scholarship_application_status_updated)
+    AppCtrl->>DB: Save ScholarshipApplicationStatusNotification for YouthProfile
+    AppCtrl-->>Pusher: Broadcast status update to private-App.Models.YouthProfile.{youthId}
+    Pusher-->>Youth: Live alert pops into YouthNotificationBell (Approved / Rejected + reason)
+    AppCtrl-->>RevUI: Return updated application status
+        </pre>
+      </div>
+    </div>
+
+    <footer class="doc-footer">
+      eKabataan YIMS · Module 03: Scholarships &amp; Real-Time Pusher Notifications
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      sequence: { diagramMarginX: 24, diagramMarginY: 16, actorMargin: 55, messageMargin: 36, useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>
