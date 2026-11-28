@@ -27,11 +27,11 @@ class SkDashboardController extends Controller
 
         $profile = $isYouthGuard
             ? YouthProfile::with(['barangay', 'city', 'province'])->find($youthUser->id)
-            : $webUser;
+            : \App\Models\User::with(['barangay', 'city', 'province'])->find($webUser->id);
 
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
 
-        $brgyCode = $isYouthGuard ? $youthUser->brgyCode : null;
+        $brgyCode = $profile?->brgyCode;
 
         $barangayYouthCount = YouthProfile::when($brgyCode, fn ($q) => $q->where('brgyCode', $brgyCode))
             ->where('role', 'youth')
@@ -41,7 +41,10 @@ class SkDashboardController extends Controller
         $barangaySkCount = YouthProfile::when($brgyCode, fn ($q) => $q->where('brgyCode', $brgyCode))
             ->where('role', 'sk')
             ->where('status', 'approved')
-            ->count() + \App\Models\User::where('role', 'sk')->count();
+            ->count()
+            + \App\Models\User::where('role', 'sk')
+                ->when($brgyCode, fn ($q) => $q->where('brgyCode', $brgyCode))
+                ->count();
 
         $publishedEventsCount = Activity::where('status', 'published')->count();
 

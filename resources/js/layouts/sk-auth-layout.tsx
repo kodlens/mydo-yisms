@@ -186,6 +186,11 @@ export default function SkAuthLayout({
                   <div className="min-w-0 leading-tight">
                     <p className="truncate text-xs font-bold text-white">{fullName}</p>
                     <p className="truncate text-[10px] font-semibold text-amber-300 mt-0.5">{skPosition}</p>
+                    {user?.barangay?.brgyDesc && (
+                      <p className="truncate text-[10px] text-indigo-200/90 mt-0.5">
+                        Brgy. {user.barangay.brgyDesc}
+                      </p>
+                    )}
                     {user?.reference_code && (
                       <span className="mt-0.5 inline-block truncate rounded border border-indigo-400/30 bg-indigo-950/70 px-1.5 py-0.2 font-mono text-[9px] font-semibold text-indigo-200">
                         {user.reference_code}

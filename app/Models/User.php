@@ -27,7 +27,12 @@ class User extends Authenticatable
         'email',
         'password',
 
-        'role'
+        'role',
+        'sk_position',
+        'provCode',
+        'citymunCode',
+        'brgyCode',
+        'street_address',
     ];
 
     /**
@@ -61,6 +66,21 @@ class User extends Authenticatable
             'sk' => 'sk.dashboard.index',
             default => 'staff.dashboard.index',
         };
+    }
+
+    public function province(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Province::class, 'provCode', 'provCode');
+    }
+
+    public function city(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(City::class, 'citymunCode', 'citymunCode');
+    }
+
+    public function barangay(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Barangay::class, 'brgyCode', 'brgyCode');
     }
 
     public function cashIncentivePrograms(): \Illuminate\Database\Eloquent\Relations\HasMany

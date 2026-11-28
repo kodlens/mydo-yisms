@@ -1,3 +1,6 @@
+import SelectBarangay from '@/components/select-barangay';
+import SelectCity from '@/components/select-city';
+import SelectProvince from '@/components/select-province';
 import StaffAuthLayout from '@/layouts/staff-auth-layout';
 import { PaginatedResponse, SharedData, User } from '@/types';
 import {
@@ -19,16 +22,26 @@ import {
   Modal,
   Pagination,
   Popconfirm,
+  Select,
   Space,
   Table,
   Tag,
   Tooltip,
 } from 'antd';
 import axios from 'axios';
-import { KeyRound, Mail, ShieldCheck, Trash, User as UserIcon } from 'lucide-react';
+import { KeyRound, Mail, MapPin, ShieldCheck, Trash, User as UserIcon } from 'lucide-react';
 import { ReactElement, ReactNode, useState } from 'react';
 
 const { Column } = Table;
+
+export const SK_POSITION_OPTIONS = [
+  { value: 'SK Chairperson', label: 'SK Chairperson' },
+  { value: 'SK Kagawad', label: 'SK Kagawad (Councilor)' },
+  { value: 'SK Secretary', label: 'SK Secretary' },
+  { value: 'SK Treasurer', label: 'SK Treasurer' },
+  { value: 'SK Federated President', label: 'SK Federated President' },
+  { value: 'SK Federated Officer', label: 'SK Federated Officer' },
+];
 
 const StaffSkOfficialsPage = () => {
   const [form] = Form.useForm();
@@ -43,6 +56,9 @@ const StaffSkOfficialsPage = () => {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+
+  const provCode = Form.useWatch('provCode', form) || '';
+  const citymunCode = Form.useWatch('citymunCode', form) || '';
 
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['staff-sk-officials', perPage, page, search],
@@ -69,6 +85,9 @@ const StaffSkOfficialsPage = () => {
     setEditingSk(undefined);
     setErrors({});
     form.resetFields();
+    form.setFieldsValue({
+      sk_position: 'SK Chairperson',
+    });
     setModalOpen(true);
   };
 
@@ -82,6 +101,11 @@ const StaffSkOfficialsPage = () => {
       fname: record.fname,
       mname: record.mname,
       suffix: record.suffix,
+      sk_position: record.sk_position || 'SK Chairperson',
+      provCode: record.provCode || undefined,
+      citymunCode: record.citymunCode || undefined,
+      brgyCode: record.brgyCode || undefined,
+      street_address: record.street_address || '',
       password: '',
       password_confirmation: '',
     });
@@ -115,7 +139,7 @@ const StaffSkOfficialsPage = () => {
         await axios.put(`/staff/sk-officials/${editingSk.id}`, values);
         notification.success({
           message: 'Updated',
-          description: 'SK Official account updated successfully.',
+          description: 'SK Official account and barangay assignment updated successfully.',
           placement: 'topRight',
         });
       } else {
@@ -163,8 +187,7 @@ const StaffSkOfficialsPage = () => {
                   Sangguniang Kabataan (SK) Officials
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  Register and manage SK Official login accounts. Registered SK Officials sign in using the shared
-                  portal login with their username and password.
+                  Register and manage SK Official login accounts along with their position and assigned barangay.
                 </p>
               </div>
 
@@ -184,8 +207,7 @@ const StaffSkOfficialsPage = () => {
               <div>
                 <h2 className="text-base font-semibold text-slate-900">SK Official Accounts Directory</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Accounts listed here have the <strong>SK</strong> role and access the SK Official Portal to upload
-                  event pictures and evidence.
+                  View each SK Official&apos;s leadership position, barangay jurisdiction, and login credentials.
                 </p>
               </div>
               <Button
@@ -209,7 +231,7 @@ const StaffSkOfficialsPage = () => {
                   size="large"
                   value={searchInput}
                   prefix={<SearchOutlined className="text-slate-400" />}
-                  placeholder="Search by username, first name, last name, or email"
+                  placeholder="Search by name, username, email, position, or barangay"
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') applySearch();
@@ -243,7 +265,7 @@ const StaffSkOfficialsPage = () => {
               pagination={false}
               dataSource={Array.isArray(data?.data) ? data.data : []}
               rowClassName={() => 'hover:bg-slate-50'}
-              scroll={{ x: 900 }}
+              scroll={{ x: 1080 }}
               locale={{
                 emptyText: isFetching ? (
                   'Loading SK Officials...'
@@ -257,7 +279,7 @@ const StaffSkOfficialsPage = () => {
                         </p>
                         <p className="mt-1 text-sm text-slate-500">
                           {search
-                            ? 'Try another name or clear your search.'
+                            ? 'Try another name or barangay, or clear your search.'
                             : 'Click "Register SK Official" to create an account.'}
                         </p>
                       </div>
@@ -269,7 +291,7 @@ const StaffSkOfficialsPage = () => {
               <Column<User>
                 title="SK Official"
                 key="name"
-                width={260}
+                width={240}
                 render={(_, row) => (
                   <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-800">
@@ -277,7 +299,7 @@ const StaffSkOfficialsPage = () => {
                     </span>
                     <div className="min-w-0">
                       <p className="text-sm leading-6 font-semibold break-words text-slate-900">
-                        {[row.lname, [row.fname, row.mname].filter(Boolean).join(' ')].filter(Boolean).join(', ') ||
+                        {[row.lname, [row.fname, row.mname, row.suffix].filter(Boolean).join(' ')].filter(Boolean).join(', ') ||
                           'Name not provided'}
                       </p>
                       <p className="mt-0.5 text-xs text-slate-400 tabular-nums">ID #{row.id}</p>
@@ -287,9 +309,50 @@ const StaffSkOfficialsPage = () => {
               />
 
               <Column<User>
+                title="Position"
+                key="sk_position"
+                width={175}
+                render={(_, row) => (
+                  <Tag color="geekblue" className="font-semibold">
+                    <ShieldCheck className="mr-1 inline h-3 w-3" />
+                    {row.sk_position || 'SK Official'}
+                  </Tag>
+                )}
+              />
+
+              <Column<User>
+                title="Assigned Barangay"
+                key="barangay"
+                width={230}
+                render={(_, row) =>
+                  row.barangay?.brgyDesc ? (
+                    <Tooltip
+                      title={
+                        [row.street_address, `Brgy. ${row.barangay.brgyDesc}`, row.city?.citymunDesc, row.province?.provDesc]
+                          .filter(Boolean)
+                          .join(', ')
+                      }
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-800">
+                          <MapPin size={14} className="shrink-0 text-emerald-600" />
+                          <span className="truncate">Brgy. {row.barangay.brgyDesc}</span>
+                        </div>
+                        <p className="mt-0.5 truncate text-xs text-slate-500">
+                          {[row.city?.citymunDesc, row.province?.provDesc].filter(Boolean).join(', ') || row.street_address || '—'}
+                        </p>
+                      </div>
+                    </Tooltip>
+                  ) : (
+                    <span className="text-xs italic text-slate-400">Not assigned yet</span>
+                  )
+                }
+              />
+
+              <Column<User>
                 title="Login Username"
                 dataIndex="username"
-                width={170}
+                width={150}
                 render={(value) => (
                   <code className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-800">
                     {value || '—'}
@@ -300,7 +363,7 @@ const StaffSkOfficialsPage = () => {
               <Column<User>
                 title="Email"
                 dataIndex="email"
-                width={240}
+                width={210}
                 ellipsis={{ showTitle: false }}
                 render={(email: string) => (
                   <Tooltip title={email}>
@@ -310,20 +373,9 @@ const StaffSkOfficialsPage = () => {
               />
 
               <Column<User>
-                title="Role"
-                dataIndex="role"
-                width={130}
-                render={() => (
-                  <Tag color="geekblue" className="font-semibold">
-                    SK Official
-                  </Tag>
-                )}
-              />
-
-              <Column<User>
                 title="Actions"
                 fixed="right"
-                width={130}
+                width={120}
                 render={(_, record) => (
                   <Space>
                     <Tooltip title="Edit SK Official">
@@ -374,7 +426,7 @@ const StaffSkOfficialsPage = () => {
       <Modal
         forceRender
         open={modalOpen}
-        width={680}
+        width={740}
         title={editingSk ? 'Edit SK Official Account' : 'Register New SK Official'}
         okText={editingSk ? 'Update Account' : 'Register SK Official'}
         cancelText="Cancel"
@@ -382,12 +434,24 @@ const StaffSkOfficialsPage = () => {
         okButtonProps={{ htmlType: 'submit', loading: saving }}
         destroyOnHidden
         modalRender={(dom) => (
-          <Form form={form} layout="vertical" autoComplete="off" onFinish={handleSave}>
+          <Form
+            form={form}
+            layout="vertical"
+            autoComplete="off"
+            onFinish={handleSave}
+            onValuesChange={(changedValues) => {
+              if ('provCode' in changedValues) {
+                form.setFieldsValue({ citymunCode: undefined, brgyCode: undefined });
+              } else if ('citymunCode' in changedValues) {
+                form.setFieldsValue({ brgyCode: undefined });
+              }
+            }}
+          >
             {dom}
           </Form>
         )}
       >
-        <div className="space-y-3 border-t border-slate-200 pt-4">
+        <div className="space-y-4 border-t border-slate-200 pt-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Form.Item
               name="username"
@@ -436,6 +500,73 @@ const StaffSkOfficialsPage = () => {
             </Form.Item>
           </div>
 
+          {/* SK Leadership & Barangay Assignment */}
+          <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/40 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <MapPin size={15} className="text-emerald-700" />
+              <p className="text-xs font-bold tracking-wide text-emerald-950 uppercase">
+                SK Position &amp; Barangay Jurisdiction
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Form.Item
+                name="sk_position"
+                label="SK Position"
+                validateStatus={errors.sk_position ? 'error' : undefined}
+                help={errors.sk_position?.[0]}
+                rules={[{ required: true, message: 'Please select the SK position.' }]}
+              >
+                <Select
+                  placeholder="Select SK Position"
+                  options={SK_POSITION_OPTIONS}
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="provCode"
+                label="Province"
+                validateStatus={errors.provCode ? 'error' : undefined}
+                help={errors.provCode?.[0]}
+                rules={[{ required: true, message: 'Province is required.' }]}
+              >
+                <SelectProvince />
+              </Form.Item>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Form.Item
+                name="citymunCode"
+                label="City / Municipality"
+                validateStatus={errors.citymunCode ? 'error' : undefined}
+                help={errors.citymunCode?.[0]}
+                rules={[{ required: true, message: 'City / Municipality is required.' }]}
+              >
+                <SelectCity provinceCode={provCode} />
+              </Form.Item>
+
+              <Form.Item
+                name="brgyCode"
+                label="Barangay Leading"
+                validateStatus={errors.brgyCode ? 'error' : undefined}
+                help={errors.brgyCode?.[0]}
+                rules={[{ required: true, message: 'Assigned barangay is required.' }]}
+              >
+                <SelectBarangay provinceCode={provCode} cityCode={citymunCode} />
+              </Form.Item>
+            </div>
+
+            <Form.Item
+              name="street_address"
+              label="Purok / Street / Barangay Hall Address (Optional)"
+              validateStatus={errors.street_address ? 'error' : undefined}
+              help={errors.street_address?.[0]}
+              className="mb-0"
+            >
+              <Input placeholder="e.g. Purok 1, Near Barangay Hall" />
+            </Form.Item>
+          </div>
+
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="mb-3 text-xs font-semibold text-slate-700">
               {editingSk
@@ -449,6 +580,7 @@ const StaffSkOfficialsPage = () => {
                 validateStatus={errors.password ? 'error' : undefined}
                 help={errors.password?.[0]}
                 rules={editingSk ? [] : [{ required: true, message: 'Password is required.' }]}
+                className="mb-0"
               >
                 <Input.Password
                   prefix={<KeyRound size={15} />}
@@ -463,6 +595,7 @@ const StaffSkOfficialsPage = () => {
                 validateStatus={errors.password_confirmation ? 'error' : undefined}
                 help={errors.password_confirmation?.[0]}
                 rules={editingSk ? [] : [{ required: true, message: 'Please confirm password.' }]}
+                className="mb-0"
               >
                 <Input.Password
                   prefix={<KeyRound size={15} />}

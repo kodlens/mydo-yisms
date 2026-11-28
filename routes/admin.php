@@ -9,6 +9,28 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/get-activity-categories', [App\Http\Controllers\Admin\AdminActivityCategoryController::class, 'getData'])->name('activity-categories.get-data');
     Route::post('/activity-categories/{id}/active', [App\Http\Controllers\Admin\AdminActivityCategoryController::class, 'setActive'])->name('activity-categories.set-active');
 
+    // Events & Activities + Attendance Management
+    Route::get('/events-activities', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'index'])->name('events-activities.index');
+    Route::get('/events-activities/categories', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'categories'])->name('events-activities.categories');
+    Route::get('/events-activities/data', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'data'])->name('events-activities.data');
+    Route::get('/events-activities/create', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'create'])->name('events-activities.create');
+    Route::get('/events-activities/{id}/edit', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'edit'])->name('events-activities.edit');
+
+    Route::get('/events-activities/{id}/participants', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'participantsPage'])->name('events-activities.participants-page');
+    Route::get('/events-activities/{id}/participants/list', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'participants'])->name('events-activities.participants');
+    Route::patch('/events-activities/{id}/participants/{registration}', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'updateParticipant'])->name('events-activities.participants.update');
+    Route::get('/events-activities/{id}/sk-evidences', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'skEvidences'])->name('events-activities.sk-evidences');
+
+    Route::get('/events-activities/{id}/attendance', [\App\Http\Controllers\Admin\AdminActivityAttendanceController::class, 'index'])->name('events-activities.attendance.index');
+    Route::get('/events-activities/{id}/attendance/data', [\App\Http\Controllers\Admin\AdminActivityAttendanceController::class, 'data'])->name('events-activities.attendance.data');
+    Route::post('/events-activities/{id}/attendance', [\App\Http\Controllers\Admin\AdminActivityAttendanceController::class, 'record'])->name('events-activities.attendance.record');
+    Route::delete('/events-activities/{id}/attendance/{attendanceId}', [\App\Http\Controllers\Admin\AdminActivityAttendanceController::class, 'destroy'])->name('events-activities.attendance.destroy');
+
+    Route::post('/events-activities', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'store'])->name('events-activities.store');
+    Route::put('/events-activities/{id}', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'update'])->name('events-activities.update');
+    Route::post('/events-activities/{id}/toggle-featured', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'toggleFeatured'])->name('events-activities.toggle-featured');
+    Route::delete('/events-activities/{id}', [\App\Http\Controllers\Admin\AdminEventActivityController::class, 'destroy'])->name('events-activities.destroy');
+
     Route::resource('/scholarship-types', App\Http\Controllers\Admin\AdminScholarshipTypeController::class)->names('scholarship-types');
     Route::get('/get-scholarship-types', [App\Http\Controllers\Admin\AdminScholarshipTypeController::class, 'getData'])->name('scholarship-types.get-data');
     Route::post('/scholarship-types/{id}/active', [App\Http\Controllers\Admin\AdminScholarshipTypeController::class, 'setActive'])->name('scholarship-types.set-active');

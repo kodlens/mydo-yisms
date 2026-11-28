@@ -51,7 +51,7 @@ export default function SelectCity({
 
         setOptions(
           cities.map((city) => ({
-            value: city.citymunCode,
+            value: String(city.citymunCode),
             label: city.citymunDesc,
           })),
         );
@@ -74,7 +74,7 @@ export default function SelectCity({
       optionFilterProp="label"
       options={options}
       placeholder={provinceCode ? 'Choose city / municipality' : 'Select province first'}
-      value={value || undefined}
+      value={value !== undefined && value !== null && value !== '' ? String(value) : undefined}
       onChange={(selectedValue) => onChange?.(selectedValue ?? '')}
     />
   );

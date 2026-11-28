@@ -77,7 +77,7 @@ class StaffEventActivityController extends Controller
     public function skEvidences(int $id): JsonResponse
     {
         $activity = Activity::with(['skEvidences' => function ($query) {
-            $query->with(['skOfficial.barangay', 'skOfficial.city', 'skUser'])->latest();
+            $query->with(['skOfficial.barangay', 'skOfficial.city', 'skUser.barangay', 'skUser.city'])->latest();
         }])->findOrFail($id);
 
         $evidences = $activity->skEvidences->map(function (\App\Models\SkActivityEvidence $evidence) {

@@ -40,7 +40,7 @@ export default function SelectProvince({
 
         setOptions(
           provinces.map((province) => ({
-            value: province.provCode,
+            value: String(province.provCode),
             label: province.provDesc,
           })),
         );
@@ -62,7 +62,7 @@ export default function SelectProvince({
       optionFilterProp="label"
       options={options}
       placeholder="Choose province"
-      value={value || undefined}
+      value={value !== undefined && value !== null && value !== '' ? String(value) : undefined}
       onChange={(selectedValue) => onChange?.(selectedValue ?? '')}
     />
   );

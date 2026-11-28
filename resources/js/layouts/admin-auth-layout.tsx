@@ -4,6 +4,7 @@ import { User } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { Avatar, Button, ConfigProvider, Drawer, Dropdown, Grid, Layout, Menu, MenuProps, Tooltip } from 'antd';
 import {
+  CalendarRange,
   ChartBarStacked,
   ChevronDown,
   ClipboardList,
@@ -25,6 +26,7 @@ const { Header, Sider, Content } = Layout;
 const sidebarBackground = 'linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0b1120 100%)';
 const destinations = [
   { key: 'admin.dashboard.index', prefix: 'admin.dashboard.', label: 'Dashboard', icon: Gauge },
+  { key: 'admin.events-activities.index', prefix: 'admin.events-activities.', label: 'Events & Activities', icon: CalendarRange },
   { key: 'admin.activity-categories.index', prefix: 'admin.activity-categories.', label: 'Activity Categories', icon: ChartBarStacked },
   { key: 'admin.scholarship-types.index', prefix: 'admin.scholarship-types.', label: 'Scholarships', icon: GraduationCap },
   { key: 'admin.applicants.index', prefix: 'admin.applicants.', label: 'Scholarship Applicants', icon: ClipboardList },

@@ -18,13 +18,23 @@ class AdminUserController extends Controller
     }
 
     public function getData(Request $req){
-        $validate = $req->validate([
-            'search' => [ 'string', 'nullable'],
+        $req->validate([
+            'search' => ['string', 'nullable'],
         ]);
 
-        return User::where('username', 'like', $req->search . '%')
-            ->orWhere('lname', 'like', $req->search . '%')
-            ->orWhere('fname', 'like', $req->search . '%')
+        $search = trim((string) $req->input('search', ''));
+
+        return User::with(['province', 'city', 'barangay'])
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('username', 'like', "%{$search}%")
+                        ->orWhere('lname', 'like', "%{$search}%")
+                        ->orWhere('fname', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('sk_position', 'like', "%{$search}%")
+                        ->orWhereHas('barangay', fn ($b) => $b->where('brgyDesc', 'like', "%{$search}%"));
+                });
+            })
             ->orderBy('id', 'desc')
             ->paginate($req->perpage);
     }
@@ -43,29 +53,46 @@ class AdminUserController extends Controller
     }
 
     public function show($id){
-        return User::find($id);
+        return User::with(['province', 'city', 'barangay'])->find($id);
     }
 
 
     public function store(Request $req){
-        $req->validate([
+        $isSk = $req->input('role') === 'sk';
+
+        $validated = $req->validate([
             'username' => ['required', 'string', 'unique:users'],
             'lname' => ['required', 'string'],
             'fname' => ['required', 'string'],
+            'mname' => ['nullable', 'string'],
             'email' => ['required', 'email', 'unique:users'],
             'password' => ['required', 'string', 'confirmed'],
-            //'sex' => ['required', 'string'],
             'role' => ['required', 'string'],
+            'sk_position' => [\Illuminate\Validation\Rule::requiredIf($isSk), 'nullable', 'string', 'max:100'],
+            'provCode' => [\Illuminate\Validation\Rule::requiredIf($isSk), 'nullable', 'exists:provinces,provCode'],
+            'citymunCode' => [\Illuminate\Validation\Rule::requiredIf($isSk), 'nullable', 'exists:cities,citymunCode'],
+            'brgyCode' => [\Illuminate\Validation\Rule::requiredIf($isSk), 'nullable', 'exists:barangays,brgyCode'],
+            'street_address' => ['nullable', 'string', 'max:255'],
+        ], [
+            'sk_position.required' => 'Please select the SK position.',
+            'provCode.required' => 'Province is required for SK Officials.',
+            'citymunCode.required' => 'City / Municipality is required for SK Officials.',
+            'brgyCode.required' => 'Assigned barangay is required for SK Officials.',
         ]);
 
         User::create([
-            'username' => $req->username,
-            'password' => Hash::make($req->password),
-            'lname' => $req->lname,
-            'fname' => $req->fname,
-            'mname' => $req->mname,
-            'email' => $req->email,
-            'role' => $req->role,
+            'username' => $validated['username'],
+            'password' => Hash::make($validated['password']),
+            'lname' => $validated['lname'],
+            'fname' => $validated['fname'],
+            'mname' => $validated['mname'] ?? null,
+            'email' => $validated['email'],
+            'role' => $validated['role'],
+            'sk_position' => $isSk ? ($validated['sk_position'] ?? null) : null,
+            'provCode' => $isSk && isset($validated['provCode']) ? (string) $validated['provCode'] : null,
+            'citymunCode' => $isSk && isset($validated['citymunCode']) ? (string) $validated['citymunCode'] : null,
+            'brgyCode' => $isSk && isset($validated['brgyCode']) ? (string) $validated['brgyCode'] : null,
+            'street_address' => $isSk && !empty($validated['street_address']) ? trim($validated['street_address']) : null,
         ]);
 
         return response()->json([
@@ -74,23 +101,40 @@ class AdminUserController extends Controller
     }
 
     public function update(Request $req, $id){
-        //return $req;
-        $req->validate([
+        $isSk = $req->input('role') === 'sk';
+
+        $validated = $req->validate([
             'username' => ['required', 'string', 'unique:users,username,'. $id . ',id'],
             'lname' => ['required', 'string'],
+            'fname' => ['required', 'string'],
+            'mname' => ['nullable', 'string'],
             'email' => ['required', 'email', 'unique:users,email,'. $id . ',id'],
-            //'sex' => ['required', 'string'],
             'role' => ['required', 'string'],
+            'sk_position' => [\Illuminate\Validation\Rule::requiredIf($isSk), 'nullable', 'string', 'max:100'],
+            'provCode' => [\Illuminate\Validation\Rule::requiredIf($isSk), 'nullable', 'exists:provinces,provCode'],
+            'citymunCode' => [\Illuminate\Validation\Rule::requiredIf($isSk), 'nullable', 'exists:cities,citymunCode'],
+            'brgyCode' => [\Illuminate\Validation\Rule::requiredIf($isSk), 'nullable', 'exists:barangays,brgyCode'],
+            'street_address' => ['nullable', 'string', 'max:255'],
+        ], [
+            'sk_position.required' => 'Please select the SK position.',
+            'provCode.required' => 'Province is required for SK Officials.',
+            'citymunCode.required' => 'City / Municipality is required for SK Officials.',
+            'brgyCode.required' => 'Assigned barangay is required for SK Officials.',
         ]);
 
         User::where('id', $id)
             ->update([
-                'username' => $req->username,
-                'lname' => $req->lname,
-                'fname' => $req->fname,
-                'mname' => $req->mname,
-                'email' => $req->email,
-                'role' => $req->role,
+                'username' => $validated['username'],
+                'lname' => $validated['lname'],
+                'fname' => $validated['fname'],
+                'mname' => $validated['mname'] ?? null,
+                'email' => $validated['email'],
+                'role' => $validated['role'],
+                'sk_position' => $isSk ? ($validated['sk_position'] ?? null) : null,
+                'provCode' => $isSk && isset($validated['provCode']) ? (string) $validated['provCode'] : null,
+                'citymunCode' => $isSk && isset($validated['citymunCode']) ? (string) $validated['citymunCode'] : null,
+                'brgyCode' => $isSk && isset($validated['brgyCode']) ? (string) $validated['brgyCode'] : null,
+                'street_address' => $isSk && !empty($validated['street_address']) ? trim($validated['street_address']) : null,
             ]);
 
         return response()->json([

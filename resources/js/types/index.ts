@@ -30,12 +30,32 @@ export interface SharedData {
 
 export interface User {
     id: number;
+    username?: string;
     name: string;
     lname: string;
     fname: string;
     mname: string;
+    suffix?: string | null;
     sex: string;
     email: string;
+    role?: string;
+    sk_position?: string | null;
+    provCode?: string | null;
+    citymunCode?: string | null;
+    brgyCode?: string | null;
+    street_address?: string | null;
+    province?: {
+        provCode: string;
+        provDesc: string;
+    } | null;
+    city?: {
+        citymunCode: string;
+        citymunDesc: string;
+    } | null;
+    barangay?: {
+        brgyCode: string;
+        brgyDesc: string;
+    } | null;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;

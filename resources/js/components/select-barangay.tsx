@@ -54,7 +54,7 @@ export default function SelectBarangay({
 
         setOptions(
           barangays.map((barangay) => ({
-            value: barangay.brgyCode,
+            value: String(barangay.brgyCode),
             label: barangay.brgyDesc,
           })),
         );
@@ -77,7 +77,7 @@ export default function SelectBarangay({
       optionFilterProp="label"
       options={options}
       placeholder={cityCode ? 'Choose barangay' : 'Select city / municipality first'}
-      value={value || undefined}
+      value={value !== undefined && value !== null && value !== '' ? String(value) : undefined}
       onChange={(selectedValue) => onChange?.(selectedValue ?? '')}
     />
   );

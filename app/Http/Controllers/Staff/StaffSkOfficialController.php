@@ -24,13 +24,16 @@ class StaffSkOfficialController extends Controller
         $search = trim((string) $req->input('search', ''));
 
         $query = User::query()
+            ->with(['province', 'city', 'barangay'])
             ->where('role', 'sk')
             ->when($search !== '', function ($q) use ($search) {
                 $q->where(function ($sub) use ($search) {
                     $sub->where('username', 'like', "%{$search}%")
                         ->orWhere('lname', 'like', "%{$search}%")
                         ->orWhere('fname', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('sk_position', 'like', "%{$search}%")
+                        ->orWhereHas('barangay', fn ($b) => $b->where('brgyDesc', 'like', "%{$search}%"));
                 });
             })
             ->orderByDesc('id');
@@ -48,7 +51,12 @@ class StaffSkOfficialController extends Controller
             'fname' => ['required', 'string', 'max:100'],
             'mname' => ['nullable', 'string', 'max:100'],
             'suffix' => ['nullable', 'string', 'max:30'],
-        ]);
+            'sk_position' => ['required', 'string', 'max:100'],
+            'provCode' => ['required', 'exists:provinces,provCode'],
+            'citymunCode' => ['required', 'exists:cities,citymunCode'],
+            'brgyCode' => ['required', 'exists:barangays,brgyCode'],
+            'street_address' => ['nullable', 'string', 'max:255'],
+        ], $this->messages());
 
         $skUser = User::create([
             'username' => trim($validated['username']),
@@ -56,18 +64,26 @@ class StaffSkOfficialController extends Controller
             'password' => Hash::make($validated['password']),
             'lname' => trim($validated['lname']),
             'fname' => trim($validated['fname']),
-            'mname' => isset($validated['mname']) ? trim($validated['mname']) : null,
-            'suffix' => isset($validated['suffix']) ? trim($validated['suffix']) : null,
+            'mname' => isset($validated['mname']) && trim($validated['mname']) !== '' ? trim($validated['mname']) : null,
+            'suffix' => isset($validated['suffix']) && trim($validated['suffix']) !== '' ? trim($validated['suffix']) : null,
             'role' => 'sk',
+            'sk_position' => trim($validated['sk_position']),
+            'provCode' => (string) $validated['provCode'],
+            'citymunCode' => (string) $validated['citymunCode'],
+            'brgyCode' => (string) $validated['brgyCode'],
+            'street_address' => isset($validated['street_address']) && trim($validated['street_address']) !== '' ? trim($validated['street_address']) : null,
         ]);
+
+        $skUser->load(['barangay', 'city', 'province']);
+        $brgyLabel = $skUser->barangay?->brgyDesc ?? $skUser->brgyCode;
 
         ActivityLogger::log(
             'sk_official.created',
-            "Staff registered SK Official account: {$skUser->fname} {$skUser->lname} (@{$skUser->username})",
+            "Staff registered SK Official account: {$skUser->fname} {$skUser->lname} (@{$skUser->username}) — {$skUser->sk_position}, Brgy. {$brgyLabel}",
             $skUser,
             null,
             $skUser->toArray(),
-            ['sk_user_id' => $skUser->id]
+            ['sk_user_id' => $skUser->id, 'brgyCode' => $skUser->brgyCode, 'sk_position' => $skUser->sk_position]
         );
 
         return response()->json([
@@ -89,21 +105,31 @@ class StaffSkOfficialController extends Controller
             'fname' => ['required', 'string', 'max:100'],
             'mname' => ['nullable', 'string', 'max:100'],
             'suffix' => ['nullable', 'string', 'max:30'],
+            'sk_position' => ['required', 'string', 'max:100'],
+            'provCode' => ['required', 'exists:provinces,provCode'],
+            'citymunCode' => ['required', 'exists:cities,citymunCode'],
+            'brgyCode' => ['required', 'exists:barangays,brgyCode'],
+            'street_address' => ['nullable', 'string', 'max:255'],
         ];
 
         if ($req->filled('password')) {
             $rules['password'] = ['required', 'string', 'min:4', 'confirmed'];
         }
 
-        $validated = $req->validate($rules);
+        $validated = $req->validate($rules, $this->messages());
 
         $attributes = [
             'username' => trim($validated['username']),
             'email' => strtolower(trim($validated['email'])),
             'lname' => trim($validated['lname']),
             'fname' => trim($validated['fname']),
-            'mname' => isset($validated['mname']) ? trim($validated['mname']) : null,
-            'suffix' => isset($validated['suffix']) ? trim($validated['suffix']) : null,
+            'mname' => isset($validated['mname']) && trim($validated['mname']) !== '' ? trim($validated['mname']) : null,
+            'suffix' => isset($validated['suffix']) && trim($validated['suffix']) !== '' ? trim($validated['suffix']) : null,
+            'sk_position' => trim($validated['sk_position']),
+            'provCode' => (string) $validated['provCode'],
+            'citymunCode' => (string) $validated['citymunCode'],
+            'brgyCode' => (string) $validated['brgyCode'],
+            'street_address' => isset($validated['street_address']) && trim($validated['street_address']) !== '' ? trim($validated['street_address']) : null,
         ];
 
         if ($req->filled('password')) {
@@ -111,14 +137,16 @@ class StaffSkOfficialController extends Controller
         }
 
         $skUser->update($attributes);
+        $skUser->load(['barangay', 'city', 'province']);
+        $brgyLabel = $skUser->barangay?->brgyDesc ?? $skUser->brgyCode;
 
         ActivityLogger::log(
             'sk_official.updated',
-            "Staff updated SK Official account: {$skUser->fname} {$skUser->lname} (@{$skUser->username})",
+            "Staff updated SK Official account: {$skUser->fname} {$skUser->lname} (@{$skUser->username}) — {$skUser->sk_position}, Brgy. {$brgyLabel}",
             $skUser,
             $old,
-            $skUser->fresh()->toArray(),
-            ['sk_user_id' => $skUser->id]
+            $skUser->toArray(),
+            ['sk_user_id' => $skUser->id, 'brgyCode' => $skUser->brgyCode, 'sk_position' => $skUser->sk_position]
         );
 
         return response()->json([
@@ -149,5 +177,15 @@ class StaffSkOfficialController extends Controller
             'success' => true,
             'message' => 'SK Official account removed successfully.',
         ]);
+    }
+
+    private function messages(): array
+    {
+        return [
+            'sk_position.required' => 'Please select the SK position.',
+            'provCode.required' => 'Province is required.',
+            'citymunCode.required' => 'City / Municipality is required.',
+            'brgyCode.required' => 'Assigned barangay is required.',
+        ];
     }
 }

@@ -39,6 +39,8 @@ export type Activity = {
     approved_registrations_count?: number;
     /** Number of SK Official event evidence submissions for this activity. */
     sk_evidences_count?: number;
+    /** Verified youth attendance count for this activity. */
+    attendances_count?: number;
 };
 
 export type ActivityPayload = {

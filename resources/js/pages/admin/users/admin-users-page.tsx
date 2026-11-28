@@ -210,21 +210,34 @@ const AdminUsersPage = () => {
                 )}
               />
               <Column
-                title="Role"
+                title="Role & Assignment"
                 dataIndex="role"
-                width={130}
-                render={(role: string) => (
-                  <Tag
-                    color={
-                      role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'administrator'
-                        ? 'blue'
-                        : role?.toLowerCase() === 'publisher'
-                          ? 'cyan'
-                          : 'geekblue'
-                    }
-                  >
-                    {role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Unassigned'}
-                  </Tag>
+                width={210}
+                render={(role: string, row: User) => (
+                  <div className="flex flex-col items-start gap-1">
+                    <Tag
+                      color={
+                        role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'administrator'
+                          ? 'blue'
+                          : role?.toLowerCase() === 'publisher'
+                            ? 'cyan'
+                            : role?.toLowerCase() === 'sk'
+                              ? 'purple'
+                              : 'geekblue'
+                      }
+                    >
+                      {role?.toLowerCase() === 'sk'
+                        ? row.sk_position || 'SK Official'
+                        : role
+                          ? role.charAt(0).toUpperCase() + role.slice(1)
+                          : 'Unassigned'}
+                    </Tag>
+                    {role?.toLowerCase() === 'sk' && row.barangay?.brgyDesc && (
+                      <span className="text-xs font-medium text-emerald-700">
+                        Brgy. {row.barangay.brgyDesc}
+                      </span>
+                    )}
+                  </div>
                 )}
               />
               <Column
